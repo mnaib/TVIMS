@@ -1,0 +1,83 @@
+
+yeni 28.09.2015
+
+1.  fayl xx7897xx silmek cache-den
+
+[02-Sep-15 12:20:27] MEHMAN FARACOV: Pövşənin müfəttişdəki protokolunu düzəltmək
+[02-Sep-15 12:25:05] MEHMAN FARACOV: Xəritədə   OM - da obyektlərin hamısını göstərmək....
+[02-Sep-15 12:26:08] MEHMAN FARACOV: Müfəttişləri xəritədə ancaq aktivlərini göstərmək
+[02-Sep-15 12:31:46 | Edited 12:32:40] MEHMAN FARACOV: Axtarışda Vaxtı keçmiş obyektlər
+[02-Sep-15 12:38:24] MEHMAN FARACOV: Tədbirlərdə
+[02-Sep-15 12:39:45] MEHMAN FARACOV: tutulmalar effeklərdə
+[02-Sep-15 12:49:49] MEHMAN FARACOV: XƏRİTƏNİ təqdim edərkən yeni daxil olan obyektlərin görüntülərinin plavnıy olması-yeni yaranan işıq kimi görünməsi
+
+Yeni mehman 17.04.2013
+
+ +++ 1. axtaranda  Baxanlari duzelt
+++++2. Koordinat tesdiq olmur mous sec
+3. Qebul olunub arxiv  ttnda ve yangin   papkalrin acmamaq
++++4. koordinatda unvan s'h'r rayon adini gostermir
+5. Obyektin haradan daxil edildiyini bilek ip adres protokol elave 
+++6. mufetishlerde xeritede (istifadeci seviyyesine gore )
+++7.Axtarishda (teyinat yoxdur? )   neticede ve novbetide  ozel dovlet gorsensin teyinat novbetiye salmaq
+++++8. ozel ve dolet bilinmir? rengle secilmek
+9. shekiller merheler uzre  deyishmir?
+10. merhekede adi  yazmaq olmur yuxari qaldirma
+11.Gps avtomatik calishdirmaq ve  xeriteden zeng etmek
+12. ekspertiza bir reyi gosterir;
+
+
+
+
+1. Ekspertiza viewport ee herfi
+-nomreler datagrid :-) senedler datagrid-de qraf fayl-sayi click yumrularda da fayl adlari
+++2.Gps xerite
++++- ip adres -yenile-
++++-gps removeEvent listner for stop -start
++++3.Bloknot ee herfi  BUTTON LARI yoxla
++++4.Redakte-- TextInput -lara style sozler itir
++++5.Email..naib.ttnda deyishmek
+-+-+6. image Pan-Zoom-Center
+
++++--7.firmalar herfler char code replace
+
+8.Update via link download
+
+9.Ftp Socket-le yoxlamaq
+
+++++10. Mufo top applicationla yoxlamaq
+
+11.Open default app or viewer choice
+
+12. Protokollari elave etmek
+
+13.Yoxlama
+
+14.Gosyerish - Tapshiriqlar
+
+15.USER ID E TEZ DUZELTMEK KKKKKKKK
+ 16.ANE -test java
+
+DATABASE  Changes
+-User -link with Kadrlar bir nece info ve foto goturmek for xeriteGps
+-User logged yes no active  local or remote
+-User ip adres current and last if not active
+- user - default rayon
+
+FTP Changes
+-new file type
+-file name
+
+1. ekspertiza firlanma  acilmir
+
+2. yeni pozunt ve pozuntuya aid yeni shekil elave etmwek
+
+3. Scroll text area  Qeysd and another
+
+4. Obyekt secilmeden ekspertiziya baxmaq
+
+5.Shekil background
+
+1. rey db - adi qisaltmaq rey verenin yalniz adi
+2. daxili olandan ftp birbasha
+

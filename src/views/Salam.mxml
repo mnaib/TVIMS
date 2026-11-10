@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark" xmlns:adaptive="com.responsive.*"
+		viewActivate="view1_viewActivateHandler(event)"
+		destructionPolicy="never"
+		width="100%" height="100%"
+		preinitialize="view1_initializeHandler(event)"
+         styleName="tvimsScreen">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:Bounce id="bounce"/>
+		<s:FlipViewTransition id="flipTrans"
+							  mode="cube"
+							  duration="200"
+							  direction="up"/>
+		<s:SlideViewTransition id="slideTrans"
+							   mode="cover"
+							   duration="200"
+							   direction="left"
+							   easer="{bounce}"/>
+		<s:CrossFadeViewTransition id="fadeTrans"
+								   duration="200"/>
+		<s:ZoomViewTransition id="zoomTrans"
+							  mode="out"
+							  duration="200"/>
+	
+		<s:Fade target="{nad}"  id="xFade1"  alphaFrom="0.1" alphaTo="1" duration="1000"  repeatCount="2"   />
+		
+		
+		
+		<s:Move3D  target="{nad}"  id="xFade2" autoCenterTransform="true"
+				 zBy="250"   
+				  repeatCount="2" repeatBehavior="reverse" />
+		
+		<s:Rotate3D  target="{nad}"  id="xFade3"
+			
+						 angleYFrom="0" angleYTo="360" 
+						duration="1000"
+						autoCenterTransform="true"
+					 repeatBehavior="reverse" 	 />
+		
+		<s:Rotate3D  target="{nad}"  id="xFade4"
+					 
+					 angleZFrom="0" angleZTo="360" 
+					 duration="1000"
+					 autoCenterTransform="true" />
+		
+
+
+	</fx:Declarations>
+
+	<fx:Script><![CDATA[
+		import com.*;
+		import com.mesaj.components.MessageBox;
+		
+		import components.*;
+		
+		import flash.sensors.Geolocation;
+		
+		import mx.core.FlexGlobals;
+		import mx.events.CloseEvent;
+		import mx.events.FlexEvent;
+		
+		import spark.events.PopUpEvent;
+		import spark.events.ViewNavigatorEvent;
+		import spark.managers.PersistenceManager;
+		[Bindable]
+		private var mufo:Mufo;
+		private var basilib:Boolean=false;
+		private var persistenceManager:PersistenceManager=new PersistenceManager;
+		private var timer:Timer=new  Timer(10000);
+		public var gpsok:Boolean=false;
+        // Screen sizing is handled by ResponsiveStage.
+
+
+		protected function view1_initializeHandler(event:FlexEvent):void
+		{
+			
+			mufo=persistenceManager.getProperty("mufo") as Mufo;
+			titul.text="İstifadəçi: " + mufo.uad;
+			//	ad.text=mufo.uad.toString();
+			timer.addEventListener(TimerEvent.TIMER, gonderr);
+		}
+		protected var g:Geolocation = new Geolocation();    
+		public function testgps():void
+		{
+			if(Geolocation.isSupported)
+			{ 					
+			 
+			while (!gpsok) {		
+					if(g.muted){ 
+						
+						//	var app:view ViewNavigatorApplication = FlexGlobals.topLevelApplication as TabbedViewNavigatorApplication
+						gpsok=false;
+						//			MessageBox.show(("Davam etmək üçün\n GPS-i işə salın\n" , 'Məlumat');		
+						 MessageBox.show(this.parent, MessageBox.MB_OK, MessageBox.IC_ALERT, "Məlumat", "Diqqət! Davam etmək üçün\n GPS-i işə salın\n");
+						//	return gpsok ;
+					} 
+					else
+					{
+						gpsok=true;
+						 
+					}
+			}
+			}
+			else 
+			{ 
+				gpsok=true;
+				 
+				trace("GPS not supported"); 
+				//testduz				MobileAlert.show("GPS YOXDUR\n " , 'Məlumat');	
+			}
+			gpsok=true;
+			 
+		}
+		
+		private function gonderr(evt:TimerEvent):void {
+			
+			testgps();	
+			
+		}
+		public function method2(event:PopUpEvent):void
+		{
+			if (event.data == MobileAlert.YES)
+			{
+				//	fert.text = "You answer is 'yes' : "+ event.detail;
+			mufo.Reset();	
+			mufo.uad="Qonaq";
+				mufo.usid="0";
+				mufo.osid="0";
+				mufo.ovezid="0";
+				mufo.oad=" ";
+				mufo.orey=" ";
+				mufo.otey=" ";
+				mufo.ounv=" ";
+				mufo.oqeyd=" ";
+				mufo.oray=" ";
+				//	
+				mufo.gor=false;
+				persistenceManager.setProperty("mufo", mufo);
+				navigator.popView();
+				
+				navigator.firstView=views.Login;
+				
+				navigator.pushView(Login);
+			}
+			else
+			{
+				//		fert.text = "You answer is 'No' : "+ event.detail;
+				return;
+			}
+		}
+		
+		
+		protected function button1_clickHandler():void
+		{
+			
+			
+			// TODO Auto-generated method stub
+			
+			
+			
+			MobileAlert.show('Hörmətli  ' + mufo.uad + '\n' + 'Siz Mufəttişlik sistemindən ÇIXMAQ İstəyirsiniz?', 'Sistemdən  ÇIXIŞ', 9, this, method2);
+		
+			//		NativeApplication.nativeApplication.exit();
+		}
+		
+		
+		protected function view1_viewActivateHandler(event:ViewNavigatorEvent):void
+		{
+			mufo=persistenceManager.getProperty("mufo") as Mufo;
+	//		timer.start();	
+	//		FlexGlobals.topLevelApplication.persistenceManager.getProperty("mufo");   
+			//	MobileAlert.show('Hörmətli  '+ mufo.uad+ '\n'+'Siz Mufəttişlik sisteminə xoş gəlmisiniz !' , 'Sistemə  Giriş',9,this,method2);
+			if (!(parseInt(mufo.osid) == 0))
+			{
+				nad.text=mufo.oad.toString();
+				
+				nrey.text=mufo.orey.toString();
+				ntey.text=mufo.otey.toString();
+				nunv.text=mufo.oray.toString() + ", " + mufo.ounv.toString();
+				nqeyd.text=mufo.osif;
+				nvez.text=mufo.ovez.toString();
+			}
+		
+		
+			   
+	//		timer.start();	
+		
+		
+		}
+		
+		protected function kestemiz(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			navigator.pushView(Mufler,zoomTrans);
+	//		MobileAlert.show('İnternetə qənaət üçün  baxılmış obyektlərin  şəkilləri'+'\n'+'və sənədlər Yaddaşda saxlanılır və əlavə yer tutur.'+'\n'+' Vaxtaşırı bu faylları təmizləmək lazımdır.'+'\n'+'İndi Faylları təmizləmək İstəyirsinizmi?', 'Yaddaşın təmizlənməsi', 9, this, temizlekes);
+			
+			 
+		}
+		
+		public function temizlekes(event:PopUpEvent):void
+		{
+			if (event.data == MobileAlert.YES)
+			{
+			var directory:File = File.applicationStorageDirectory.resolvePath('ttnda/cache/');
+			
+			if (directory.exists) {
+				var contents:Array = directory.getDirectoryListing(); 
+			trace('qovluq '+contents.length); 
+			for (var i:uint = 0; i < contents.length; i++) 
+			{
+				trace(contents[i].name, contents[i].size); 
+			}
+				directory.deleteDirectory(true);
+			}
+			var directory2:File = File.applicationStorageDirectory.resolvePath('ttnda/cache/');
+			 
+			MobileAlert.showt('Yaddaş   təmizləndi.', 'Yaddaşın  təmizlənməsi');
+		}
+		}
+		
+		 
+		protected function obol_click(event:MouseEvent):void
+		{
+			// obyektin koordinati yoxsa alert
+			// gps coor >< 200 metr radius
+			// yes basa 
+			// else alert
+			
+		}
+	
+		protected function axtracc(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			if (basilib)
+			{
+				navigator.replaceView(Axtar,fadeTrans) ;
+			}
+			else
+			{
+				basilib=true;
+				navigator.pushView(Axtar,fadeTrans) ;
+			}
+			 
+		}
+		
+		protected function button2_clickHandler(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			
+		}
+		
+		protected function gismon_clickHandler(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+		if (mufo.ugis) navigator.pushView(Xerite,flipTrans)
+		else  {
+			MobileAlert.show('Sizin  GPS Monitoring bölməsinə icazəniz yoxdur ' , 'Məlumat');
+		return;
+		}
+		}
+		
+	]]></fx:Script>
+
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+	
+		
+	
+	</fx:Style>
+
+
+	<s:actionContent>
+
+		<s:Button id="bquit"
+				  label="Çıxış"
+				  click="button1_clickHandler()"
+				  icon="@Embed('../assets/quit40.png')"/>
+	</s:actionContent>
+
+	<s:titleContent>
+		<s:Label width="100%"
+				 id="titul"
+				 color="white"
+				 horizontalCenter="0"
+				 text="İstifadəçi: {mufo.uad}"  accessibilityDescription=""
+				 textAlign="center"
+				 verticalAlign="middle"/>
+	</s:titleContent>
+
+	<s:Image left="0"
+			 top="0"
+			 right="0"
+			 bottom="0"
+			 alpha="0.2"
+			 scaleMode="stretch"
+			 smooth="true"
+			 source="assets/Slide5.jpg"/>
+	<!-- 1280x720 baza dizaynı. Bütün əvvəlki koordinatlar qorunur. -->
+	<adaptive:ResponsiveStage id="homeMenu" fitMode="fill" protectPortrait="true" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false">
+	<s:Label id="nrey0"
+			 x="4"
+			 y="148"
+			 width="100%"
+			 height="4"
+			 textAlign="left"
+			 verticalAlign="middle"
+			 backgroundColor="#666363"
+			 backgroundAlpha="0.5"/>
+ 
+
+	<s:Label x="114"
+			 y="2"
+			 color="#0C66D6"
+			 text="Unvan:"/>
+
+	<s:Button id="senedbut" x="810" y="158" width="163" height="169" label="Sənədlər"
+			  click="{ if (!(mufo.oad.length>2)) xFade3.play() else navigator.pushView(Sened, mufo.uad,zoomTrans);}"
+			  fontSize="16" icon="@Embed('../assets/doc123.png')" iconPlacement="top"/>
+	<s:Button x="1050" y="342" width="163" height="169" label="Lisenziyalar"
+			  click="navigator.pushView(Licenziya,zoomTrans)" fontSize="17"
+			  icon="@Embed('../assets/lisenziya.png')" iconPlacement="top"/>
+	<s:Button x="570" y="526" width="163" height="169" label="Müfəttişlər Xəritədə"
+			  click="navigator.pushView(MufXer, mufo.uad,zoomTrans)" fontSize="15"
+			  icon="@Embed('../assets/mapmuf.png')" iconPlacement="top"/>
+	<s:Button x="1050" y="526" width="163" height="169" label="Serverə köçürmə"
+			  click="navigator.pushView(Fotosinx, mufo.uad,zoomTrans)" fontSize="17"
+			  icon="@Embed('../assets/server.png')" iconPlacement="top"/>
+	<s:Button x="330" y="526" width="163" height="169" label="Müfəttişlər"
+			  click="kestemiz(event)" fontSize="17"
+			  icon="@Embed('../assets/customers.png')" iconPlacement="top"/>
+	<s:Button x="570" y="342" width="163" height="169" label="Tədbirlər"
+			  click="{ if (!(mufo.oad.length>2)) xFade3.play() else navigator.pushView(Tedbir,flipTrans);}" fontSize="17"
+			  icon="@Embed('../assets/editb.png')" iconPlacement="top"/>
+	<s:Button x="90" y="526" width="163" height="169" label="Qanun"
+			  click="navigator.pushView(Qanun,zoomTrans)" fontSize="17"
+			  icon="@Embed('../assets/qanun.png')" iconPlacement="top"/>
+	<s:Button x="1050" y="158" width="163" height="169" label="Sertifikat"
+			  click="{ if (!(mufo.oad.length>2)) xFade3.play() else navigator.pushView(Sertifikat, mufo.uad,zoomTrans);}" 
+		 
+			  fontSize="17"
+			  icon="@Embed('../assets/sertifikat.png')" iconPlacement="top"/>
+	<s:Button x="810"
+			  y="342"
+			  width="163"
+			  height="169"
+			  label="Ekspertiza"
+			  iconPlacement="top"
+			  icon="@Embed('../assets/ekspert.png')"
+			  fontSize="16"
+			
+	click=" { if (!(mufo.oad.length>2)) xFade4.play() else  navigator.pushView(Ekspertiza,flipTrans) }"
+	/>
+	<s:Button x="330"
+			  y="342"
+			  width="163"
+			  height="169"
+			   
+			  iconPlacement="top"
+			  icon="@Embed('../assets/texdoc.png')"
+			  fontSize="16"
+			  label="Texniki baxış"   enabled="true"
+			  click="{ if (!(mufo.oad.length>2)) xFade3.play() else navigator.pushView(Texblist,zoomTrans); }"
+			/>
+	<s:Button x="570"
+			  y="158"
+			  width="163"
+			  height="169"
+			  label="Mərhələlər"
+			  iconPlacement="top"
+			  icon="@Embed('../assets/iPhoto.png')"
+			  fontSize="16"
+			  click=" { if (!(mufo.oad.length>2)) xFade2.play() else  navigator.pushView(Merhele,flipTrans) }"
+			  />
+	<s:Button x="90"
+			  y="158"
+			  width="163"
+			  height="169"
+			  label="Yeni obyekt"
+			  iconPlacement="top" enabled="{mufo.uderece=='2' || mufo.uderece=='1' }"
+			  click="navigator.pushView(Yeni,fadeTrans)"
+			  icon="@Embed('../assets/constructionnew128.png')"
+			  fontSize="16"/>
+	<s:Button x="330" y="158" width="163" height="173" label="Axtarış"
+			  click="axtracc(event)" color="#C006F6" fontSize="21"
+			  icon="@Embed('../assets/buildings128.png')" iconPlacement="top"/>
+	<s:Button x="810"
+			  y="526"
+			  width="163" id="gismon"
+			  height="169"
+			  label="GIS Monitorinq"
+			  color="#C006F6" 
+			  iconPlacement="top"
+			  icon="@Embed('../assets/map.png')"
+			  fontSize="18"
+			   click="gismon_clickHandler(event)"
+			  />
+	<s:Button x="90" y="342" width="163" height="169" label="Pozuntular"
+			  click="{ if (!(mufo.oad.length&gt;2)) xFade1.play() else  navigator.pushView(Pozuntu,zoomTrans) }"
+			  enabled="true" fontSize="16" icon="@Embed('../assets/poz1.png')" iconPlacement="top"/>
+	 
+	 
+ 
+  
+	<s:Button x="247" y="478" label="admin" click="{mufo.admin=true}" visible="false"/>
+	<s:Button x="510" y="478" label="mufet" click="{mufo.duzelden=true}" visible="false"/>
+	<s:Label id="nad"
+			 x="307"
+			 y="14.25"
+			 width="730"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 color="#7D049B"
+			 fontSize="21"
+			 fontWeight="bold"
+			 text="Obyekt  Secilməyib"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+	<s:Label x="641"
+			 y="74.2"
+			 color="#0C66D6"
+			 text="Sifarişçi"/>
+	<s:Label x="1147"
+			 y="3"
+			 color="#0C66D6"
+			 text="Təyinat:"/>
+	<s:Label id="ntey"
+			 x="1062"
+			 y="14.25"
+			 width="208"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+	<s:Label x="1107"
+			 y="75"
+			 color="#0C66D6"
+			 text="Tikintinin vəziyyəti:"/>
+	<s:Label id="nvez"
+			 x="1062"
+			 y="91.25"
+			 width="208"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+
+	<s:Label id="nqeyd"
+			 x="307"
+			 y="91.25"
+			 width="730"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+	<s:Label x="121"
+			 y="76"
+			 color="#0C66D6"
+			 text="Rəy:"/>
+	<s:Label id="nrey"
+			 x="10"
+			 y="91.25"
+			 width="270"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+
+	<s:Label id="nunv"
+			 x="9"
+			 y="14.25"
+			 width="266"
+			 height="55"
+			 backgroundAlpha="0.2"
+			 backgroundColor="#666363"
+			 textAlign="center"
+			 verticalAlign="middle"/>
+ 
+
+
+
+	</adaptive:ResponsiveStage>
+</s:View>

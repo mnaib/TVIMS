@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					
+					xmlns:s="library://ns.adobe.com/flex/spark"
+					>
+	
+	
+	
+	<fx:Script>
+
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.utils.DateUtil;
+			[Bindable]
+			private var reng:uint=0xfe0303;
+			private function differenceBetweenDates(dds:String):Number{
+				var MS_PER_DAY:uint = 60 * 60*1000;
+				var date1:Date=new Date();
+				var da1:Array =dds.split(' ');
+				var da2:Array =da1[0].toString().split('.');
+				var da3:Array =da1[1].toString().split(':');
+				var ddd:int=parseInt(da2[1].toString());
+				ddd=ddd-1;
+				var date2:Date = new Date(parseInt(da2[2].toString()),
+					ddd,
+					parseInt(da2[0].toString()),
+					parseInt(da3[0].toString()),
+					parseInt(da3[1].toString()),
+					parseInt(da3[2].toString()));
+				
+				
+				return  (date1.time - date2.time )/ MS_PER_DAY;
+				
+				
+			}
+			override public function prepare(hasBeenRecycled:Boolean):void 
+				
+			{
+				
+				super.prepare(hasBeenRecycled);
+				
+				if (data)
+					
+				{ 
+					var ess:Graphic=data as Graphic;
+					var ss:Object=new Object;
+					ss=ess.attributes as Object;
+					var sse:Object=new Object;
+					sse=ss.uad;				 
+					var df:String=sse.valueOf().toString();
+					Comment.text =  df;
+					//	Comment.setStyle("backgroundColor", 0xB1CCF0);
+					
+					var ssre:Object=new Object;
+					ssre=ss.vaxt;
+					var dfr:String=ssre.valueOf().toString();
+					
+					//  7 deqiqeden az offlayn olur
+					var nn:Number=differenceBetweenDates(dfr);
+					if (nn>1)  reng=0xec58e3;
+					else  reng=0x025902;
+					
+					if (nn>8)  reng=0xfe0303;
+				} 
+				
+			}
+			
+		]]>
+		
+	</fx:Script>
+	
+	
+	
+	<!--- The renderer's visual component.          -->
+	
+	<s:Label id="Comment" width="100%"   color="{reng}"  paddingLeft="5" paddingTop="5" fontSize="{column.grid.dataGrid.getStyle('fontSize')}"/>
+	
+</s:GridItemRenderer>

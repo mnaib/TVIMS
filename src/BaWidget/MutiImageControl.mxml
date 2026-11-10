@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Version 2.2.2 - Mar 30, 2011
+//
+// Delevoped by Robert Scheitlin
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="100%" height="100%"
+		>
+	<fx:Script>
+		<![CDATA[
+		
+			import flash.system.Capabilities;
+			
+	 
+			import mx.managers.PopUpManager;
+		
+
+			[Bindable]
+			private var _cWidth:Number;
+			
+			[Bindable]
+			public var titulad:String="Şəkil" ;
+			
+			[Bindable]
+			private var _multiImgPre:String;
+			
+			[Bindable]
+			private var _multiImgSuf:String;
+			
+			[Bindable]
+			private var _nextButtonToolTip:String = "Next";
+			
+			[Bindable]
+			private var _prevButtonToolTip:String = "Prev";
+			
+			[Bindable]
+			private var imgToolTip:String = "";
+			
+			[Bindable]
+			private var _iArray:Array;
+			
+			[Bindable]
+			public var iimageURL:String = "eeee";
+			
+			[Bindable]
+			public var iCurrIndx:int = 0; 
+			
+			
+			public function get iiCurrIndx():int			{
+				return 	iCurrIndx;
+			}
+			public function set iiCurrIndx(value:int):void
+			{
+				iCurrIndx= value;
+			}
+			
+			public function set cWidth(value:Number):void
+			{
+				_cWidth = value;
+			}
+			
+			public function set nextButtonToolTip(value:String):void
+			{
+				_nextButtonToolTip = value;
+			}
+			
+			public function set prevButtonToolTip(value:String):void
+			{
+				_prevButtonToolTip = value;
+			}
+			
+			public function set multiImgPre(value:String):void
+			{
+				_multiImgPre = value;
+			}
+			
+			public function set multiImgSuf(value:String):void
+			{
+				_multiImgSuf = value;
+			}
+			import com.Dekod; 
+			import com.nlib;
+			public function getimage(value:String):void
+			{
+			 
+				 
+				nlib.GetFtpF('Mufettis', value.replace('.','_.'),downexr);
+				function downexr(event:Event ):void {
+ 					trace("GetFtp HAZIR" +event.toString()+"  "  +(new Date()).toString()+"--"+(new Date()).milliseconds);
+					var	ssoaota :XMLDocument = new XMLDocument(event.target.data);
+					var fad:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.nodeValue;
+					var ffile:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.nodeValue;
+		 				
+					mInfoImage.source=Dekod.decode(ffile);
+				}
+			}
+			public function set iArray(value:Array):void
+			{
+				_iArray = value;
+				iCurrIndx = _iArray.length-1;
+	//	//		visible="false" includeInLayout="false" 
+				iCurrIndx = _iArray.length-1;
+				getimage(_iArray[iCurrIndx].toString());
+		// 	 .source = _multiImgPre + _iArray[0] + _multiImgSuf;
+				imgToolTip = _iArray[0];
+				if(_iArray.length ==1)
+					prev.visible = false;
+				
+				else 	prev.visible = true;
+				
+				next.visible = false;
+			}
+			
+			private function prevImg():void
+			{
+				if((iCurrIndx - 1) < 0)
+				{
+					prev.visible = false;
+				} else if((iCurrIndx - 1) == 0){
+					//mInfoImage.source = _multiImgPre + _iArray[(iCurrIndx - 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx - 1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx - 1)];
+					prev.visible = false;
+					iCurrIndx -=1;
+				}else{
+					//mInfoImage.source =  _multiImgPre + _iArray[(iCurrIndx - 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx - 1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx - 1)];
+					iCurrIndx -=1;
+				}
+				if(iCurrIndx < (_iArray.length -1))
+				{
+					next.visible = true
+				} else {
+					next.visible = false
+				}
+			}
+			
+			private function nextImg():void
+			{
+				if((iCurrIndx + 1) > (_iArray.length -1))
+				{
+					next.visible = false;
+				} else if((iCurrIndx + 1) == (_iArray.length -1)){
+				//	mInfoImage.source =   _multiImgPre + _iArray[(iCurrIndx + 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx +1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx + 1)];
+					next.visible = false;
+					iCurrIndx +=1;
+				}else{
+					getimage(_iArray[(iCurrIndx + 1) ].toString());
+					//mInfoImage.source =   _multiImgPre + _iArray[(iCurrIndx + 1)] + _multiImgSuf;
+					imgToolTip =_iArray[(iCurrIndx + 1)];
+					iCurrIndx +=1;
+				}
+				if(iCurrIndx > 0)
+				{
+					prev.visible = true
+				} else {
+					prev.visible = false
+				}
+			}
+			
+			//show link
+			
+		 
+			
+			 
+			
+			private function img_click(evt:MouseEvent):void {
+				var img:Image = evt.currentTarget as Image;
+				PopUpManager.removePopUp(img);
+			}
+
+			
+			
+			private function showLink():void
+			{
+		
+				
+				if (!(_iArray[0]=="nofoto.jpg"))
+				{
+							
+							
+						var vidpl:ImgView= ImgView(PopUpManager.createPopUp(this, ImgView, true));
+						vidpl.iimageURL=_iArray;
+					
+						vidpl.adtitul=titulad;
+						vidpl.x=70; 
+						vidpl.y=70;
+					
+						vidpl.height=Capabilities.screenResolutionY-240;
+							vidpl.width=Capabilities.screenResolutionX-200;
+						vidpl.multiImgPred = _multiImgPre;
+						vidpl.multiImgSufd = _multiImgSuf;
+						vidpl.curin=iCurrIndx;
+		//				vidpl.showCloseButton=true;
+
+					//		PopUpManager.centerPopUp(vidpl);
+						
+				}	
+			}
+		]]>
+	</fx:Script>
+
+<s:HGroup  verticalAlign="middle" horizontalAlign="center" width="100%">
+	
+<s:Image id="prev" source="@Embed(source='../assets/images/w_left.png')"  
+			  useHandCursor="true" buttonMode="true" verticalCenter="0"  
+			  visible="false" click="prevImg()" toolTip="{_prevButtonToolTip}"  />
+	
+	<s:Image id="mInfoImage"   maxWidth="{_cWidth}" horizontalAlign="center" buttonMode="true"  height="100%" scaleMode="letterbox" 
+			  click="showLink()"  />
+	<s:Image id="next" source="@Embed(source='../assets/images/w_right.png')" 
+			  useHandCursor="true" buttonMode="true" verticalCenter="0"  
+			  visible="false" click="nextImg()" toolTip="{_nextButtonToolTip}" />
+	
+</s:HGroup>
+</s:Group>

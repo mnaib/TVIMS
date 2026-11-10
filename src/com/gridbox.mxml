@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" >
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.conversion.TextConverter;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.skins.SparkSkin;
+			import spark.utils.TextFlowUtil;
+		 
+		 
+		]]>
+	</fx:Script>
+	
+	<s:RichText   id="hert"	maxDisplayedLines="-1"      width="690" paddingBottom="3"  paddingTop="3" paddingLeft="3"   
+				 textFlow="{TextConverter.importToFlow(data.toString(), TextConverter.TEXT_FIELD_HTML_FORMAT)}"  />
+</s:GridItemRenderer>

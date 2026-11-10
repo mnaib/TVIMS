@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Used by InfoWindowRollOverSample.mxml -->
+
+<s:VGroup  horizontalAlign="center"    xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			[Embed("../assets/phone.png")]
+			[Bindable]
+			private  var phone:Class; 
+			
+			[Embed("../assets/video.png")]
+			[Bindable]
+			private  var vid:Class; 
+				
+			[Embed("../assets/sms.png")]
+			[Bindable]
+			private  var mail:Class; 
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				 navigateToURL(new URLRequest('tel:'+tel),'_blank');
+			}
+			
+			protected function zeng(ss:String):void
+			{
+				// TODO Auto-generated method stub
+				var u:URLRequest = new URLRequest("tel:" +ss);
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			protected function vidik():void
+			{
+				
+				var u:URLRequest = new URLRequest("skype:" +skype+ "?call&video=true " );
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			
+			protected function mesaj(ss:String ):void
+			{
+				// TODO Auto-generated method stub
+				var u:URLRequest = new URLRequest("sms:" +ss);
+				navigateToURL(u,"_self"); 
+			}
+			
+			 
+//			<s:Label width="100%" text="{uad}" left="3" top="3" color="white" backgroundColor="red" fontWeight="bold" fontSize="20"  textAlign="center" />
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+        <fx:String id="userad">3</fx:String>
+        <fx:String id="uad">4</fx:String>
+		<fx:String id="oad">3</fx:String>
+		<fx:String id="tel">4</fx:String>
+		<fx:String id="ptel">4</fx:String>
+		<fx:String id="vaxt">4</fx:String>
+		<fx:String id="skype">4</fx:String>
+    </fx:Declarations>
+	 
+		
+		
+	<s:BorderContainer id="hc" x="0" y="0" height="305" backgroundColor="#534d4d"    horizontalCenter="0"  
+					   borderColor="#ccb49f" borderWeight="3" color="#FFFFFF" cornerRadius="8"
+					   fontWeight="normal" percentHeight="100" percentWidth="100">
+		<s:VGroup paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="3" horizontalCenter="0"  horizontalAlign="center">
+			
+	
+	<s:Label text="Obyekt:"/>
+	<s:Label text="{oad}" maxWidth="200"  maxDisplayedLines="-1"/>
+	<s:Label text="Tel: {tel}"  />
+	<s:HGroup width="100%" horizontalAlign="center">
+	 
+		<s:Button id="xmobilbww" width="50" height="50"    buttonMode="true"		includeInLayout="{tel.toString().length>3}"						visible="{tel.toString().length>3}"				 
+				 click="{zeng(tel)}"  skinClass="skins.iconbutt"
+		 icon="{phone}"/>
+		
+		<s:Button id="xmobilbwwu" width="50" height="50"    buttonMode="true"		includeInLayout="{tel.toString().length>3}"			 visible="{tel.toString().length>3}"						 
+				  skinClass="skins.iconbutt" click="{mesaj(tel)}"
+				  icon="{mail}"/>
+	 
+	</s:HGroup>
+		
+			<s:Label text="Planşetin Telefonu"  />
+			<s:Label   text="{ptel}"  />
+	
+			
+			
+	<s:HGroup width="100%" horizontalAlign="center">
+		<s:Button id="xmobiww" width="50" height="50"    buttonMode="true"	includeInLayout="{skype.length>4}"					visible="{skype.length>4}"					 
+				  click="{vidik()}"  skinClass="skins.iconbutt"
+				  icon="{vid}"/>
+		<s:Button id="xmobilbwwt" width="50" height="50"    buttonMode="true"		 includeInLayout="{ptel.toString().length>3}"					 visible="{ptel.toString().length>3}"				 
+				  click="{zeng(ptel)}"  skinClass="skins.iconbutt"
+				  icon="{phone}"/>
+		
+		<s:Button id="xmobilbwwy" width="50" height="50"    buttonMode="true"		includeInLayout="{ptel.toString().length>3}"						visible="{ptel.toString().length>3}"			 
+				  skinClass="skins.iconbutt" click="{mesaj(ptel)}"
+				  icon="{mail}"/>
+	</s:HGroup>	
+	<s:Label text="Vaxt: {vaxt}"/>
+		</s:VGroup>	
+		</s:BorderContainer>
+</s:VGroup>

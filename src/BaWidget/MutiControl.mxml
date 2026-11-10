@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Version 2.2.2 - Mar 30, 2011
+//
+// Delevoped by Robert Scheitlin
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:pandzoom="com.panzoom.*" 
+		 minWidth="{_cWidth}"
+		 minHeight="{_cHeight}"  
+		 creationComplete="init()">
+	
+	
+	<fx:Style>
+		
+	
+		
+		.ZoomInButton {		
+		disabledSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="MinusButton_Disabled");
+		downSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="MinusButton_Down");
+		overSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="MinusButton_Over");
+		upSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="MinusButton_Up");		
+		}	
+		
+		.ZoomOutButton {		
+		disabledSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="PlusButton_Disabled");
+		downSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="PlusButton_Down");
+		overSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="PlusButton_Over");
+		upSkin: Embed(source="../assets/icons/demoIcons.swf",symbol="PlusButton_Up");
+		}	
+		
+		
+	</fx:Style>
+
+	
+	<fx:Script>
+		<![CDATA[
+		
+			import flash.events.EventDispatcher;
+			import flash.events.PressAndTapGestureEvent;
+			import flash.events.TimerEvent;
+			import flash.events.TransformGestureEvent;
+			import flash.geom.Point;
+			import flash.ui.Multitouch;
+			import flash.ui.MultitouchInputMode;
+			import flash.utils.Timer;
+			
+			import mx.controls.Image;
+			import mx.core.*;
+			import mx.effects.*;
+			import mx.effects.easing.*;
+			import mx.effects.effectClasses.*;
+			import mx.events.*;
+			import mx.managers.PopUpManager;
+			
+
+			[Bindable]
+			private var _cWidth:Number;
+			[Bindable]
+			private var _cHeight:Number;
+			
+				[Bindable]
+			private var bitmapdatan:BitmapData;
+			[Bindable]
+			private var _multiImgPre:String;
+		
+			[Bindable]
+			private var _multiImgSuf:String;
+			
+			[Bindable]
+			private var _nextButtonToolTip:String = "Next";
+			
+			[Bindable]
+			private var _prevButtonToolTip:String = "Prev";
+			
+			[Bindable]
+			private var imgToolTip:String = "";
+			
+			[Bindable]
+			public var _iArray:Array;
+			
+			
+			
+			[Bindable]
+			public var iCurrIndx:int = 0;
+			
+		
+			public function get cWidth():Number
+			{
+			return	_cWidth ;
+			}
+			public function get cHeight():Number
+			{
+			return 	_cHeight;
+			}
+			public function get iArray():Array
+			{
+				return 	_iArray;
+			}
+			public function set cWidth(value:Number):void
+			{
+		    	_cWidth = value;
+			}
+			public function set cHeight(value:Number):void
+			{
+				_cHeight = value;
+			}
+			
+			
+			public function set nextButtonToolTip(value:String):void
+			{
+				_nextButtonToolTip = value;
+			}
+			
+			public function set prevButtonToolTip(value:String):void
+			{
+				_prevButtonToolTip = value;
+			}
+			
+			public function set multiImgPre(value:String):void
+			{
+				_multiImgPre = value;
+			}
+			
+			public function set multiImgSuf(value:String):void
+			{
+				_multiImgSuf = value;
+			}
+			
+			public function get iiCurrIndx():int			{
+				return 	iCurrIndx;
+			}
+			public function set iiCurrIndx(value:int):void
+			{
+				iCurrIndx= value;
+				getimage(_iArray[iCurrIndx].toString());
+				imgToolTip = _iArray[iCurrIndx];
+				if(_iArray.length ==1)
+					next.visible = false;
+					
+				else 	next.visible = true;
+				
+				prev.visible = false;
+			}
+			
+			
+			
+			public function set iArray(value:Array):void
+			{
+				_iArray = value;
+				
+			
+			}
+			
+			
+			public var resizeInst:ResizeInstance;
+			public var resizeInst1:ResizeInstance;
+			public var resizeInst2:ResizeInstance;
+			public var resizeInst3:ResizeInstance;
+			
+			public function handleMouse(event:MouseEvent):void
+			{
+				if (resizeInst)
+					resizeInst.reverse();
+				else
+					slid.play([event.currentTarget],event.type==MouseEvent.MOUSE_OUT);
+			}
+			
+			public function handleMouse1(event:MouseEvent):void
+			{
+				if (resizeInst1)
+					resizeInst1.reverse();
+				else
+					z1.play([event.currentTarget],event.type==MouseEvent.MOUSE_OUT);
+			}
+			public function handleMouse2(event:MouseEvent):void
+			{
+				if (resizeInst2)
+					resizeInst2.reverse();
+				else
+					z2.play([event.currentTarget],event.type==MouseEvent.MOUSE_OUT);
+			}
+			public function handleMouse3(event:MouseEvent):void
+			{
+				if (resizeInst3)
+					resizeInst3.reverse();
+				else
+					z3.play([event.currentTarget],event.type==MouseEvent.MOUSE_OUT);
+			}
+			
+			private function init():void
+			{
+			
+				if(iCurrIndx > 0)
+				{
+					prev.visible = true
+				} else 
+				{
+					prev.visible = false
+					
+				}
+				
+				if(iCurrIndx < (_iArray.length -1))
+				{
+					next.visible = true
+				} else {
+					next.visible = false
+				}	
+				
+				// mInfoImager.imageURL = _multiImgPre + _iArray[0] + _multiImgSuf;
+			}
+			
+			
+			
+			
+			private function prevImg():void
+			{
+				if((iCurrIndx - 1) < 0)
+				{
+					prev.visible = false;
+				} else if((iCurrIndx - 1) == 0){
+				//	mInfoImager.imageURL = _multiImgPre + _iArray[(iCurrIndx - 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx - 1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx - 1)];
+					prev.visible = false;
+					iCurrIndx -=1;
+					mInfoImager.centerView();
+				}else{
+				//	mInfoImager.imageURL =  _multiImgPre + _iArray[(iCurrIndx - 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx - 1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx - 1)];
+					iCurrIndx -=1;
+					mInfoImager.centerView();
+				}
+				if(iCurrIndx < (_iArray.length -1))
+				{
+					next.visible = true
+				} else {
+					next.visible = false
+				}
+			}
+			
+			private function nextImg():void
+			{
+				if((iCurrIndx + 1) > (_iArray.length -1))
+				{
+					next.visible = false;
+				} else if((iCurrIndx + 1) == (_iArray.length -1)){
+					//mInfoImager.imageURL =   _multiImgPre + _iArray[(iCurrIndx + 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx + 1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx + 1)];
+					next.visible = false;
+					iCurrIndx +=1;
+					mInfoImager.centerView();
+				}else{
+				//	mInfoImager.imageURL =   _multiImgPre + _iArray[(iCurrIndx + 1)] + _multiImgSuf;
+					getimage(_iArray[(iCurrIndx +1) ].toString());
+					imgToolTip =_iArray[(iCurrIndx + 1)];
+					iCurrIndx +=1;
+					mInfoImager.centerView();
+				}
+				if(iCurrIndx > 0)
+				{
+					prev.visible = true
+				} else {
+					prev.visible = false
+					
+				}
+			}
+			
+			//show link
+			import com.nlib;
+			import com.Dekod;
+			public function getimage(value:String):void
+			{
+				
+				
+				nlib.GetFtpF('Mufettis', value,downexr);
+				function downexr(event:Event ):void {
+					trace("GetFtp HAZIR" +event.toString()+"  "  +(new Date()).toString()+"--"+(new Date()).milliseconds);
+					var	ssoaota :XMLDocument = new XMLDocument(event.target.data);
+					var fad:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.nodeValue;
+					var ffile:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.nodeValue;
+					
+					mInfoImager.bitmapdata =Dekod.decode(ffile);
+				}
+			}
+			
+		
+			
+		]]>
+	</fx:Script>
+	
+<fx:Declarations>	
+	
+	
+	<mx:Resize id="z1" widthTo="22" widthFrom="13" heightTo="22" heightFrom="13" effectStart="{resizeInst1 = ResizeInstance(event.effectInstance);}" effectEnd="{resizeInst1=null}"/>
+	<mx:Resize id="z2"  widthTo="22" widthFrom="17"   heightTo="22" heightFrom="17" effectStart="{resizeInst2 = ResizeInstance(event.effectInstance);}" effectEnd="{resizeInst2=null}"/>
+	<mx:Resize id="z3"  widthTo="22" widthFrom="13"   heightTo="22" heightFrom="13" effectStart="{resizeInst3 = ResizeInstance(event.effectInstance);}" effectEnd="{resizeInst3=null}"/>
+
+	<mx:Resize id="slid" widthTo="150" widthFrom="90"  heightTo="22" heightFrom="13" effectStart="{resizeInst = ResizeInstance(event.effectInstance);}" effectEnd="{resizeInst=null}"/>
+
+	<mx:Rotate id="downim1"  target="{mInfoImager}" angleFrom="0" angleTo="360" duration="5000" /> 
+	<mx:WipeLeft id="downim" startDelay="0" 	target="{mInfoImager}" repeatDelay="1"		 duration="1500" />
+	
+
+	
+</fx:Declarations>	
+	
+	<s:VGroup gap="15" id="InfoImager"  width="100%" height="100%">
+		
+		<s:HGroup gap="3"   verticalAlign="middle"
+				  width="{InfoImager.width}"
+				  height="{InfoImager.height-50}"  >
+			
+			
+			<s:Image id="prev" source="@Embed(source='../assets/images/w_left.png')" 
+					 useHandCursor="true" buttonMode="true" 
+					 visible="false" click="prevImg()" toolTip="{_prevButtonToolTip}"  />	
+			  
+		<pandzoom:ImageViewer  id="mInfoImager"    
+							 width="{InfoImager.width-50}"
+							 height="{InfoImager.height-50}"  
+							  
+					
+							  
+							 buttonMode="true" 
+							 bitmapScaleFactorMax="10"
+							 bitmapScaleFactorMin=".01"/>	
+			
+		<s:Image id="next" source="@Embed(source='../assets/images/w_right.png')" 
+					 useHandCursor="true" buttonMode="true"  
+					 visible="false" click="nextImg()" toolTip="{_nextButtonToolTip}" />
+	
+		</s:HGroup>
+
+		
+	</s:VGroup>
+	
+		<s:HGroup    gap="5"	  horizontalAlign="center" horizontalCenter="0" > 
+		
+			<mx:Button      mouseOver="handleMouse1(event)" mouseOut="handleMouse1(event)"
+				styleName="ZoomInButton"
+				toolTip="Kiçilt"
+				click="{ mInfoImager.zoom('out'); }"			
+				/>	
+			
+				<s:HSlider   id="sll" mouseOver="handleMouse(event)" mouseOut="handleMouse(event)"
+					minimum="{ mInfoImager.bitmapScaleFactorMin }" 
+					maximum="{ mInfoImager.bitmapScaleFactorMax }" 
+					value  ="{ mInfoImager.bitmapScaleFactor }"	
+					change ="{ mInfoImager.setZoom(HSlider(event.currentTarget).value) }" 				
+					snapInterval=".01"
+					liveDragging="true" 
+					/>	
+				
+			<mx:Button   mouseOver="handleMouse3(event)" mouseOut="handleMouse3(event)"
+				styleName="ZoomOutButton"
+				toolTip="Böyüt"
+				click="{mInfoImager.zoom('in');}"
+				/>
+			
+		
+			
+			<s:Image id="img" width="17" height="17"
+					  mouseOver="handleMouse2(event)" mouseOut="handleMouse2(event)"
+					  source="@Embed(source='../assets/icons/full.png')" 
+					  toolTip="Tam şəkil"
+					  click="{mInfoImager.centerView();}"
+					  buttonMode="true" />
+		
+			
+		</s:HGroup>		
+	
+	
+	
+		
+	
+	
+	
+	
+	
+	
+</s:Group>

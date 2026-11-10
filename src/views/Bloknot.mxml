@@ -1,0 +1,407 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:components2="views.components.*" xmlns:adaptive="com.responsive.*" width="100%" height="100%" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" viewActivate="view1_activateHandler(event)" deactivate="deact(event)" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			
+			
+			import com.*;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			
+			import spark.events.ViewNavigatorEvent;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				
+			}
+			[Bindable]
+			private var	xmlListColl: XMLListCollection;
+			[Bindable]
+			private var firmaarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var sifararr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var licarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var obyarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var tablexml:XML = new XML();
+			import flash.data.SQLConnection;
+			import flash.data.SQLStatement;
+			import flash.errors.SQLError;
+			import flash.events.Event;
+			import flash.events.SQLErrorEvent;
+			import flash.events.SQLEvent;
+			import flash.events.TimerEvent;
+			import flash.filesystem.File;
+			import flash.utils.Timer;
+			import flash.data.SQLConnection;
+			import mx.collections.ArrayCollection;
+			import mx.utils.ObjectUtil;
+			
+			import org.osmf.events.TimeEvent;
+			
+			// sqlc is a variable we need to define the connection to our database
+			private var sqlc:SQLConnection = new SQLConnection();
+			// sqlc is an SQLStatment which we need to execute our sql commands
+			private var sqls:SQLStatement = new SQLStatement();
+			// ArrayCollection used as a data provider for the datagrid. It has to be bindable so that data in datagrid changes automatically when we change the ArrayCollection
+			[Bindable]
+			private var dp:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var icrast:String=' where icra=false';
+			// function we call at the begining when application has finished loading and bulding itself
+			private function start():void
+			{
+				// first we need to set the file class for our database (in this example test.db). If the Database doesn't exists it will be created when we open it.
+				var db:File = File.applicationStorageDirectory.resolvePath("ttnda/bloknot.db");
+				// after we set the file for our database we need to open it with our SQLConnection.
+				sqlc.openAsync(db);
+				
+				// we need to set some event listeners so we know if we get an sql error, when the database is fully opened and to know when we recive a resault from an sql statment. The last one is uset to read data out of database.
+				sqlc.addEventListener(SQLEvent.OPEN, db_opened);
+				sqlc.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLEvent.RESULT, resault);
+				
+				
+			}
+			
+			private function db_opened(e:SQLEvent):void
+			{
+				// when the database is opened we need to link the SQLStatment to our SQLConnection, so that sql statments for the right database.
+				// if you don't set this connection you will get an error when you execute sql statment.
+				sqls.sqlConnection = sqlc;
+				// in property text of our SQLStatment we write our sql command. We can also combine sql statments in our text property so that more than one statment can be executed at a time.
+				// in this sql statment we create table in our database with name "test_table" with three columns (id, first_name and last_name). Id is an integer that is auto incremented when each item is added. First_name and last_name are columns in which we can store text
+				// If you want to know more about sql statments search the web.
+				sqls.text = "CREATE TABLE IF NOT EXISTS qeyd ( id INTEGER PRIMARY KEY AUTOINCREMENT, titul TEXT, mezmun TEXT,tarix TEXT, icra BOOLEAN);";
+				// after we have connected sql statment to our sql connection and writen our sql commands we also need to execute our sql statment.
+				// nothing will change in database until we execute sql statment.
+				sqls.execute();
+				// after we load the database and create the table if it doesn't already exists, we call refresh method which i have created to populate our datagrid
+				refresh();
+			}
+			// function to add item to our database
+			private function addItem():void
+			{
+				
+				if (titult.text.length>2)
+				{
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls.text = "INSERT INTO qeyd (titul,mezmun,tarix,icra) VALUES( '"+titult.text+"','"+mezmunt.text+"','"+dateFormatter.format(new Date())+"',"+icrat.selected+");";
+				sqls.execute();
+				
+				refresh();
+				}
+				else
+				{
+					
+				}
+			}
+			
+			// function to call when we want to refresh the data in datagrid
+			private function refresh(e:TimerEvent = null):void
+			{
+				// timer object which we need if sql statment is still executing so that we can try again after 10 milliseconds.
+				var timer:Timer = new Timer(10,1);
+				timer.addEventListener(TimerEvent.TIMER, refresh);
+				
+				if ( !sqls.executing )// we need to check if our sql statment is still executing our last sql command. If so we use Timer to try again in 10 milliseconds. If we wouldn't check we could get an error because SQLStatment can't execute two statments at the same time.
+				{
+					// sql statment which returns all the data from our "test_table". To retrive only data from first_name and last_name columns we would use "SELECT first_name,last_name FROM test_table"
+					sqls.text = "SELECT * FROM qeyd  "+icrast;
+					sqls.execute();
+				}
+				else
+				{
+					timer.start();
+				}
+			}
+			
+			// method that gets called if we recive some resaults from our sql commands.
+			//this method would also get called for sql statments to insert item and to create table but in this case sqls.getResault().data would be null
+			private function resault(e:SQLEvent):void
+			{
+				// with sqls.getResault().data we get the array of objects for each row out of our database
+				var data:Array = sqls.getResult().data;
+				// we pass the array of objects to our data provider to fill the datagrid
+				dp = new ArrayCollection(data);
+			}
+			
+			// method to remove row from database.
+			private function remove():void
+			{
+				if (firma.selectedIndex>-1) {
+				// sql statment to delete from our test_table the row that has the same number in number column as our selected row from datagrid
+				sqls.text = "DELETE FROM qeyd WHERE id="+dp[firma.selectedIndex].id;
+				sqls.execute();
+				refresh();
+			}
+			}
+			// method which gets called when we recive an error  from sql connection or sql statment and displays the error in the alert
+
+			
+			protected function icrasw_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				if (icrasw.selected) 
+					
+					icrast=' where icra=false'; 
+				else
+					icrast='';
+				refresh();
+			}
+			
+			protected function temizle(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				titult.text="";	
+				mezmunt.text="";
+				tarixt.text="";
+				icrat.selected=false;
+			}
+			
+			protected function update(event:MouseEvent):void
+			{
+				if (titult.text.length>2)
+				{
+				// TODO Auto-generated method stubtext="{dateFormatter.format(date1)}" 
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls.text = "UPDATE qeyd  SET titul='"+titult.text+"',mezmun='"+mezmunt.text+"',tarix='"+dateFormatter.format(new Date())+"',icra="+icrat.selected +"  WHERE id="+dp[firma.selectedIndex].id;
+				sqls.execute();
+				
+				refresh();
+				}
+				else
+				{
+					
+				}
+			}
+			
+			protected function icradeyish(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				// TODO Auto-generated method stub
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls.text = "UPDATE qeyd  SET icra="+!dp[firma.selectedIndex].icra +"  WHERE id="+dp[firma.selectedIndex].id;
+				sqls.execute();
+				
+				refresh();
+			}
+			
+			
+			private function error(e:SQLErrorEvent):void
+			{
+				///	Alert.show(e.toString());
+			}
+			
+			
+			
+			
+			protected function view1_activateHandler(event:ViewNavigatorEvent):void
+			{
+				start();
+				if (!(mufo.osid==null))
+				{
+					if (mufo.osid=="0")
+					{
+						nom.enabled=false;
+						ad.enabled=false;
+						qey.enabled=false;
+						unv.enabled=false;
+						ray.enabled=false;
+						ob.visible=true;
+						
+					}
+				}
+				else
+				{
+					nom.enabled=false;
+					ad.enabled=false;
+					qey.enabled=false;
+					unv.enabled=false;
+					ray.enabled=false;
+					ob.visible=true;
+				}
+				
+			}
+			
+			
+			
+		
+			
+			
+		
+			private function licaxtar(event:MouseEvent):void
+			{
+				if (firma.selectedIndex>-1) {
+				titult.text=dp[firma.selectedIndex].titul.toString();	
+			mezmunt.text=dp[firma.selectedIndex].mezmun.toString();
+			tarixt.text=dp[firma.selectedIndex].tarix.toString();
+			icrat.selected=dp[firma.selectedIndex].icra;
+			
+			}
+			}
+			
+			
+		
+			
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+			
+			
+			protected function execSQLResult1_faultHandler(event:FaultEvent):void
+			{
+				//		inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+			}
+			
+	
+			private function filtsifar( ):void
+			{
+			
+			}
+			
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			private function okLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == true)
+					return "OK";
+				else
+					return "";
+			}
+			import spark.events.IndexChangeEvent; 
+			
+			
+
+			
+			
+			
+			
+			protected function deact(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				sqlc.close();
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="1000" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="1000" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1000"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="1000" mode="cover"/>
+		
+		
+		<s:DateTimeFormatter id="dateFormatter" dateTimePattern="dd/MM/yyyy/"/>
+		
+	
+	</fx:Declarations>
+	
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		<s:Button id="btnh" click="navigator.pushView(views.Help,fadeTrans)" icon="@Embed('../assets/help40bg.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label id="titul" width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="180" y="17" width="142" height="30" fontSize="20" fontWeight="bold" text="QEYDLƏR" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="750" y="22" width="249" height="21" fontSize="22" fontWeight="bold" text="Seçilmiş qeyd" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="750" y="144" width="249" height="25" fontSize="22" fontWeight="bold" text="Qeydin məzmunu" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="1077" y="52" width="145" height="79" fontSize="18" fontWeight="bold" text="OBYEKTə aid məlumatın əlavə edilməsi" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="729" y="100" width="145" height="39" fontSize="18" fontWeight="bold" text="Yaradılma tarixi:" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="ob" x="1097" y="469" width="145" height="39" fontSize="18" fontWeight="bold" visible="false" text="Obyekt seçilməyib" textAlign="center" verticalAlign="middle"/>
+	
+	<components:SearchBar id="axtarfirma" x="47" y="52" width="385" height="40" dataGrid="{firma}" fontSize="14" searchListCollection="{dp}"/>
+	
+	
+	<s:DataGrid id="firma" x="47" y="97" width="385" height="468" click="licaxtar(event)" dataProvider="{dp}" horizontalScrollPolicy="auto" textAlign="left" fontSize="17" verticalScrollPolicy="auto">
+		
+		<s:columns>
+			<s:ArrayList> 
+							
+					<s:GridColumn dataField="id" headerText="Sıra" width="60" labelFunction="nullLabelFunction"/>
+				
+					<s:GridColumn dataField="titul" headerText="Başlıq" width="163" labelFunction="nullLabelFunction"/>
+				
+					<s:GridColumn dataField="tarix" headerText="Tarix" width="112" labelFunction="nullLabelFunction"/>
+				
+				<s:GridColumn dataField="icra" headerText="İcra" width="60" labelFunction="okLabelFunction"/>
+				
+				
+				</s:ArrayList>
+			
+		</s:columns>
+		
+		
+	</s:DataGrid>
+	
+	
+	
+	
+	<s:Button x="1119" y="600" width="124" height="39" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	<s:Image bottom="4" width="40" height="40" horizontalCenter="-161" source="@Embed('../assets/fhnlogo.png')"/>
+	<s:Label bottom="7" width="295" height="35" color="#5D5252" fontSize="16" fontWeight="bold" horizontalCenter="12" text="Baş Dövlət Tikinti Mufəttişliyi" textAlign="left" verticalAlign="middle"/>
+	<s:TextArea id="mezmunt" x="708" y="172" width="330" height="330" prompt="Qeydin məzmununu bura  yazın" verticalAlign="top"/>
+	<s:Button x="494" y="200" width="147" height="45" label="Yeni qeyd" click="addItem()"/>
+	<s:Button x="494" y="269" width="147" height="45" label="Qeydi sil" click="remove()"/>
+	<s:Button x="494" y="338" width="147" height="45" label="Qeydi dəyiş" click="update(event)"/>
+	<s:Button x="494" y="136" width="147" height="45" label="Formanı Sil" click="temizle(event)"/>
+	<s:Button id="nom" x="1085" y="139" width="137" height="45" label="Nomrəsi" click="{mezmunt.text+='  '+mufo.osid}"/>
+	<s:Button id="ad" x="1085" y="198" width="137" height="45" label="Adı" click="{mezmunt.text+='  '+Azstring.Azrec(mufo.oad)}"/>
+	<s:Button id="unv" x="1090" y="267" width="132" height="45" label="Ünvanı" click="{mezmunt.text+='  '+Azstring.Azrec(mufo.ounv)}"/>
+	<s:Button id="qey" x="1094" y="338" width="127" height="45" label="Qeydi" click="{mezmunt.text+='  '+Azstring.Azrec(mufo.oqeyd)}"/>
+	<s:Button id="ray" x="1097" y="411" width="124" height="45" label="Rayonu" click="{mezmunt.text+='  '+Azstring.Azrec(mufo.oray)}"/>
+	
+	<s:Button x="494" y="411" width="147" height="45" label="İcranı dəyiş" click="icradeyish(event)"/>
+	<s:TextInput id="titult" x="707" y="51" width="330" prompt="Başlığı bura  yazın" styleName="azStyle" height="42"/>
+	<s:CheckBox id="icrat" x="811" y="510" width="192" label="İcra edilib"/>
+	<s:Label id="tarixt" x="874" y="102" width="141" height="35" textAlign="left" verticalAlign="middle"/>
+	<s:CheckBox id="icrasw" x="79" y="579" width="390" label="İcra olunmuşları siyahidan cixartmaq" change="icrasw_changeHandler(event)" selected="true"/>
+	
+</adaptive:ResponsiveStage></s:View>

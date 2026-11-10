@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" >
+	<fx:Script>
+		<![CDATA[
+			public override function set data(value:Object):void {
+				super.data=value
+				if (value==null){
+					cb.selected=false
+				}else{
+					cb.selected=value.sel.toString()=="true"?true:false ;
+				}
+			}
+			
+			public function onCheckBoxChange(event:Event):void{
+				data.sel=cb.selected;
+			}
+			
+			public function onUpdateComplete(event:Event):void{
+				if(data!=null){        
+					if(data.sel.toString()=="true"){
+						event.currentTarget.selected=true;
+					}else{
+						event.currentTarget.selected=false;
+					}
+				}
+			}
+			
+	//		override public function prepare(hasBeenRecycled:Boolean):void{
+	//			cb.selected=data.sel;
+		//	}
+			
+			override public function setFocus():void {
+				cb.setFocus();
+			}
+		]]>
+	</fx:Script>
+	<s:CheckBox id="cb"
+				horizontalCenter="0" verticalCenter="0" 
+				change="{onCheckBoxChange(event)}" updateComplete="{onUpdateComplete(event)}"/>
+</s:GridItemRenderer>

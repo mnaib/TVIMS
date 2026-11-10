@@ -1,0 +1,876 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		width="100%" height="100%" destructionPolicy="never"
+		preinitialize="view1_initializeHandler(event)" 
+		title="TTNDA TVIMS  Sisteminə GİRİŞ" 
+	 creationComplete="loginViewCreated()" resize="scheduleLoginLayout()" actionBarVisible="false" xmlns:local="*" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			 
+		 
+			import com.adobe.serializers.xml.XMLDecoder;
+		/* 	import com.distriqt.extension.packagemanager.PackageInfo;
+			import com.distriqt.extension.packagemanager.PackageManager;
+			import com.distriqt.extension.packagemanager.events.PackageManagerEvent;
+		 
+			import com.freshplanet.ane.AirAlert.AirAlert;
+			import com.freshplanet.ane.AirDeviceId.AirDeviceId;
+			import com.freshplanet.ane.AirDeviceId.events.AirDeviceIdEvent;
+			import com.freshplanet.ane.AirNetworkInfo.AirNetworkInfo;
+			import com.freshplanet.ane.AirNetworkInfo.NativeNetworkInterface;
+			import com.plter.hello.HelloNative; */
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import flash.system.Capabilities;
+            import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.messaging.MessageAgent;
+			import mx.messaging.messages.AcknowledgeMessage;
+			import mx.messaging.messages.SOAPMessage;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.utils.ObjectProxy;
+			import mx.utils.StringUtil;
+			
+			import org.apache.flex.spark.components.progressBar.ProgressBar;
+			
+			import skins.Hedwin;
+			
+			import spark.components.TitleWindow;
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+			import spark.layouts.VerticalLayout;
+			import spark.managers.PersistenceManager;
+		/* 	import com.myflashlab.air.extensions.pm.*; */
+			
+			[Bindable]
+			private var mufo:Mufo;
+			[Bindable]
+			public var socet:Soket;
+			[Bindable]
+		 	private var ust:String="https://service.ttnda.az/proqramlar/TTTNDA_TVIMS.apk";
+			
+		[Bindable]
+			private	var localFile:String = "TTTNDA_TVIMS.apk";
+			[Bindable]
+			private var apksize:int=0;
+			[Bindable]
+			private var timm:Timer=new Timer(1000);
+			[Bindable]
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			// Flex applicationDPI is chosen at application startup, not dynamically per View.
+            // Width/height below are Flex display units after its own DPI scaling.
+            // For the legacy root applicationDPI=160 this code uses 160-based
+            // UI control dimensions; for the experimental no-applicationDPI mode,
+            // the applicationDPI reflects device density and controls are sized
+            // explicitly in Flex logical units. Do not scale the full root again.
+            private var responsiveLayoutPending:Boolean = false;
+
+            private function loginViewCreated():void
+            {
+                callLater(scheduleLoginLayout);
+                updateok(); // Orijinal server/versiya yoxlaması dəyişmir.
+            }
+
+            private function scheduleLoginLayout():void
+            {
+                if (responsiveLayoutPending) return;
+                responsiveLayoutPending = true;
+                callLater(applyLoginLayout);
+            }
+
+            private function between(value:Number, low:Number, high:Number):Number
+            {
+                return Math.max(low, Math.min(high, value));
+            }
+
+            private function applyLoginLayout():void
+            {
+                responsiveLayoutPending = false;
+                if (ert == null || screenLayout == null || loginCard == null) return;
+                var vw:Number = ert.width;
+                var vh:Number = ert.height;
+                if (vw <= 0 || vh <= 0 || isNaN(vw) || isNaN(vh)) return;
+
+                // Measure DPI BEFORE sizing controls. Flex may have already applied
+                // runtimeDPI/applicationDPI scaling to the root application.
+                var app:Object = FlexGlobals.topLevelApplication;
+                var rDPI:Number = (app != null) ? Number(app.runtimeDPI) : 160;
+                var aDPI:Number = (app != null) ? Number(app.applicationDPI) : 160;
+                if (isNaN(aDPI) || aDPI < 72) aDPI = 160;
+                var dpiFactor:Number = between(aDPI / 160, 0.75, 4.0);
+
+                // Use actual Flex View dimensions, not the original 1280 x 720.
+                var portrait:Boolean = vh > vw;
+                var margin:Number = between(Math.min(vw, vh) * 0.025,
+                                            12 * dpiFactor, 30 * dpiFactor);
+                var gap:Number = between(vh * 0.02, 12 * dpiFactor, 24 * dpiFactor);
+                var bannerWidth:Number = Math.max(1, vw); // full available screen width
+                var bannerHeight:Number = bannerWidth * 267 / 1586; // original image ratio
+
+                // Phone landscape / keyboard-open layouts reduce vertical spacing.
+                var compact:Boolean = vh < 735 * dpiFactor;
+                // Keep full-width banner proportional in either orientation.
+                var cardWidth:Number = Math.min(vw - 2 * margin,
+                                                (portrait ? 530 : 520) * dpiFactor);
+                cardWidth = Math.max(1, cardWidth);
+                var edge:Number = between(cardWidth * 0.062,
+                                          16 * dpiFactor, 34 * dpiFactor);
+                var fieldWidth:Number = Math.max(40, cardWidth - 2 * edge);
+                var controlHeight:Number = (compact ? 43 : 50) * dpiFactor;
+                var labelHeight:Number = (compact ? 22 : 25) * dpiFactor;
+                var bodyFont:Number = between(cardWidth * 0.037,
+                                              16 * dpiFactor, 19 * dpiFactor);
+                var titleFont:Number = between(cardWidth * 0.065,
+                                               25 * dpiFactor, 35 * dpiFactor);
+                var y:Number = (compact ? 16 : 22) * dpiFactor;
+
+                tvimsTitle.x = edge;
+                tvimsTitle.y = y;
+                tvimsTitle.width = fieldWidth;
+                tvimsTitle.height = (compact ? 37 : 46) * dpiFactor;
+                tvimsTitle.setStyle("fontSize", titleFont);
+                y += tvimsTitle.height + ((compact ? 7 : 13) * dpiFactor);
+
+                loginUserLabel.x = edge;
+                loginUserLabel.y = y;
+                loginUserLabel.width = fieldWidth;
+                loginUserLabel.height = labelHeight;
+                loginUserLabel.setStyle("fontSize", bodyFont);
+                y += labelHeight + 5 * dpiFactor;
+
+                adstr.x = edge;
+                adstr.y = y;
+                adstr.width = fieldWidth;
+                adstr.height = controlHeight;
+                adstr.setStyle("fontSize", bodyFont);
+                y += controlHeight + ((compact ? 10 : 15) * dpiFactor);
+
+                loginPasswordLabel.x = edge;
+                loginPasswordLabel.y = y;
+                loginPasswordLabel.width = fieldWidth;
+                loginPasswordLabel.height = labelHeight;
+                loginPasswordLabel.setStyle("fontSize", bodyFont);
+                y += labelHeight + 5 * dpiFactor;
+
+                pstr.x = edge;
+                pstr.y = y;
+                pstr.width = fieldWidth;
+                pstr.height = controlHeight;
+                pstr.setStyle("fontSize", bodyFont);
+                y += controlHeight + 4 * dpiFactor;
+
+                cBox.x = edge;
+                cBox.y = y;
+                cBox.width = fieldWidth;
+                cBox.height = 33 * dpiFactor;
+                cBox.setStyle("fontSize", between(bodyFont - dpiFactor, 14 * dpiFactor, 18 * dpiFactor));
+                y += 33 * dpiFactor + ((compact ? 7 : 13) * dpiFactor);
+
+                loqin.x = edge;
+                loqin.y = y;
+                loqin.width = fieldWidth;
+                loqin.height = (compact ? 47 : 54) * dpiFactor;
+                loqin.setStyle("fontSize", between(bodyFont + 3 * dpiFactor, 19 * dpiFactor, 23 * dpiFactor));
+                y += loqin.height + 5 * dpiFactor;
+
+                inff.x = edge;
+                inff.y = y;
+                inff.width = fieldWidth;
+                inff.height = (compact ? 30 : 38) * dpiFactor;
+                inff.setStyle("fontSize", between(bodyFont - 2 * dpiFactor, 14 * dpiFactor, 17 * dpiFactor));
+                y += inff.height + dpiFactor;
+
+                vers.x = edge;
+                vers.y = y;
+                vers.width = fieldWidth;
+                vers.height = (compact ? 22 : 26) * dpiFactor;
+                vers.setStyle("fontSize", between(bodyFont - 4 * dpiFactor, 12 * dpiFactor, 15 * dpiFactor));
+                y += vers.height + ((compact ? 7 : 15) * dpiFactor);
+
+                exitButton.x = edge;
+                exitButton.y = y;
+                exitButton.width = fieldWidth;
+                exitButton.height = (compact ? 43 : 49) * dpiFactor;
+                exitButton.setStyle("fontSize", between(bodyFont + dpiFactor, 17 * dpiFactor, 21 * dpiFactor));
+                y += exitButton.height + ((compact ? 14 : 22) * dpiFactor);
+
+                loginCard.width = cardWidth;
+                loginCard.height = y;
+                bannerGroup.width = bannerWidth;
+                bannerGroup.height = bannerHeight;
+
+                var totalHeight:Number = margin + bannerHeight + gap + loginCard.height + margin;
+                screenLayout.width = vw;
+                screenLayout.height = Math.max(vh, totalHeight);
+                var startY:Number = Math.max(margin, (screenLayout.height - (bannerHeight + gap + loginCard.height)) / 2);
+                bannerGroup.x = 0;
+                bannerGroup.y = Math.round(startY);
+                loginCard.x = Math.round((vw - cardWidth) / 2);
+                loginCard.y = Math.round(startY + bannerHeight + gap);
+
+                // Show device metrics in trace for testing (and optional UI label).
+                var info:String = "View " + int(vw) + "x" + int(vh)
+                    + " | raw DPI " + int(Capabilities.screenDPI)
+                    + " | runtimeDPI " + int(rDPI)
+                    + " | applicationDPI " + int(aDPI);
+                trace("TTNDATVIMS responsive LOGIN: " + info);
+                if (stage != null)
+                    trace("Stage " + stage.stageWidth + "x" + stage.stageHeight
+                          + " | fullScreen " + stage.fullScreenWidth + "x" + stage.fullScreenHeight);
+                debugMetrics.text = info;
+                debugMetrics.width = Math.max(50, vw - 2 * margin);
+                debugMetrics.x = margin;
+                debugMetrics.y = Math.max(0, screenLayout.height - 20);
+            }
+
+            private static const ZLIB_CODE:String = "CWS";
+			private var persistenceManager:PersistenceManager = new PersistenceManager;
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+			
+				
+					
+				mufo= persistenceManager.getProperty("mufo") as Mufo;
+				mufo.Resetuser();
+				mufo.uad="Qonaq";
+				mufo.userad="";
+				mufo.utel="";
+				mufo.usid="0";  
+				mufo.osid="0";  
+				mufo.oqeyd="0";  
+				mufo.admin=false;
+				mufo.baxan=false;
+				mufo.duzelden=false;
+			
+				if (mufo.ipadres==null)  mufo.ipadres="https://service.ttnda.az";
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+	//			srv1.wsdl=mufo.ipadres+wsdlstr;
+				
+				//	ad.text=mufo.uad.toString();
+			}
+		
+			
+		 
+		 	[Bindable]
+			private var  sq1:String="EXEC  Mufettis.dbo.Mobloqin22  ";
+			
+			 
+		 
+		/* 	private function onReceivedIDFA(event:AirDeviceIdEvent):void {
+				trace("Received IDFA ", event.idfa);
+			}
+			private function packageRemovedHandler( event:PackageManagerEvent ):void
+			{
+				 trace( event.type + "::"+ event.packageName );
+			} */
+
+			private function updateok():void
+			{
+			/*				var androidInfo:DeviceInfoAndroid = DeviceInfo.android;
+				var yyyy:String = JSON.stringify(androidInfo, null, 4);
+				
+	var myCallback1:Function = function():void { trace("Callback 1"); };
+				var myCallback2:Function = function():void { trace("Callback 2"); };
+			 
+				// Display a one-button alert popup
+				
+				
+				if (AirAlert.isSupported) {
+					
+					 
+					
+				AirAlert.getInstance().showAlert("My title", "My message", "OK", myCallback1);
+				
+				// Display a two-button alert popup
+				AirAlert.getInstance().showAlert("My title", "My message", "YES", myCallback1, "NO", myCallback2);
+				}
+				else{
+				trace("AirAlert ANE is NOT supported on this platform!");
+				}
+				try
+				{
+					trace( "PackageManager Supported: " + PackageManager.isSupported );
+					trace( "PackageManager Version:   " + PackageManager.service.version );
+					if (PackageManager.isSupported)
+					{
+						PackageManager.service.addEventListener( PackageManagerEvent.PACKAGE_REMOVED, packageRemovedHandler );
+					}
+				}
+				catch (e:Error)
+				{
+					trace( "ERROR::"+e.message );
+				}
+			 
+				
+			 /*   	
+				var h:HelloNative = new HelloNative();
+				h.sayHello();  
+				
+		 		PackageManager.init();
+				if(PackageManager.canRequestPackageInstalls())
+				{
+					trace("canRequestPackageInstalls() "+PackageManager.canRequestPackageInstalls());
+				}
+				else
+				{
+					PackageManager.requestPackageInstalls(function ($result:Boolean):void
+					{
+						trace("requestPackageInstalls result: " + $result);
+					})
+				}  
+				if (!AirDeviceId.isSupported) {
+					trace("AirDeviceId ANE is NOT supported on this platform!");
+				 
+				
+				AirDeviceId.instance.addEventListener(AirDeviceIdEvent.RECEIVED_IDFA, onReceivedIDFA);
+				
+				  	trace("isConnected", AirNetworkInfo.instance.isConnected);
+					 		trace("isConnectedWithWIFI ", AirNetworkInfo.instance.isConnectedWithWIFI);
+					 		trace("carrierName ", AirNetworkInfo.instance.carrierName);
+				  		var interfaces:Vector.<NativeNetworkInterface> = 
+								AirNetworkInfo.instance.findInterfaces();
+							for (var i:int = 0; i < interfaces.length; i++) {
+								var networkInterface:NativeNetworkInterface = interfaces[i];
+								trace("Network interface : ");
+								trace("Active : ", networkInterface.active);
+								trace("Display Name : ", networkInterface.displayName);
+								trace("Hardware Address : ", networkInterface.hardwareAddress);
+								trace("MTU : ", networkInterface.mtu);
+								trace("Name : ", networkInterface.name);
+								trace("-----------------------");
+							};
+					 
+				}
+				
+				
+				
+				
+				
+				
+				*/
+				
+				loaduser();
+			 
+				var file:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + localFile); 
+			 
+				if (file.exists)	 file.deleteFile();
+				
+				var request:URLRequest = new URLRequest("https://service.ttnda.az/proqramlar/mufettish.xml");
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(Event.COMPLETE, completeHandler);
+			//	loader.addEventListener(Event., execSQLResult1_faultHandler);
+				try
+				{   
+					
+					loader.load(request);
+				}
+				catch (error:ArgumentError)
+				{
+					trace("An ArgumentError has occurred.");
+				}
+				catch (error:SecurityError)
+				{
+					trace("A SecurityError has occurred.");
+				}
+				
+				catch (error:Fault)
+				{
+					trace("A SecurityError has occurred.");
+					MobileAlert.show("Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin" , 'Məlumat');	
+				}
+				
+			
+			}
+			protected function saveuser():void
+			{
+				var file:File = File.applicationStorageDirectory.resolvePath("istad.ec");
+				var stream:FileStream = new FileStream()
+				stream.open(file, FileMode.WRITE);
+				stream.writeUTFBytes(adstr.text);
+				stream.close();
+			}
+			protected function loaduser():void
+			{
+				var file:File = File.applicationStorageDirectory.resolvePath("istad.ec");
+				var stream:FileStream = new FileStream()
+				if(!file.exists)
+					return;
+				stream.open(file, FileMode.READ);
+				adstr.text ="";
+				adstr.text = stream.readUTFBytes(stream.bytesAvailable);
+				stream.close();
+			 
+			}
+			
+			private function completeHandler(event:Event):void
+			{
+				
+				var dataXML:XML = XML(event.target.data);
+				var dst:String=dataXML.child("davam").toString();
+				var vst:String=dataXML.child("version").toString();
+				var iist:String=dataXML.child("info").toString();
+		 	ust=dataXML.child("url").toString();
+	  //     ust="https://service.ttnda.az/proqramlar/aa.apk";
+				var appXML:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var ns:Namespace = appXML.namespace();
+				var vvst:String=appXML.ns::versionNumber;
+				var ist:String=iist.replace(/;/g,'\n ');
+				vers.text="Versiya "+vvst;
+				trace(dataXML.child("davam").toString());
+				timm.addEventListener(TimerEvent.TIMER, exittim);
+				
+				//trace( appXML.ns::versionNumber);
+				trace(vvst,vst,ist,ust,dst);
+				//	MobileAlert.showt('Siz DAXİLİ şəbəkədən istifadə edirsiniz!' , 'Məlumat');
+				if (!(vst==vvst))
+				{ 
+					trace("duzdeyil");
+					if (dst=="OK")
+					{
+						
+						MobileAlert.show('Proqramın  yeni ' + vst  +' versiyasını qurmaq  İstəyirsiniz?'+ist+ '\n *proqram yükləndikdən sonra qurulmalıdır*', 'Proqramın yenilənməsi', 9, this, method1);		
+					 
+						loqin.enabled=true;
+						
+					}
+					else{
+						MobileAlert.show('Proqramın  yeni ' + vst  +' versiyası qurulmalıdır. ' +ist+'\n'+' Proqramı qurmaq üçün BƏLİ  \n çixmaq üçün XEYR düyməsini secin.'+'\n *proqram yükləndikdən sonra qurulmalıdır*', 'Proqramın yenilənməsi', 9, this, method2);		
+						 
+					}
+					
+				}
+					
+				else
+				{loqin.enabled=true;
+					trace("duzdur");
+					
+					 
+					
+				}
+				
+		//sss		srv1.wsdl=wsdlstr;
+	//sss			srv1.loadWSDL();
+			}
+				
+			protected function updateapp( ):void
+			{
+			 
+				trace("FILE  yeni urdu" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				var urlStream:URLStream = new URLStream();                
+				var request:URLRequest = new URLRequest(ust);                 
+				
+				var fileStream:FileStream = new FileStream();                
+				
+				var file:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + localFile); 
+				if(!file.exists)	 trace("FILE NONO" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				//newDir.createDirectory();
+				urlStream.addEventListener(Event.COMPLETE, completeHandler);
+				urlStream.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
+				urlStream.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+				urlStream.addEventListener(Event.OPEN, openHandler);
+				urlStream.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+				urlStream.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
+				
+				fileStream.open(file, FileMode.WRITE);
+			 var hWin:TitleWindow ;
+				
+				var waitingpopup:ProgressBar;
+				
+				hWin =new TitleWindow();
+				var ll:VerticalLayout=new VerticalLayout();
+				hWin.title = "     Proqramın yenilənməsi";
+				hWin.width = 300;
+				hWin.height = 120;
+				hWin.setStyle("skinClass",skins.Hedwin);
+				hWin.controlBarVisible=false;
+				ll.horizontalAlign="center";
+				ll.gap=2;
+				ll.verticalAlign="middle";
+			  hWin.layout=ll;
+				hWin.addEventListener(CloseEvent.CLOSE, cixf);
+				PopUpManager.addPopUp(hWin, ert, true);
+			PopUpManager.centerPopUp(hWin);
+				var cix:Button= new Button();
+				cix.label="Imtina";
+				cix.addEventListener(MouseEvent.CLICK,cixf);
+				waitingpopup = new ProgressBar();
+				waitingpopup.width=250;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+				waitingpopup.height=30;
+				hWin.addElement(waitingpopup);
+				hWin.addElement(cix);
+				
+		 
+					try {
+					urlStream.load(request);   	 
+					} 
+					catch (error:Error)
+					{
+						trace("Unable to load requested URL.");
+					}
+			
+				
+				 
+				
+				  function parseHeader():void {
+			//		  urlStream.position=0;
+					trace("parseHeader");
+					trace("isCompressed: " + isCompressed());
+					trace("version: " + urlStream.readByte());
+					
+				}
+				
+				  function isCompressed():Boolean {
+					return (urlStream.readUTFBytes(3) == ZLIB_CODE);
+				}
+				
+			  function completeHandler(event:Event):void {
+				  
+					trace("completeHandler: " + event);
+				
+				//	urlStream.position=0;
+						//	trace(tb+"  sira "+urlStream.bytesAvailable+"etap" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						if(urlStream.bytesAvailable > 0)
+						{
+							var dataBuffer:ByteArray = new ByteArray();
+							urlStream.readBytes(dataBuffer, 0, urlStream.bytesAvailable);
+							fileStream.writeBytes(dataBuffer, 0, dataBuffer.length);
+							 
+							//		trace(" Son "+dataBuffer.length+"etap" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						}                    
+						trace("FILE fffffffffffff HAZİR" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						
+					 
+						urlStream.close();				
+				 urlStream =null;
+						
+					 	fileStream.close();
+				 	fileStream=null;
+					PopUpManager.removePopUp(hWin);
+					//	parseHeader();
+							var docac2:Doclanch=new Doclanch();
+					docac2.openDoc(file.nativePath);
+				/////install	
+					
+			//////var ll:Boolean=		PackageManager.service.installApplication(file.nativePath);
+				timm.start();
+					              
+				}
+				
+			 function openHandler(event:Event):void {
+					trace("openHandler: " + event);
+				
+				//	waitingpopup.currentProgress =event.bytesLoaded;
+				//	waitingpopup.totalProgress= event.bytesTotal;
+			//	PopUpManager.addPopUp(hWin, ert, true);
+		//	PopUpManager.centerPopUp(hWin);
+				}
+				function cixf():void {
+					
+			if (urlStream !=null)	{	urlStream.close();				
+					urlStream =null;
+			}
+			if (fileStream!=null)
+			{
+				fileStream.close();
+				fileStream=null;
+			}
+					
+					file.cancel();
+					if (file.exists)	 file.deleteFile();
+					PopUpManager.removePopUp(hWin);
+					loqin.enabled=true;
+					
+					
+				}
+			  function progressHandler(event:ProgressEvent):void {
+				//	trace("progressHandler: " + event);
+	  
+			 		  waitingpopup.currentProgress =event.bytesLoaded;
+			 		waitingpopup.totalProgress= event.bytesTotal;
+				  	trace( " " + event.bytesTotal + "  " + event.bytesLoaded +"  sonsira "+"etap" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+					
+				}
+				
+			 function securityErrorHandler(event:SecurityErrorEvent):void {
+					trace("securityErrorHandler: " + event);
+					MobileAlert.show("Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin" , 'Məlumat');	
+				}
+				
+				  function httpStatusHandler(event:HTTPStatusEvent):void {
+					trace("httpStatusHandler: " + event);
+				}
+				
+				 function ioErrorHandler(event:IOErrorEvent):void {
+					trace("ioErrorHandler: " + event);
+					MobileAlert.show("Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin" , 'Məlumat');	
+				}
+				
+				
+			}
+		
+			
+			public function method2(event:PopUpEvent):void
+			{
+				
+				if (event.data == MobileAlert.YES)
+				{updateapp();
+				
+				}
+				else
+				{
+				 
+					trace("CIXDI"+event);
+			 	NativeApplication.nativeApplication.exit();	//navigateToURL(new URLRequest(ust),"_self");
+					
+					
+				}
+				
+			}
+			
+			public function method1(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					
+				//	event.preventDefault();
+					
+		//			timm.start();
+			updateapp();
+			//navigateToURL(new URLRequest(ust),"_self");
+					
+				}
+				else
+				{
+					//		fert.text = "You answer is 'No' : "+ event.detail;
+					
+				}
+			}
+			
+		private	function exittim(event:TimerEvent):void	{	
+				NativeApplication.nativeApplication.exit();
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				trace("login VVVVV vurdu" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				button1_clickHandlere();
+			}
+			import mx.utils.Base64Decoder;
+			import mx.utils.Base64Encoder;
+			import com.probertson.utils.GZIPEncoder;
+			import com.probertson.utils.GZIPFile;
+			protected function button1_clickHandlere():void
+			{
+				
+				inff.text="Gözləyin . . . ";
+				saveuser();
+				mufo= persistenceManager.getProperty("mufo") as Mufo;
+				
+	
+				mufo.uloq=StringUtil.trim(adstr.text.toString());
+				mufo.uparol=pstr.text.toString();
+			
+				nlib.GetUrl(sq1+"  '" +adstr.text.toString()+"',2,'"+pstr.text.toString()+"'",onResult);
+	
+			}
+		 
+	 private  function onResult(event:Event):void {
+				trace("AXTAR GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				var aar:Object= xml.Cedvel as Object;
+		
+				
+				mufo.usid= aar.id.toString(); 
+				mufo.uad=aar.ad.toString();	
+				mufo.userad=aar.loqin.toString();
+				if ((parseInt(mufo.usid)>0))
+					
+				{
+					inff.text="Siz sistemə DAXIL olmusunuz";
+					
+					mufo.gor=true;
+					
+					mufo.osid="0"; 
+					
+					mufo.oad=" ";	
+					mufo.orey=" ";	
+					mufo.otey=" ";	
+					mufo.ounv=" ";	
+					mufo.oqeyd=" ";	
+					mufo.oray=" ";	
+					
+					mufo.uderece=aar.derece.toString();
+					mufo.utel=aar.tel.toString();	
+					if (mufo.utel.substr(0,1)!="0") mufo.utel="0"+mufo.utel;
+					mufo.ptel=aar.ptel.toString();
+					mufo.udo=aar.udo.toString();	
+					mufo.skype=aar.skype.toString();	
+					mufo.admin=parseInt(aar.admin.toString()) ;
+						mufo.ugis=parseInt(aar.ugis.toString()) ;
+						mufo.ukoor=parseInt(aar.ukoor.toString()) ;
+					mufo.baxan=parseInt(aar.baxan.toString()) ;
+				if ( aar.mm )	mufo.umm=aar.mm.toString() ;
+					if ( aar.qrup  )	mufo.uqrup=aar.qrup.toString() ;
+					mufo.duzelden=parseInt(aar.duzelden.toString()) ;
+					
+			/*		switch(mufo.uderece)
+					{
+						case '2': mufo.duzelden=true;
+							break;
+						
+						case '1':
+						case '4':
+						case '5':
+						case '6':
+							mufo.admin=true;
+							break;
+						
+						case '7': mufo.baxan=true;
+							break;
+						
+						default: 
+							mufo.udo=aar.udo.toString();	
+							break;
+					}				
+					
+					if (mufo.uloq=="naib")
+					{
+						mufo.duzelden=true; mufo.admin=true;
+					}*/
+					
+					var mainApp:TTNDATVIMS = parentDocument as TTNDATVIMS;
+					socet=mainApp.socet;
+					
+					socet.istif=mufo.userad+"~"+mufo.skype;
+					socet.usid=mufo.usid;
+					socet.osid=mufo.osid;
+					 
+					socet.qeyd =mufo.utel ;
+					socet.suret=0;
+					socet.say=1;
+					socet.say1=1;
+					socet.qeyd1=mufo.ptel ;
+					socet.interval=30000;
+					socet.start();
+					persistenceManager.setProperty("mufo",mufo);
+					persistenceManager.save();
+					navigator.popView();
+					navigator.firstView=views.Salam;			
+					navigator.pushView(Salam,flipTrans);					
+				}
+					
+				else
+					
+				{
+					inff.text="İstifadəçi adı və ya parol YANLIŞDIR";
+					if (StringUtil.trim(adstr.text).length>1)
+						pstr.setFocus();
+					else adstr.setFocus();
+				}
+				trace("login HHHH Hazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+					 
+				trace("AXTAR HHHH Hazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			}
+		
+		
+			
+	
+			
+			 
+			
+			
+			protected function execSQLResult1_faultHandler(event:FaultEvent):void
+			{
+			//	inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+				MobileAlert.show("Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin" , 'Məlumat');	
+			}
+			
+			
+		//	<s:ZoomViewTransition id="zoomTrans" duration="200" mode="in"/>
+	//			<s:CrossFadeViewTransition id="fadeTrans" duration="200"/>
+	//			<s:SlideViewTransition id="slideTrans" direction="left" duration="200" mode="cover"/>
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+			<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="200" mode="cube"/>
+	
+	 	</fx:Declarations>
+		
+	
+    <!-- Full-screen background remains independent of the form/scroll area. -->
+    <s:Group id="ert" width="100%" height="100%" resize="scheduleLoginLayout()">
+        <s:Image left="0" right="0" top="0" bottom="0"
+                 scaleMode="zoom" alpha="0.30"
+                 source="assets/Building-Construction.jpg"
+                 click="{stage.focus = null}" />
+
+        <!-- Scroller allows the login to remain usable on short landscape screens
+             and when the soft keyboard reduces the available viewport. -->
+        <s:Scroller id="loginScroller" left="0" right="0" top="0" bottom="0"
+                    horizontalScrollPolicy="off" verticalScrollPolicy="auto">
+            <s:Group id="screenLayout">
+                <!-- Original agency banner / logo: preserve source aspect ratio. -->
+                <s:Group id="bannerGroup">
+                    <s:Image left="0" right="0" top="0" bottom="0"
+                             source="assets/fhnttnda.jpg" scaleMode="stretch" />
+                </s:Group>
+
+                <s:Group id="loginCard">
+                    <s:Rect left="0" right="0" top="0" bottom="0" radiusX="18" radiusY="18">
+                        <s:fill><s:SolidColor color="#FFFFFF" alpha="0.94" /></s:fill>
+                        <s:stroke><s:SolidColorStroke color="#C4CCD4" weight="1" alpha="0.85" /></s:stroke>
+                    </s:Rect>
+
+                    <s:Label id="tvimsTitle" styleName="tvimsLoginTitle" text="TVIMS" fontWeight="bold" textAlign="center"
+                             verticalAlign="middle" />
+
+                    <s:Label id="loginUserLabel" text="İstifadəçi adı"
+                             color="#273B56" fontWeight="bold" verticalAlign="middle" />
+                    <s:TextInput id="adstr" styleName="tvimsLoginField" prompt="İstifadəçi adınızı yazın"
+                                 enter="{stage.focus = null; pstr.setFocus();}" />
+
+                    <s:Label id="loginPasswordLabel" text="Parol"
+                             color="#273B56" fontWeight="bold" verticalAlign="middle" />
+                    <s:TextInput id="pstr" styleName="tvimsLoginField azStyle" prompt="Parolu yazın"
+                                 displayAsPassword="{!cBox.selected}"
+                                 needsSoftKeyboard="true"
+                                 enter="{stage.focus = null; button1_clickHandlere()}"
+                                 />
+                    <s:CheckBox id="cBox" label="Parolu göstər" selected="false" color="#344658" />
+
+                    <s:Button id="loqin" styleName="tvimsPrimary" label="Sistemə GİRİŞ"
+                              enabled="false" fontWeight="bold"
+                              click="button1_clickHandler(event)" />
+                    <s:Label id="inff" textAlign="center" verticalAlign="middle"
+                             color="#B32635" />
+                    <s:Label id="vers" styleName="tvimsMuted" textAlign="center" verticalAlign="middle"
+                             color="#66727C" />
+                    <s:Button id="exitButton" styleName="tvimsSecondary" label="Çıxış"
+                              fontWeight="bold"
+                              click="NativeApplication.nativeApplication.exit();" />
+                </s:Group>
+                <!-- Debug label is hidden by default; switch visible=true for first APK test. -->
+                <s:Label id="debugMetrics" visible="false" color="#24364E" fontSize="11" />
+            </s:Group>
+        </s:Scroller>
+    </s:Group>
+</s:View>

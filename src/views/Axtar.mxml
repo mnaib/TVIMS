@@ -1,0 +1,673 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:flextras="http://www.flextras.com/mxml" xmlns:com="com.*" xmlns:adaptive="com.responsive.*" width="100%" height="100%" creationComplete="view1_creationCompleteHandler(event)" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" styleName="tvimsScreen">  
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			import com.probertson.utils.*;
+			
+			import components.*;
+			
+			import flash.utils.ByteArray;
+			import flash.utils.CompressionAlgorithm;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.utils.StringUtil;
+			
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var mufo:Mufo;
+			
+			[Bindable]
+			public var socet:Soket;
+			
+			private var persistenceManager:PersistenceManager = new PersistenceManager;
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo= persistenceManager.getProperty("mufo") as Mufo;
+			
+			  
+				
+			}
+			[Bindable]
+			private var aray:ArrayCollection = new ArrayCollection();	
+			[Bindable]
+			private var vezray:ArrayCollection = new ArrayCollection();	
+			 
+			[Bindable]
+			private var tablexml:XML = new XML();
+			[Bindable]
+			private static var vezfil:ArrayCollection=new ArrayCollection();
+			
+ 
+			[Bindable]
+			private var  sq2:String="EXEC Mufettis.dbo.Mobobsecid   ";
+			
+			[Bindable]
+			private var  rsss:String="";
+			
+			[Bindable]
+			private var  getvez:String=" EXEC  [Mufettis].[dbo].[MobGetVez] @userid=";
+			
+	 	[Bindable]
+			private var  sq1:String=" EXEC  [Mufettis].[dbo].[MobAxtar]    ";
+			
+			
+			
+			protected function view2_activateHandler(event:Event):void            {    
+				
+				//		execvez.token=srv2.execSQL(sqs4, 'DML', "select id, kod as ad from [umumi].[dbo].[oliqarx]   ", 1000); 
+				//	execSQLResult4.token=srv4.execSQL(sqs4,'DML','SELECT ad as rayon,id as numre FROM umumi.dbo.bolge ORDER BY ad' ,1000);
+				//	execSQLResult4.token=srv4.Cedvel('SELECT ad as rayon,id as numre FROM umumi.dbo.bolge ORDER BY ad');
+		
+				if (StringUtil.trim(mufo.udo)!="")
+				{
+					if( mufo.udo=="D")  dov.selected=true;
+					if (mufo.udo=="Ö")  ozel.selected=true;
+					dov.enabled=false;
+					ozel.enabled=false;
+				}
+				else
+				{
+					
+					dov.enabled=true;
+					ozel.enabled=true;
+				}
+				
+	/*			if( mufo.duzelden)  istol.selected=false;
+				else  istol.selected=true;*/
+			}  
+			
+			
+			private function result1(event:Event):void {
+				trace("AXTAR GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+
+				
+				
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+			 
+				axtlist.dataProvider=new XMLListCollection(xml.Cedvel);;	
+				
+				//	axtlist.selectedIndex=remm.length/2;
+				axtlist.selectedIndex=0;
+				inff.text= (axtlist.dataProvider.length).toString()+" obyekt tapıldı.";
+				
+				trace("AXTAR HHHH Hazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+			}
+			private function result1ll(evt:ResultEvent):void {
+				trace("AXTAR GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+				
+				/*		var xmlResult:XML = new XML(evt.result);     
+				var remma:ArrayCollection=new ArrayCollection();  
+				
+				
+				
+				for each(var s:XML in xmlResult.NewDataSet.Table)
+				{ 
+				
+				var oob:Object=new Object;
+				oob.id=s.id;
+				oob.ad=s.ad;
+				oob.rayon=s.rayon;
+				oob.mm=s.mm;
+				oob.rey=s.rey;
+				remma.addItem(oob);
+				}
+				remm.source=remma.source;
+				axtlist.dataProvider=remm;*/
+				var ssd:GZIPBytesEncoder=new GZIPBytesEncoder();
+				var bta:ByteArray=new ByteArray();
+				bta=evt.result as ByteArray;
+				//	bta=
+				//			var btas:ByteArray=new ByteArray();
+				//			btas=ssd.uncompressToByteArray(bta);
+				//	var xmlResult:XML = btas.readUTF();
+				axtlist.dataProvider=evt.result.Tables.Cedvel.Rows;	
+				
+				//	axtlist.selectedIndex=remm.length/2;
+				axtlist.selectedIndex=0;
+				inff.text= (axtlist.dataProvider.length).toString()+" obyekt tapıldı.";
+				
+				trace("AXTAR HHHH Hazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				if  (axtlist.selectedIndex>-1)
+				{		var sstam:String= axtlist.selectedItem.id.toString();
+					
+					mufo.gor=false;
+			//			execSQLResult2.token=srv2.execSQL(sqs4,'DML',sq2 +sstam,1000);
+				nlib.GetUrl(sq2 +sstam,result2);
+				}
+				mufo.gor=false;
+			}
+			
+			
+			
+			
+			private function result2(event:Event):void {
+				
+				
+				 
+				
+				mufo.gor=false;
+				
+				
+				trace("AXTAR GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				
+				xml=xml.normalize();
+				
+				var cemddd:String="";
+				for each (var s:XML in xml.Cedvel)
+				{
+					cemddd+=s.children()[0];
+					
+				}
+				
+				var	taar =JSON.parse( cemddd);
+				
+				var	aar =taar[0] ;
+				
+				
+				
+				
+				if ( aar.id=="")
+				{
+					MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat')
+					return;  
+				}
+				if( (isNaN(Number( StringUtil.trim(aar.id))))  || ( StringUtil.trim(aar.id).length==0))
+				{
+					MobileAlert.show('Xəta 25: Yenidən daxil edin ' , 'Məlumat')
+					return;  
+				}
+				
+				mufo.Reset();
+				if (mufo.uderece=='2') mufo.duzelden=true;
+				if (mufo.uderece=='1') mufo.duzelden=true;
+				mufo.osid=aar.id.toString(); 
+			
+				mufo.oad=aar.ad.toString();	
+			 
+				
+			if (aar.rey)		mufo.orey=aar.rey.toString();
+				
+				
+				//	ntey.text=tablexml.NewDataSet.Table.teyi.toString();
+		if (aar.unvan)	mufo.ounv=aar.unvan.toString();
+		if (aar.tey)		mufo.otey=aar.tey.toString();
+		if (aar.teyid)		mufo.oteyid=aar.teyid.toString();
+		if (aar.qeyd)		 mufo.oqeyd=aar.qeyd.toString();
+		if (aar.ray)		mufo.oray=aar.ray.toString();
+		if (aar.rayid)		mufo.orayid=aar.rayid.toString();
+		if (aar.meridian)		mufo.meridian= aar.meridian.toString();
+		if (aar.paralel)		mufo.paralel= aar.paralel.toString();
+				
+		if (aar.pod)		mufo.opod=aar.pod.toString();
+		if (aar.it1)		mufo.it1=aar.it1.toString() ;
+		if (aar.it2)		mufo.it2=aar.it2.toString() ;
+		if (aar.it3)		mufo.it3=aar.it3.toString() ;
+		if (aar.it4)	mufo.it4=aar.it4.toString() ;
+		if (aar.it5)	mufo.it5=aar.it5.toString() ;
+		if (aar.it6)	mufo.it6=aar.it6.toString() ;
+	 	if (aar.sah)	mufo.osah=aar.sah.toString();
+		if (aar.sahid)	mufo.osahid=aar.sahid.toString();
+			if (aar.tip)	mufo.otip=aar.tip.toString();
+		if (aar.tipid)	mufo.otipid=aar.tipid.toString();
+		if (aar.sif)	mufo.osif=aar.sif.toString();
+		if (aar.sifid)	mufo.osifid=aar.sifid.toString();
+		if (aar.mmid)	mufo.ommid=aar.mmid.toString();
+		if (aar.mm)	mufo.omm=aar.mm.toString();
+		if (aar.vez)	mufo.ovez=aar.vez.toString();
+		if (aar.qey)		mufo.oqey=aar.qey.toString();
+		if (aar.qeyid)		mufo.oqeyid=aar.qeyid.toString();
+
+		if (aar.sahilyani)		mufo.osahil=aar.sahilyani.toString();
+		if (aar.iao)		mufo.oisgal=aar.iao.toString();
+		
+		
+		
+		if (aar.vezid)		mufo.ovezid=aar.vezid.toString();
+		if (aar.basla)		mufo.obasla=aar.basla.toString().replace("T","");
+			if (aar.son)			mufo.oson=aar.son.toString().replace("T","");;
+				 
+				
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+				nad.text=Azstring.Azrec(mufo.oad);	
+				npod.text=Azstring.Azrec(mufo.opod);
+				nrey.text=Azstring.Azrec(mufo.orey);
+				ntey.text= Azstring.Azrec(mufo.otey);
+				nunv.text=Azstring.Azrec(mufo.ounv);
+			 	nqeyd.text=Azstring.Azrec(mufo.oqeyd);
+				//nray.text=Azstring.Azrec(mufo.oray.toString());
+				var mainApp:TTNDATVIMS = parentDocument as TTNDATVIMS;
+				socet=mainApp.socet;
+			//nray.text=Azstring.Azrec(mufo.ovez.toString());
+				socet.osid=aar.id.toString(); 
+				
+			}
+		
+			
+			protected function execSQLResult1_faultHandler(event:FaultEvent):void
+			{
+				inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+			}
+			
+			private function axtarf():void
+			{  
+				//	var sstam:String= "SELECT P.id ,B.ad as rayon, P.ad as ad   FROM [Mufettis].[dbo].[obyekt] as P, umumi.dbo.bolge B where (B.id=P.bolge) and ( P.ad like '%"+nomreaxtar.text+"%')";
+				var sstam:String= sq1 +"  @userid="+mufo.usid.toString(); 
+				if(  StringUtil.trim(lad.text).length>0)
+					sstam+="  ,@ad=N'"+Azstring.Azstr(lad.text)+"'";
+			  
+				
+				tesp=false;
+				 
+				var ssray:String= "";
+				ssray="";
+				var ssrey:String= "";
+				var sdov:String= "";
+				var sozel:String= "";
+				var oliq:String= ""; 
+				 
+				//	if (list.selectedIndex>0) oliq= " and  (P.oliqarx="+list.selectedIndex+")"; 
+				rsss="";
+				for(var count:int = 0; count < aray.length; count++)
+				{
+					if (aray[count].sel.toString()=="true")  rsss=rsss+aray[count].numre+",";
+				}
+				var gff:String=rsss
+ 				if (!(rsss==""))  rsss=gff.substr(0,	rsss.length-1);
+				else
+				{
+					MobileAlert.show("Rayon Seçilməyib" , 'Məlumat');
+					return;
+				}
+		//		@ad nvarchar(100)=null,
+			 
+			//			@vez nvarchar(400)=null, 
+						 
+	 
+				
+				if (rsss.length>0)  
+				{
+					ssray=",@ray='"+rsss+"'"; 
+				}
+				
+				if (lrey.selected)  
+				{
+					ssrey=",@rey=0"; 
+					
+				}
+				
+				if (dov.selected)
+				{
+					sdov=",@mm=2"; 
+					
+				}
+				if (ozel.selected) 
+				{
+					sozel=",@mm=1"; 
+					
+				}
+				
+				if (gecikme.selected) 
+				{
+					sozel=",@gecikme=1"; 
+					
+				}
+				var vezss:String=""
+		/*		if (istol.selected) 		 
+					ists=" and  (P.veziyyet<100)"; 
+				else 
+					ists=" and  (P.veziyyet<6)"; */
+				// SELECT P.id ,B.ad as rayon, P.ad as ad   FROM [Mufettis].[dbo].[obyekt] as P, umumi.dbo.bolge B where (B.id=P.bolge) and ( P.ad like ";
+				//	execSQLResult1.token=srv1.execSQL(sqs4,'DML',sstam+userid+ssray+ssrey+sdov+sozel+oliq +' ORDER BY P.id DESC',100000);		
+				trace("AXTAR VVVVV vurdu" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			//	execSQLResult1.token=srv4.Cedvell(sstam+userid+ssray+ssrey+sdov+sozel+ists);
+				
+				for each (var s:Object in vezsec.selectedItems)
+				{				
+				var oob:Object=new Object();
+				vezss+=s.id.toString()+",";	
+					 
+				}
+				 vezss =  vezss.slice(0, -1);
+				vezss= ", @vez='"+vezss+"'";
+				 
+				
+				nlib.GetUrl(sstam+ssray+ssrey+sdov+sozel+vezss,result1);	
+				
+			}
+			
+			private function result4(event:Event):void {
+				trace("Rayon GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				//		var remma4:ArrayCollection=new ArrayCollection();  
+				//	var remma4:ArrayCollection=evt.result.Tables.Cedvel.Rows;		
+				
+				mufo.gor=false;
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+					var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+					aray  = new ArrayCollection(xmlListCollection.toArray()); 
+				 
+				lray.dataProvider =aray;
+				trace("Rayon HHHH Hazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			
+ 		 
+				nlib.GetUrl(getvez+mufo.usid ,rayuserr);	
+		 
+					
+					
+				//	rayuser.token=srv2.execSQL(sqs4,'DML',',1000);	
+				// neeeett
+			}
+				
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				var senr:String="";
+				if (tesp) senr=rowItem.id+"\  "+rowItem.rayon+"\  "+rowItem.eks+"\  "+ rowItem.ad;
+				else senr=rowItem.id+ (rowItem.gun=='NULL'?("\  "):("\  ["+rowItem.gun+"]\  "))+rowItem.rayon+"\  "+ rowItem.ad; 
+				return  senr;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+				private function showvez(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			private function ozelc():void
+			{
+				if (ozel.selected)	
+				{
+					ozel.selected=true;
+					dov.selected=false	
+				}
+				else
+				{
+					ozel.selected=false;
+					dov.selected=false	;
+					
+				}
+				
+			}
+			
+			
+			private function dovc():void
+			{
+				if (dov.selected)	
+				{
+					ozel.selected=false	;
+					dov.selected=true;
+				}
+					
+				else
+				{
+					ozel.selected=false;
+					dov.selected=false	;
+				}
+				
+			}
+			
+			
+			
+			protected function selall(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				for(var count:int = 0; count < aray.length; count++)
+				{
+					aray[count].sel=true;
+				}
+				aray.refresh();
+		lray.dataProvider=null;
+		lray.dataProvider=aray;
+		aray.refresh();
+			}
+			protected function celall(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				for(var count:int = 0; count < aray.length; count++)
+				{
+					aray[count].sel=false;
+				}
+				aray.refresh();
+			 	lray.dataProvider=null;
+		 	lray.dataProvider=aray;
+	
+				aray.refresh();
+			}
+			
+			protected function secill():void
+			{
+				// TODO Auto-generated method stub
+				
+				rsss="";
+				for(var count:int = 0; count < aray.length; count++)
+				{
+					if (aray[count].sel)  rsss=rsss+aray[count].numre+",";
+				}
+				var gff:String=rsss
+				if (!(rsss==""))  rsss=gff.substr(0,	rsss.length-1);
+			}
+			
+			
+		
+			
+			public function rayuserr(event:Event):void
+			{
+				 
+			   
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				//var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+			//	vezray  = new ArrayCollection(xmlListCollection.toArray()); 
+				var newVector:Vector.<Object> = new Vector.<Object>();
+			 
+				
+				 
+				for each (var s:XML in xml.Cedvel)
+				{
+					
+					var oob:Object=new Object();
+					 
+					oob.id=s.id ;
+					oob.ad=s.ad.toString();					 
+					vezray.addItem(oob );
+					if (s.sec==1) newVector.push(oob );
+				}
+			
+
+	     
+		 vezsec.dataProvider =vezray;
+						 	vezsec.selectedItems=newVector;
+			 	
+			}	
+			
+			protected function efekt(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				myResize.target=event.target;
+				
+				myResize.play(); 
+				//	myResize.end();
+			}
+			
+		 
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace("Rayon VVVVV vurdu" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			//	execSQLResult4.token=srv4.Cedvel('SELECT ad as rayon,id as numre FROM umumi.dbo.bolge ORDER BY ad');
+			
+			////***				nlib.GetUrl("SELECT ad as rayon,id as numre,cast('"+(!mufo.duzelden).toString()+"' as bit) as sel FROM umumi.dbo.bolge ORDER BY ad",result4);
+	
+				nlib.GetUrl(" exec  [dbo].[MobGetRayonAxtar]     @userid=" +mufo.usid.toString(),result4);
+				//			execvez.token=srv2.execSQL(sqs4, 'DML', "select id, kod as ad from [umumi].[dbo].[oliqarx]   ", 1000); 
+				//	execSQLResult4.token=srv4.execSQL(sqs4,'DML','SELECT ad as rayon,id as numre FROM umumi.dbo.bolge ORDER BY ad' ,1000);
+			
+				if (StringUtil.trim(mufo.udo)!="")
+				{
+					if( mufo.udo=="D")  dov.selected=true;
+					if (mufo.udo=="Ö")  ozel.selected=true;
+					dov.enabled=false;
+					ozel.enabled=false;
+				}
+				else
+				{
+					
+					dov.enabled=true;
+					ozel.enabled=true;
+				}
+				
+			/*	if( mufo.duzelden)  istol.selected=false;
+				else  istol.selected=true;*/
+			}
+		 var tesp:Boolean=false;
+		 
+		 
+			protected function button2_clickHandler(event:MouseEvent):void
+			{navigator.popView();
+				// TODO Auto-generated method stub
+				navigator.firstView=views.Salam;
+				
+				navigator.pushView(Salam);
+			}
+			
+			protected function gecikmeet(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		
+		
+		
+		<s:Resize id="myResize" heightBy="20" widthBy="20" duration="100" effectEnd="myt"/>
+		
+		<s:Resize id="myt" heightBy="-20" widthBy="-20" duration="100"/>
+		<s:Bounce id="bounce"/>
+		<s:FlipViewTransition id="flipTrans" direction="up" duration="100" mode="cube"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="100" easer="{bounce}" mode="cover"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="100"/>
+		
+		
+	 
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bbaddck" click="button2_clickHandler(event)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	<s:titleContent>
+		<s:Label width="100%" id="titul" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1290" designHeight="720" width="1290" height="720" includeInLayout="false"><s:Label x="28" y="4" width="248.5" height="43" fontSize="28" fontWeight="bold" text="Obyektin axtarışı" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="344" y="4" width="526.5" height="32" fontSize="28" fontWeight="bold" text="Axtarışın nəticələri" textAlign="center" verticalAlign="middle"/>
+	
+	<s:Label x="962" y="-1" width="15" height="100%" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	<s:Label x="309" y="0" width="15" height="100%" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	
+
+	<s:Button x="335" y="595" width="619" label="Seçilmiş obyekti təsdiq et" click="button1_clickHandler(event)" color="#A102FC" fontSize="26"/>
+	<s:Button x="991" y="595" width="275" label="Növbəti" click="button2_clickHandler(event)" color="#04700F" fontSize="26"/>
+	
+	<s:Label id="bb2" x="1087.5" y="81" text="Rəyi" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb3" x="1063.5" y="299" text="Tikintinin vəziyyəti" width="160" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb6" x="1088.5" y="6" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle" text="Adı"/>
+	<s:TextInput id="lad" x="10" y="51" width="287" height="41" enter="{stage.focus=null;axtarf()}" focusOut="{stage.focus=null}" prompt="axtarılan sözü və ya nömrəni yazın" styleName="azStyle" tabEnabled="true"/>
+	
+	<s:Label id="nray" x="998" y="322" width="271" height="37" text="{mufo.ovez }" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb5" x="1093.5" y="151" text="Sifarişçi" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nsif" x="999" y="175" width="271" height="37" text="{mufo.osif }" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nad" x="993" y="29" width="271" height="37" text="{mufo.oad } " backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nrey" x="993" y="104" width="271" height="37" text="{mufo.orey }" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nqeyd" x="993" y="541" width="271" height="37" text="{mufo.oqeyd }" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nunv" x="999" y="393" width="271" height="37" text="{mufo.ounv }" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	
+	<s:Label id="bb7" x="1090.5" y="371" text="Ünvan" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="npod" x="999" y="248" width="271" height="37" text="{mufo.opod}" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb9" x="1090.5" y="225" text="Podratçı" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb8" x="1088.5" y="519" text="Qeyd" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="ntey" x="993" y="468" width="271" height="37" text="{mufo.otey}" backgroundColor="0xe6e6e6" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="bb4" x="1091.5" y="444" text="Təyinatı" width="88" height="24.5" backgroundColor="0xe6e6e6" color="#0D4C81" fontSize="18" fontStyle="normal" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	
+	<s:Label id="inff" x="26" y="561" width="234" height="22" color="#F80303" fontSize="17" text=" 0 obyekt tapıldı." textAlign="center" verticalAlign="middle"/>
+	
+	<s:SpinnerListContainer id="lrayo" visible="false" x="16" y="292" width="248" height="262">
+		<s:SpinnerList id="lrayr" width="100%" height="224" labelField="data" labelFunction="{showTwoColumns}" selectedIndex="0">
+			
+		</s:SpinnerList>
+	</s:SpinnerListContainer>
+	
+	<s:SpinnerListContainer id="lrays" x="335" y="51" width="619" height="509">
+		<s:SpinnerList id="axtlist" width="100%" height="100%" labelField="data" labelFunction="{showTwoColumns2}" selectedIndex="0">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:IconItemRenderer symbolColor="red" color="{(data.mm==1)?1214726:678072}" fontStyle="{(data.gun&gt;0)?'normal':'italic'}" fontWeight="{(data.rey==0)?'bold':'normal'}"/>
+				</fx:Component>
+			</s:itemRenderer>   
+		</s:SpinnerList>
+		
+	</s:SpinnerListContainer>
+	
+	
+	<s:CheckBox id="dov" x="26" y="143" width="114" label="Dövlət" click="dovc()" color="#0A58B8"/>
+	<s:CheckBox id="ozel" x="163" y="143" width="95" label="Özəl" click="ozelc()" color="#128906"/>
+	<s:CheckBox id="gecikme" x="163" y="99" width="138" label="Gecikmə" click="gecikmeet(event)" fontStyle="italic"/>
+	<s:CheckBox id="lrey" x="26" y="99" width="36" fontSize="14" fontWeight="bold"/>
+	 
+	<components:CSearchBar id="axtarsifar" x="10" y="244" width="287" height="42" dataGrid="{lray}" fontSize="14" searchListCollection="{aray}"/>
+	<s:DataGrid id="lray" x="10" y="290" width="287" height="231" verticalScrollPolicy="on">
+		
+		
+		<s:columns>
+			<s:ArrayList id="checkList">
+				<s:GridColumn headerText="Rayon" dataField="rayon"/>
+				
+				<s:GridColumn width="50" headerText="Seç" dataField="sel" itemRenderer="com.checkboxdata">
+					
+				</s:GridColumn>
+				
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+	<s:Button id="bb0" x="10.5" y="528" width="139" height="31.5" label="Tam Seç" accentColor="0x565656" click="selall(event)" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb1" x="148.5" y="528" width="148" height="31.5" label="Seçmə" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton" click="celall(event)"/>
+	<s:Label x="14" y="204" width="49" height="30" text="Şəxsi" verticalAlign="middle" visible="false"/>
+	<s:Label x="61" y="98" width="79" height="40" fontSize="16" fontWeight="bold" text="Rəyi olmayan" textAlign="left" verticalAlign="middle"/>
+ 
+	<s:Button x="26" y="593" width="233" label="Axtar" click="axtarf()" color="#A102FC" fontSize="26"/>
+	<com:DropDownListEx x="10" y="192" width="287" height="36" dataProvider="{vezray}" labelField="ad" id="vezsec"/>
+	 
+	
+</adaptive:ResponsiveStage></s:View>

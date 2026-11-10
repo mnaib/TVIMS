@@ -1,0 +1,346 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:flextras="http://www.flextras.com/mxml" xmlns:adaptive="com.responsive.*" width="100%" height="100%" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" creationComplete="view1_creationCompleteHandler(event)" title="Müfəttişlər" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.utils.StringUtil;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			[Embed("../assets/phone2.png")]
+			[Bindable]
+			private  var phone:Class; 
+			[Embed("../assets/sms2.png")]
+			[Bindable]
+			private  var mail:Class; 
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var mufo:Mufo;
+			
+			 
+			private var persistenceManager:PersistenceManager = new PersistenceManager;
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo= persistenceManager.getProperty("mufo") as Mufo;
+			 
+			
+			}
+			[Bindable] private var skp:String='';
+			[Embed("../assets/video.png")]
+			[Bindable]
+			private  var vid:Class; 
+			 
+			[Bindable]
+			private var  rsss:String="";
+			
+		  
+			 
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+		//		region.token=srv.execSQL(sqs4, 'DML', "exec MobRegion ", 1000); 
+				nlib.GetUrl("exec MobRegion " ,rregion);
+				var mainApp:TTNDATVIMS = parentDocument as TTNDATVIMS;
+			 
+			 
+			}
+			private function rregion(event:Event):void
+			{
+ 				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmllist: XMLListCollection= new XMLListCollection(xml.Cedvel);
+ 				lreg.dataProvider=xmllist;
+				xmllist.refresh();
+				lreg.selectedIndex=-1;			 
+ 			//	rayon.token=srv.execSQL(sqs4,'DML','exec MobRayon' ,1000);
+				nlib.GetUrl('exec MobRayon' ,rrayon);
+				
+			}
+			
+			private function rrayon(event:Event):void
+			{
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmllist: XMLListCollection= new XMLListCollection(xml.Cedvel);			
+				 			
+				lray.dataProvider=xmllist;
+				xmllist.refresh();
+				lreg.selectedIndex=0;
+				lray.selectedIndex=-1;
+			//	user.token=srv.execSQL(sqs4,'DML','exec MobUser' ,1000);
+				nlib.GetUrl('exec MobUser'  ,ruser);
+			}
+			private function ruser(event:Event):void
+			{
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmllist: XMLListCollection= new XMLListCollection(xml.Cedvel);		
+				lmuf.dataProvider=xmllist;
+				xmllist.refresh();
+				lmuf.selectedIndex=-1;
+			
+			 lmuf.selectedIndex=0;
+			 lray.selectedIndex=-1;
+			   lray.selectedIndex=0;
+			
+			 lreg.selectedIndex=2;
+			 lreg.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE));
+			 
+			}
+			
+			protected function zeng(ss:String):void
+			{
+				// TODO Auto-generated method stub
+				if (ss.substr(0,1)!="0") ss="0"+ss;
+				var u:URLRequest = new URLRequest("tel:" +ss);
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			protected function vidik():void
+			{
+				
+				var u:URLRequest = new URLRequest("skype:" + skp+ "?call&video=true " );
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			protected function mesaj(ss:String ):void
+			{
+				// TODO Auto-generated method stub
+				var u:URLRequest = new URLRequest("sms:" +ss);
+				navigateToURL(u,"_self"); 
+			}
+			
+			protected function lreg_caretChangeHandler(event:IndexChangeEvent):void
+			{
+				if (lray.dataProvider ) {
+				var factoryMethodsXLC:XMLListCollection=XMLListCollection(lray.dataProvider);			 
+				factoryMethodsXLC.filterFunction = filterray;
+				factoryMethodsXLC.refresh();
+				lray.selectedIndex=0;
+				lray.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE));
+			
+				}
+			}
+			
+			private function filterfav(item:Object):Boolean{
+				if(item.fav)
+					return true;
+				return false;
+			}
+
+		 
+			 
+
+			  
+			private function filterFunc(item:Object):Boolean {			
+				return item.ad.toString().toLowerCase().indexOf(regt.text.toLowerCase())!=-1;
+			}
+			protected function regt_changeHandler(event:TextOperationEvent):void
+			{			
+				var factoryMethodsXLC:XMLListCollection=XMLListCollection(lreg.dataProvider);
+				if (regt.text.length<1)  {
+					factoryMethodsXLC.filterFunction = null;
+					factoryMethodsXLC.refresh();
+				} else {
+					factoryMethodsXLC.filterFunction = filterFunc;
+					factoryMethodsXLC.refresh();					
+				}
+			}
+			
+		 
+			private function filterray(item:Object):Boolean {
+				var bb:Boolean=false;
+			if (rayt.text.length<1) bb=true;
+				else bb=item.ad.toString().toLowerCase().indexOf(rayt.text.toLowerCase())!=-1;
+				if 	 (lreg.selectedIndex<0) return bb;
+				
+			/*	var bbs:Boolean=false;
+				var oo:Object=new Object;
+				oo=lreg.selectedItem.id.toString(); 
+					oo= item.region.toString();
+				bbs=item.region==lreg.selectedItem.table.id;
+				 	*/
+				return bb&&(item.region.toString()==lreg.selectedItem.id.toString());
+			}
+			protected function rayt_changeHandler(event:TextOperationEvent):void
+			{			
+				var factoryMethodsXLC:XMLListCollection=XMLListCollection(lray.dataProvider);			 
+					factoryMethodsXLC.filterFunction = filterray;
+					factoryMethodsXLC.refresh();					
+			 
+			}
+			
+			protected function lray_caretChangeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (lmuf.dataProvider!=null ) {
+					var factoryMethodsXLC:XMLListCollection=XMLListCollection(lmuf.dataProvider);			 
+					factoryMethodsXLC.filterFunction = filteruser;
+					factoryMethodsXLC.refresh();
+					lmuf.selectedIndex=0;
+					lmuf.dispatchEvent(new IndexChangeEvent(IndexChangeEvent.CHANGE));
+				}
+			}
+			
+			private function filteruser(item:Object):Boolean {
+				var bb:Boolean=false;
+				if (muft.text.length<1) bb=true;
+				else bb=item.ad.toString().toLowerCase().indexOf(muft.text.toLowerCase())!=-1;
+				if 	 (lray.selectedIndex<0) return bb;
+				
+				 	var bbs:Boolean=false;
+				var rid:String= lray.selectedItem.id.toString(); 
+			var sar:Array=item.rayonlar.toString().split(",");
+			for (var i:int=0; i<sar.length; i++) 
+			{
+			if 	(rid==sar[i] )
+			{bbs=true;
+			break;}
+			}	 
+				return bb&&bbs;
+			}
+			protected function muft_changeHandler(event:TextOperationEvent):void
+			{			
+				var factoryMethodsXLC:XMLListCollection=XMLListCollection(lmuf.dataProvider);			 
+				factoryMethodsXLC.filterFunction = filteruser;
+				factoryMethodsXLC.refresh();					
+				
+			}
+			
+			protected function lmuf_changeHandler(event:IndexChangeEvent):void
+			{
+	 if ((lmuf.selectedIndex<0) || ( lmuf.selectedItem=== undefined) ){
+		 	xmobt.visible=false;
+				xmobm.visible=false;
+			 
+				return;
+					
+	 } 
+				nad.text= lmuf.selectedItem.ad.toString();	
+				
+		//		nrey.text=  lmuf.selectedItem.loqin.toString();
+				
+			//	nunv.text=  lmuf.selectedItem.pl_tel.toString();
+				nray.text=  lmuf.selectedItem.tel.toString();
+				mufo.ovez=  lmuf.selectedItem.id.toString();
+				skp=lmuf.selectedItem.skype.toString();
+				
+			 
+		 
+				
+				if (nray.text.length>4){
+				xmobt.visible=true;
+					xmobm.visible=true;
+				}
+				else {
+					xmobt.visible=false;
+				xmobm.visible=false;
+				}
+				
+			
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		
+		
+		
+		<s:Resize id="myResize" heightBy="20" widthBy="20" duration="1000" effectEnd="myt"/>
+		
+		<s:Resize id="myt" heightBy="-20" widthBy="-20" duration="1000"/>
+		<s:Bounce id="bounce"/>
+		<s:FlipViewTransition id="flipTrans" direction="up" duration="1000" mode="cube"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="1000" easer="{bounce}" mode="cover"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1000"/>
+		 
+		
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="951" y="4.25" width="280.5" height="39" fontSize="28" fontWeight="bold" text="Məlumat" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="573" y="11.4" width="248.5" height="35" fontSize="28" fontWeight="bold" text="Müfəttişlər-{lmuf.dataProvider.length.toString()}" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="63" y="12.25" width="208.5" height="32" fontSize="28" fontWeight="bold" text="Region" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="288" y="13" width="216.5" height="32" fontSize="28" fontWeight="bold" text="Rayonlar-{lray.dataProvider.length.toString()}" textAlign="center" verticalAlign="middle"/>
+	<s:Button x="935" y="588" width="275" label="Geriyə" click="navigator.replaceView(views.Salam,flipTrans)" color="#04700F" fontSize="26"/>
+	
+	<s:Button id="bb2" visible="false" x="976" y="150" width="200" height="40" label="İstifadəçi" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb0" x="976" y="48" width="200" height="40" label="Adı" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb3" x="973.5" y="211" width="200" height="40" label="Telefon " accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:TextInput id="muft" x="531" y="48" width="344" height="41" change="muft_changeHandler(event)" focusOut="{stage.focus=null}" prompt="Müfəttişin adını yazın" styleName="azStyle" tabEnabled="true" textAlign="center"/>
+	<s:TextInput id="regt" x="50" y="48" width="226" height="41" change="regt_changeHandler(event)" focusOut="{stage.focus=null}" prompt="Regionnun adını yazın" styleName="azStyle" tabEnabled="true" textAlign="center"/>
+	<s:TextInput id="rayt" x="304" y="49" width="200" height="41" change="rayt_changeHandler(event)" focusOut="{stage.focus=null}" prompt="Rayonun adını yazın" styleName="azStyle" tabEnabled="true" textAlign="center"/>
+	
+	
+	<s:Label id="nad" x="937.25" y="90" width="271" height="40" backgroundColor="0xe6e6e6" fontSize="20" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nrey" visible="false" x="937.5" y="191" width="271" height="40" backgroundColor="0xe6e6e6" fontSize="20" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	
+	
+	<s:Label id="nray" x="937" y="252" width="271" height="40" backgroundColor="0xe6e6e6" fontSize="20" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	
+	<s:HGroup x="937" y="301" gap="25" width="271" horizontalAlign="center">
+		
+		
+		<s:Image id="xmobt" width="60" height="60" buttonMode="true" visible="false" click="{zeng(nray.text)}" scaleMode="stretch" source="{phone}"/>
+		
+		<s:Image id="xmobm" width="60" height="60" buttonMode="true" visible="false" click="{mesaj(nray.text)}" scaleMode="stretch" source="{mail}"/>
+	</s:HGroup>	
+	
+	
+	
+	
+	<s:Button id="bb7" visible="false" x="974.5" y="472" width="200" height="40" label="Planşetin Telefonu" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Label id="nunv" visible="false" x="938" y="514" width="271" height="40" backgroundColor="0xe6e6e6" fontSize="20" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	
+	
+	
+	
+	
+	
+	<s:SpinnerListContainer id="lrays" x="39" y="97" width="848" height="585">
+		<s:Spacer width="10"/>
+		<s:SpinnerList id="lreg" width="226" labelField="ad" height="90%" horizontalCenter="0" fontSize="18" wrapElements="false" change="lreg_caretChangeHandler(event)">
+			
+		</s:SpinnerList>
+		<s:Spacer width="30"/>
+		
+		
+		<s:SpinnerList id="lray" width="200" labelField="ad" height="90%" horizontalCenter="0" fontSize="18" wrapElements="false" change="lray_caretChangeHandler(event)">
+			
+		</s:SpinnerList>
+		<s:Spacer width="30"/>
+		<s:SpinnerList id="lmuf" width="330" height="90%" labelField="ad" horizontalCenter="0" fontSize="18" wrapElements="false" change="lmuf_changeHandler(event)">
+			 
+		</s:SpinnerList>
+		
+	</s:SpinnerListContainer>
+	<s:Label x="516" y="1" width="7" height="679" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	<s:Label x="883" y="0" width="7" height="682" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	<s:Label x="290" y="0" width="7" height="681" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	<s:Label x="33" y="4" width="7" height="678" backgroundAlpha="0.5" backgroundColor="#366363"/>
+	
+	
+	
+</adaptive:ResponsiveStage></s:View>

@@ -1,0 +1,486 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:adaptive="com.responsive.*" viewActivate="view2_ActivateHandler(event)" destructionPolicy="never" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" styleName="tvimsScreen">
+
+	<fx:Script>
+		<![CDATA[
+			
+			
+			
+			import com.*;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+		
+			import spark.components.gridClasses.GridColumn;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var firmaarr:ArrayCollection = new ArrayCollection();	
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			
+			 
+			[Bindable]
+			private var faylarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var senedarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var pararr:ArrayCollection = new ArrayCollection();	
+			
+			 
+			
+			
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				 
+				//	ad.text=mufo.uad.toString();
+				firmaarr.addItem("Yoxdur");
+				
+			}
+			[Bindable]
+			private var remm4:ArrayCollection = new ArrayCollection();	
+			
+			
+			/// 7436 7640
+			
+			protected function view2_ActivateHandler(event:Event):void            {    
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				nad.text=mufo.oad.toString();
+				
+				nrey.text=mufo.orey.toString();
+				ntey.text=mufo.otey.toString();
+				nunv.text=mufo.oray.toString() + ", " + mufo.ounv.toString();
+				nqeyd.text=mufo.oqeyd.toString();
+					
+				
+		//		firmac.token=srv.execSQL(sqs,'DML','select * from [Mufettis].[dbo].[eksper] where obyekt='+mufo.osid+' order by id desc' ,1000)
+				nlib.GetUrl('select * from [Mufettis].[dbo].[eksper] where obyekt='+mufo.osid+' order by id desc',firmar);		
+			//	firmac.token=srv.execSQL(sqs,'DML','select * from [Mufettis].[dbo].[eksper] where obyekt=7640  order by id desc' ,1000)
+				
+			}  
+			
+			
+			
+			
+			
+			 
+			
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+		
+			
+			private function firmar(event:Event):void
+				
+			{
+				firmaarr.removeAll();
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+ 
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+					firmaarr.addItem(s.nomre.toString());      
+				}				
+			
+				ekspn.dataProvider=firmaarr;
+				
+				ekspn.selectedIndex=0;
+				getdat();
+				
+					
+			}
+			
+			private function getdat():void {
+				if (firmaarr.length>0)	{
+					
+					var senn:String;
+		//		var 	sdnn='select S.id, T.ad as "Tad", SS.ad, S.tarix, S.nomre, S.qnom, S.orqan,'+
+			//			'(select case when count(id)>0 then count(id) end  from [Ekspertiza].[dbo].[fayls] where [Ekspertiza].[dbo].[fayls].sened=S.id) as "F"\n '+
+		//			'from [Ekspertiza].[dbo].[sened] S, [Ekspertiza].[dbo].[soz] SS, [Ekspertiza].[dbo].[teyinat] T where S.hal=SS.id and S.teyinat=T.id\n '+
+			//		'and S.qovluq='+firmaarr[ekspn.selectedIndex].toString()+ '\n order by T.sn'
+						
+					senn='exec [Mufettis].[dbo].[MobSenedGet] '+firmaarr[ekspn.selectedIndex].toString();
+						
+					
+					
+			//	senedc.token=srv.execSQL(sqs,'DML',senn ,1000)
+					nlib.GetUrl(senn,senedr);	
+						fayl.enabled==true;
+				}	
+						
+				}
+			
+			private function senedr(event:Event):void {
+				
+				senedarr.removeAll();
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+					senedarr.addItem(s);      
+				}				
+				
+				sened.dataProvider=senedarr;
+				
+			
+	//		var stemo:String='select  M.ad as "sif", Q.Layiheci as "lay", Q.ad as "isi", T.ad as "tey", Mer.ad as "mer",MM.ad as "mal", Q.tarixyr as "reyt",Rey.ad as "rey" from Ekspertiza.dbo.qovluq Q left join umumi.dbo.mus M on M.id=Q.musid left join Ekspertiza.dbo.teyinat T on T.id=Q.teyinat left join Ekspertiza.dbo.soz Mer on Mer.id=Q.mer left join  Ekspertiza.dbo.malmen MM on MM.id=Q.malmen left join Ekspertiza.dbo.soz Rey on Rey.id=Q.yekun where Q.id='+firmaarr[ekspn.selectedIndex].toString();
+			var stemo:String=' exec [mufettis].[dbo].[MobGetRey] '+ mufo.usid +','+firmaarr[ekspn.selectedIndex].toString();
+				
+			//	'select O.*, T.ad as "tad", B.ad as "bad"  from Lisenziya.dbo.obyekt O  left join umumi.dbo.teyinat T on T.id=O.teyinat  left join umumi.dbo.bolge B on B.id=O.bolge  where O.firma=';
+				
+		//		parc.token=srv.execSQL(sqs,'DML',stemo ,10000)
+				
+				nlib.GetUrl(stemo,parr);		
+				
+				
+			}
+			
+			private function faylaxtar(event:MouseEvent):void
+			{
+				
+				
+				faylarr.removeAll();
+				
+				///select I.*, T.ad as "Tad", T.kod as "Tkod" , T.fn  from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma=:firma
+				
+				
+			
+				//var steme:String='select T.ad as "Fad" from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma='+firmaarr[firma.selectedIndex].id.toString();
+var steme:String="select id, fayl from [Ekspertiza].[dbo].[fayls] where sened="+senedarr[sened.selectedIndex].id.toString()+" order by id desc";
+      //select T.ad as "Fad" from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma='+firmaarr[firma.selectedIndex].id.toString();
+				
+			//	faylac.token=srv.execSQL(sqs,'DML',steme ,10000)
+				nlib.GetUrl(steme,faylr);
+			}
+			
+			private function faylr(event:Event):void {
+				
+				faylarr.removeAll();
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{           
+					faylarr.addItem(s);      
+				}				
+			if (faylarr.length>0) 
+			{   fayl.enabled=true;
+				fayl.dataProvider=faylarr;
+			}
+			
+		 
+			}
+			
+			
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+			
+			private function parr(event:Event):void {
+				pararr.removeAll();
+				
+			 
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+					pararr.addItem(s);      
+				}				
+				
+				par.dataProvider=pararr;
+				
+			}
+			import spark.events.IndexChangeEvent; 
+			private function changeHandler(event:IndexChangeEvent):void { 
+				
+				 
+				if (event.newIndex==0)
+				{
+					sened.visible=true;
+				 bbb.selectedIndex=0;
+					par.visible=false;
+					fayl.enabled=true;
+				}
+				
+				
+				if (event.newIndex==1)
+				{
+				  
+					bbb.selectedIndex=1;
+					sened.visible=false;
+					par.visible=true;
+					fayl.enabled=false;
+				}
+			} 
+			
+			
+			private function changeHandler2(event:IndexChangeEvent):void { 
+				
+				
+				 
+//	 ekspn.selectedIndex=ekspn.selectedIndex;
+	 getdat();
+			} 
+
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			
+			
+			public function tarPad(number:String):String
+			{
+				var ret:Array=number.split(" ");
+				if (ret.length<2)  return number;
+				var set:String=ret[0].toString();
+				ret=set.split("/");
+				
+				if (ret.length<2) ret=set.split("-");
+				if (ret.length<2) ret=set.split(".");
+				if (ret.length<2) return number;
+				return  zeroPad(ret[1].toString(),2)+"."+zeroPad(ret[0].toString(),2)+"."+ ret[2].toString();
+			}
+			 
+			
+			
+			
+			private function tnullLabelFunction(item:Object, column:GridColumn):String {
+				if ((item[column.dataField] == '<NULL>') || (item[column.dataField] == '0'))
+					return "";
+				else
+					
+					return tarPad(item[column.dataField].toString());
+			} 
+			
+private function reygoster(event:MouseEvent):void
+			{
+ 	   if (pararr[par.selectedIndex].goster.toString()=="1")  { 
+				if (pararr[par.selectedIndex].rey.toString()=="Müsbət rəy")
+				{
+			//	var outFile:File=WorkDir.resolvePath('ttnda/cache/' + faylarr[fayl.selectedIndex].fayl.toString());
+		//		var 	fname:String="-" + zeroPad(firmaarr[0].nomre.toString(), 7)+".htm";	
+					
+					var 	fname:String="-" + zeroPad(firmaarr[ekspn.selectedIndex].toString(), 7)+".doc";	
+					var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+			//	if (!(WorkDir.resolvePath('ttnda/cache/' + faylarr[fayl.selectedIndex].fayl.toString()).exists))
+			//	{
+			//	Downex.token=srv2.qdown('eksper',fname);
+					var folname='eksper/yr/'+fname.substr(1,4);
+					nlib.GetFtp(folname, fname,outFile,downexr);
+			//		ftp://172.16.0.19/eksper/yr/0006/ 
+				}
+	   }
+			
+		 function downexr( ):void {
+				
+				
+			
+			
+				
+				var docac2:Doclanch=new Doclanch();
+				docac2.openDoc(outFile.nativePath);
+				
+			}
+			
+		}	
+			
+			private function goster(event:MouseEvent):void
+			{
+				var 	fext:String=".jpg";	
+			//	fext="."+faylarr[fayl.selectedIndex].fayl.toString().substr(faylarr[fayl.selectedIndex].fayl.toString().length-3,3);
+			var aaa:Array=faylarr[fayl.selectedIndex].fayl.toString().split(".");
+			fext="."+aaa[aaa.length-1];
+				var 	fname:String="s" + zeroPad(faylarr[fayl.selectedIndex].id.toString(), 7);	
+				var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname+fext);
+			//	Down.token=srv2.qdown('eksper',fname);
+				var folname='eksper/sened/'+fname.substr(1,4);
+				nlib.GetFtp(folname , fname,outFile,downer);
+				
+			//	ftp://172.16.0.19/eksper/sened/0026/
+			
+			
+			function downer( ):void {
+			var docac2:Doclanch=new Doclanch();
+				docac2.openDoc(outFile.nativePath);
+				
+			}
+	}
+			
+			
+		
+			protected function axgtam(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (gtam.selected)
+				{
+					sened.variableRowHeight=true;
+					 
+					par.variableRowHeight=true;
+				}
+				else
+				{
+				sened.variableRowHeight=false;	
+					par.variableRowHeight=false;	
+				}
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" mode="cube" duration="200" direction="right"/>
+		<s:ZoomViewTransition id="zoomTrans" mode="out" duration="200"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="200"/>
+		<s:SlideViewTransition id="slideTrans" mode="cover" duration="200" direction="left"/>
+		
+	 
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+		
+	</s:actionContent>
+	
+
+	<s:titleContent>
+		<s:Label id="titul" width="1102" height="34" color="white" fontSize="28" horizontalCenter="-161" text="Müfəttişlik sistemi üzrə Tikinti obyektin Ekspertiza Rəyi" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="118" y="155" width="426" height="52" fontSize="27" fontWeight="bold" text="Ekspertiza rəyi                  iş №" textAlign="right" verticalAlign="middle"/>
+	<s:Label x="442" y="76" color="#0C66D6" text="Unvan:"/>
+	<s:Label id="nad" x="18" y="21" width="1235" height="50" backgroundAlpha="0.2" backgroundColor="#666363" color="#7D049B" fontSize="21" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="807" y="76.2" color="#0C66D6" text="Qeyd:"/>
+	<s:Label x="1130" y="75.9" color="#0C66D6" text="Təyinat:"/>
+	<s:Label id="ntey" x="1045" y="92.5" width="208" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nqeyd" x="660" y="93.25" width="348" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="121" y="76" color="#0C66D6" text="Rəy:"/>
+	<s:Label id="nrey" x="18" y="93" width="262" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nunv" x="326" y="93.25" width="287" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	
+	
+	
+	<s:DataGrid id="sened" x="37" y="263" width="1042" height="378" horizontalScrollPolicy="auto" doubleClick="faylaxtar(event)" doubleClickEnabled="true" textAlign="left" verticalScrollPolicy="auto">
+		
+		<s:columns>
+			<s:ArrayList> 
+				
+				<s:GridColumn dataField="Tad" width="390" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Adı"/>
+				<s:GridColumn dataField="ad" width="120" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Vəziyyəti"/>
+				
+				<s:GridColumn dataField="tarix" width="110" labelFunction="tnullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Tarix"/>
+				
+				<s:GridColumn dataField="nomre" width="110" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Nömrə"/>
+				
+				<s:GridColumn dataField="qnom" width="110" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Qeyd.nöm"/>
+				
+				<s:GridColumn dataField="orqan" width="130" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Digər"/>
+				
+				<s:GridColumn dataField="F" width="70" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer" headerText="Fayl"/>
+			</s:ArrayList>
+			
+		</s:columns>
+	</s:DataGrid>
+	<s:DataGrid id="fayl" x="1092" y="263" width="161" height="378" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto" enabled="false" doubleClick="goster(event)" doubleClickEnabled="true">
+		
+		<s:columns>
+			<s:ArrayList> 
+				
+				<s:GridColumn dataField="fayl" headerRenderer="components.HeaderRenderer" headerText="Fayl"/>
+			
+			</s:ArrayList>
+			
+		</s:columns>
+	</s:DataGrid>
+	<s:DataGrid id="par" x="37" y="263" width="1042" height="378" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto" visible="false" doubleClickEnabled="true" doubleClick="reygoster(event)">
+		
+		<s:columns>
+			<s:ArrayList>  
+			
+				
+				
+				<s:GridColumn dataField="rey" labelFunction="nullLabelFunction" width="100" headerRenderer="components.HeaderRenderer" headerText="Rəy"/>
+				
+				<s:GridColumn dataField="reyt" labelFunction="tnullLabelFunction" width="90" headerRenderer="components.HeaderRenderer" headerText="Rəy tarixi"/>
+			
+				<s:GridColumn dataField="sif" labelFunction="nullLabelFunction" width="160" headerRenderer="components.HeaderRenderer" headerText="Sifarişci"/>
+				
+				<s:GridColumn dataField="lay" labelFunction="nullLabelFunction" width="180" headerRenderer="components.HeaderRenderer" headerText="Layihəçi"/>
+				
+				<s:GridColumn dataField="isi" labelFunction="nullLabelFunction" width="207" headerRenderer="components.HeaderRenderer" headerText="İşin adı"/>
+				
+				<s:GridColumn dataField="tey" labelFunction="nullLabelFunction" width="103" headerRenderer="components.HeaderRenderer" headerText="Təyinat"/>
+				
+				<s:GridColumn dataField="mer" labelFunction="nullLabelFunction" width="100" headerRenderer="components.HeaderRenderer" headerText="Mərhələ"/>
+				
+				<s:GridColumn dataField="mal" labelFunction="nullLabelFunction" width="100" headerRenderer="components.HeaderRenderer" headerText="Mal.mənbəyi"/>
+				
+				
+				
+			
+				
+			</s:ArrayList>
+			
+			
+			
+		</s:columns>
+	</s:DataGrid>
+	<s:Button x="1011" y="652" width="235" height="39" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+
+	<s:ButtonBar id="bbb" x="37" y="216" width="1042" change="changeHandler(event);" selectedIndex="0" requireSelection="true">
+		
+		<s:ArrayCollection>
+			<fx:String>Sənədlər</fx:String> 
+			<fx:String>Parametrlər</fx:String> 
+		</s:ArrayCollection>
+	</s:ButtonBar>
+	 
+	
+	<s:ButtonBar requireSelection="true" id="ekspn" x="562" y="161" width="517" change="changeHandler2(event);" selectedIndex="0">		
+	</s:ButtonBar>
+	<s:CheckBox id="gtam" x="43" y="649" width="220" height="30" label="Sözləri tam yerləşdirmək" click="axgtam(event)" fontSize="12" skinClass="spark.skins.mobile.CheckBoxSkin"/>
+	 
+	
+
+</adaptive:ResponsiveStage></s:View>

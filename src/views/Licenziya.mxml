@@ -1,0 +1,298 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:adaptive="com.responsive.*" destructionPolicy="never" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" viewActivate="view2_activateHandler(event)" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			
+			
+			import components.*;
+			import com.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			
+			import spark.events.ViewNavigatorEvent;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				//		titul.text="Müfəttiş: " + mufo.uad;
+				//	ad.text=mufo.uad.toString();
+				
+			}
+			
+			[Bindable]
+			private var firmaarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var sifararr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var licarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var obyarr:ArrayCollection = new ArrayCollection();	
+			
+			
+			
+			protected function view2_activateHandler(event:Event):void            {    
+				
+				
+				
+				
+				//	sifarc.token=srv.execSQL(sqs,'DML','select M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id and M.id<40 ' ,10000)
+				
+				//	sifarc.token=srv.execSQL(sqs,'DML','select M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id  ' ,10000)
+				nlib.GetUrl('select M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id  ',resul);
+				
+			}  
+			
+			private function resul(event:Event):void {
+				trace("Rayon GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				//		var remma4:ArrayCollection=new ArrayCollection();  
+				//	var remma4:ArrayCollection=evt.result.Tables.Cedvel.Rows;		
+				
+				
+				
+				var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				
+				
+				
+				
+				sifararr= new ArrayCollection(xmlListCollection.toArray()); 
+				
+				//		sifarish.dataProvider=sifararr;
+				
+				//		axtarsifar.searchListCollection=sifararr;
+				//		axtarsifar.dataGrid=sifarish;
+				
+				//					var stem:String='select F.*, fn.ad as "fnad", hal.ad as "halad",  F.LQN+'+"' '"+'+convert(varchar,F.Ldt,3) as "qeydiyyat"  from Lisenziya.dbo.firma F  left join Lisenziya.dbo.fn as fn on fn.id=F.fn  left join Lisenziya.dbo.hal as hal on hal.id=F.hal where F.id<30'; 
+				var stem:String='select F.*, fn.ad as "fnad", hal.ad as "halad",  F.LQN+'+"' '"+'+convert(varchar,F.Ldt,3) as "qeydiyyat"  from Lisenziya.dbo.firma F  left join Lisenziya.dbo.fn as fn on fn.id=F.fn  left join Lisenziya.dbo.hal as hal on hal.id=F.hal '; 
+				nlib.GetUrl(stem  ,firmar);
+				
+				//	firmac.token=srv.execSQL(sqs,'DML',stem ,10000)
+				
+				
+			}
+			
+			private function firmar(event:Event):void
+				
+			{				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				firmaarr= new ArrayCollection(xmlListCollection.toArray()); 
+				axtarfirma.searchListCollection=firmaarr;
+				firma.dataProvider=firmaarr;
+				
+			}
+			
+			private function licaxtar(event:MouseEvent):void
+			{
+				
+				var pro:String="' '";
+				licarr.removeAll();
+				obyarr.removeAll();
+				///select I.*, T.ad as "Tad", T.kod as "Tkod" , T.fn  from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma=:firma
+				
+				//	select I.*, T.ad as "Tad", T.kod as "Tkod" , T.fn from Lisenziya.dbo.izin I left join Lisenziya.dbo.tizin T on T.id=I.tizin where firma=:firma',false);
+				
+				var steme:String='select T.ad as "Fad" from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma= '+
+					firmaarr[firma.selectedIndex].id.toString()+'  and I.ok<>'+pro+ ' order by T.kod';
+				//	licc.token=srv.execSQL(sqs,'DML',steme ,10000)
+				nlib.GetUrl(steme  ,licr);
+			}
+			
+			private function licr(event:Event):void {
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				licarr= new ArrayCollection(xmlListCollection.toArray()); 
+				
+				lic.dataProvider=licarr;
+				
+				// 'select O.*, T.ad as "Tad", B.ad as "Bad"  from Lisenziya.dbo.obyekt O  left join umumi.dbo.teyinat T on T.id=O.teyinat  left join umumi.dbo.bolge B on B.id=O.bolge  where O.firma=:firma
+				
+				//
+				var stemo:String='select O.*, T.ad as "tad", B.ad as "bad"  from Lisenziya.dbo.obyekt O  left join umumi.dbo.teyinat T on T.id=O.teyinat  left join umumi.dbo.bolge B on B.id=O.bolge  where O.firma='+firmaarr[firma.selectedIndex].id.toString();
+				nlib.GetUrl(stemo  ,obyr);	
+				//	obyc.token=srv.execSQL(sqs,'DML',stemo ,10000)
+				
+				
+				
+				
+			}
+			
+			private function obyr(event:Event):void {
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				obyarr= new ArrayCollection(xmlListCollection.toArray()); 
+				oby.dataProvider=obyarr;
+				
+			}
+			
+			
+			
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+			
+			
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			import spark.events.IndexChangeEvent; 
+			
+			private function changeHandler(event:IndexChangeEvent):void { 
+				
+				if (event.newIndex==0)
+				{
+					lic.visible=true;
+					oby.visible=false;
+				}
+				else
+					
+				{
+					lic.visible=false;
+					oby.visible=true;
+				}
+			} 
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="300" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="300" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1300"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="300" mode="cover"/>
+		
+		
+	</fx:Declarations>
+	
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(flipTrans)" icon="@Embed('assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label id="titul" width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="399" y="6" width="388" height="31" fontSize="27" fontWeight="bold" text="Lisenziyalı Şirkətlər" textAlign="center" verticalAlign="middle"/>
+		<components:SearchBar id="axtarfirma" x="27" y="46" width="717" dataGrid="{firma}" fontSize="14" searchListCollection="{firmaarr}"/>
+		
+		
+		<s:DataGrid id="firma" x="27" y="88" width="720" height="481" doubleClick="licaxtar(event)" doubleClickEnabled="true" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto">
+			
+			<s:columns>
+				<s:ArrayList> 
+					
+					<s:GridColumn dataField="ad" headerText="Ad" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="LN" headerText="LN" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="qeydiyyat" headerText="Qeydiyyat"/>
+					
+					<s:GridColumn dataField="fnad" headerText="Fəal.növü" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="huquqi" headerText="Hüquqi ünvan" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="faktiki" headerText="Faktiki ünvan" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="rusum" headerText="Rüsum" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="halad" headerText="Lisenziya"/>
+					
+				</s:ArrayList>
+				
+			</s:columns>
+			
+			
+		</s:DataGrid>
+		
+		<s:DataGrid id="lic" x="758" y="90" width="499" height="479" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto">
+			
+			<s:columns>
+				<s:ArrayList> 
+					
+					<s:GridColumn dataField="Fad" headerText="İşin adı"/>			
+				</s:ArrayList>
+				
+			</s:columns>
+		</s:DataGrid>
+		
+		
+		
+		
+		
+		<s:DataGrid id="oby" visible="false" x="520" y="451" width="721" height="193" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto">
+			
+			<s:columns>
+				<s:ArrayList> 
+					
+					<s:GridColumn dataField="id" headerText="No"/>
+					
+					<s:GridColumn dataField="bad" headerText="Bölgə" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="unvan" headerText="Ünvan" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="tad" headerText="Təyinat" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="qeyd" headerText="Qeyd " labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="reyno" headerText="Rəy No" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="reydt" headerText="Rəy tarix" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="signo" headerText="Siğ. No" labelFunction="nullLabelFunction"/>
+					
+					<s:GridColumn dataField="sigdt" headerText="Siğ. tarix" labelFunction="nullLabelFunction"/>
+					
+				</s:ArrayList>
+				
+			</s:columns>
+		</s:DataGrid>	
+		
+		<s:Button x="465" y="613" width="235" height="39" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+		<s:ButtonBar x="758" y="47" width="499" change="changeHandler(event);">
+			
+			<s:ArrayCollection>
+				<fx:String>Lisenziyalı işlər</fx:String> 
+				<fx:String>Şirkətə aid obyektlər</fx:String> 
+			</s:ArrayCollection>
+		</s:ButtonBar> 
+		
+		
+	</adaptive:ResponsiveStage></s:View>

@@ -1,0 +1,356 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Version 2.2.2 - Mar 30, 2011
+//
+// Delevoped by Robert Scheitlin
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:viewer="com.esri.viewer.*"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:esri="http://www.esri.com/2008/ags"
+				   xmlns:InfoTemplates="BaWidget.*"
+				   creationComplete="init()"
+				   width="100%"
+				    maxHeight="600"
+					 maxWidth="300" 
+					 currentStateChanging="vgroup1_showHandler(event)"
+				     >
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.layers.supportClasses.AttachmentInfo;
+			import com.esri.ags.layers.supportClasses.CodedValue;
+			import com.esri.ags.layers.supportClasses.CodedValueDomain;
+			import com.esri.ags.layers.supportClasses.Field;
+			import com.esri.ags.layers.supportClasses.LayerDetails;
+			import com.esri.ags.layers.supportClasses.Relationship;
+			import com.esri.ags.layers.supportClasses.TableDetails;
+			
+			import mx.binding.utils.ChangeWatcher;
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.styles.CSSStyleDeclaration;
+			import mx.styles.IStyleManager2;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.Button;
+			import spark.components.CheckBox;
+			[Bindable]
+			private var data:Object;
+			[Bindable]
+			private var map:Map;
+			
+			[Bindable]
+			private var contentList:ArrayCollection;
+			private var fields:Array;
+			[Bindable]
+			private var wsdlstr:String="http://ttnda.geoinfo.az/agslogin/flexsqladmin.asmx?WSDL";
+		
+			private var multiImgField:String;
+			private var multiImgPre:String;
+			private var multiImgSuf:String;
+			private var multiImgNext:String;
+			private var multiImgPrev:String;
+			private var isIconOrTextOrImg:String;
+			private var bLinkField:Boolean;
+		
+			private var titleField:String;
+
+			private var zoomScale:Number = 5000;
+			private var csvSep:String;
+			private var expBtnLbl:String;
+			private var exp2csvOptLbl:String;
+			private var exp2txtOptLbl:String;
+			private var _csvName:String;
+			
+			
+			
+			
+			[Embed(source="../assets/images/w_close.png")]
+			private var wCloseBtnClass:Class;
+			[Bindable]
+			private var tablexml:XML = new XML();
+			[Bindable]
+			public var adstr:String="8175";
+			//the layer name from the config xml file for the feature layer
+			private var layername:String;
+			
+		
+			
+			private function init():void
+			{
+				this.addEventListener(FlexEvent.DATA_CHANGE, setInfoParameters);
+				this.addEventListener("result", gresult); 
+			
+				infoClass = BaWidget;
+				execSQLResult.token=srv2.execSQL('Data Source=ttnda.az; Initial Catalog=sdedata; User ID=sde; Password=gissde','DHL','exec sde.obsecid  ' +adstr,1000);
+				
+				map = FlexGlobals.topLevelApplication.map;
+				var topLevelStyleManager:IStyleManager2 = FlexGlobals.topLevelApplication.styleManager;
+				var cssStyleDeclarationInfoWindow:CSSStyleDeclaration = topLevelStyleManager.getStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowCloseButton");
+				cssStyleDeclarationInfoWindow.setStyle("upSkin", wCloseBtnClass);
+				cssStyleDeclarationInfoWindow.setStyle("downSkin", wCloseBtnClass);
+				cssStyleDeclarationInfoWindow.setStyle("overSkin", wCloseBtnClass);
+				topLevelStyleManager.setStyleDeclaration("com.esri.ags.components.supportClasses.InfoWindowCloseButton", cssStyleDeclarationInfoWindow, false);
+				setInfoParameters(null);
+			}
+			
+			private function initConfig():void
+			{
+		/*		if (configXML)
+				{
+					titleField = configXML.titlefield;
+					var fds:String = configXML.fields;
+					
+					
+					
+					csvSep = configXML.csvseparator || ",";
+					
+					//get the layer name from the xml file
+					layername = configXML.layername;
+					
+					if (fds)
+					{
+						fields = fds.split(",");
+					}
+					
+					
+					
+					
+					multiImgField = configXML.multiimagefield;
+					multiImgPre = configXML.multiimagefield.@linkprefix;
+					multiImgSuf = configXML.multiimagefield.@linksuffix;
+					multiImgNext = configXML.multiimagefield.@nexttooltip;
+					multiImgPrev = configXML.multiimagefield.@prevtooltip;
+					if (Number(configXML.zoomscale) > 0)
+					{
+						zoomScale = Number(configXML.zoomscale);
+					}
+				}
+				*/
+			}
+			
+			public function set infoConfig(value:XML):void
+			{
+	//s			configXML = value;
+				initConfig();
+			}
+			
+			private function setInfoParameters(event:FlexEvent):void
+			{
+				if (data && fields)
+				{
+					try
+					{
+				
+						//Clear all previous link info
+						infoImage.source = "";
+						infoImage.visible = false;
+						infoImage.includeInLayout = false;
+				
+						mfotoc.nextButtonToolTip = multiImgNext;
+						mfotoc.prevButtonToolTip = multiImgPrev;
+                      
+					   
+						 
+						 adstr=data["id"].toString();
+				//		 lnum.text=adstr;
+					
+								mfotoc.multiImgPre = multiImgPre;
+								mfotoc.multiImgSuf = multiImgSuf;
+								mfotoc.visible = true;
+								mfotoc.includeInLayout = true;
+								
+								execSQLResult.token=srv2.execSQL('Data Source=172.17.253.200; Initial Catalog=sdedata; User ID=sde; Password=gissde','DHL','exec sde.obsecid  ' +adstr,1000);
+			
+			
+							
+			
+						
+						map.infoWindow.label = "Obyekt haqqında";
+					
+					}
+					catch (err:Error)
+					{
+						trace(err.message);
+					}
+					
+					
+				}
+				
+			}
+			
+			private var _infoClass:Class = BaWidget;
+			
+			public function set infoClass(value:Class):void
+			{
+				_infoClass = value;
+			}
+			
+			public function get infoClass():Class
+			{
+				return _infoClass;
+			}
+			
+			protected function zoom_clickHandler(event:MouseEvent):void
+			{
+				var here:MapPoint = map.toMap(new Point(map.infoWindow.anchorX, map.infoWindow.anchorY));
+				if (map.scale > zoomScale)
+				{
+					map.scale = zoomScale;
+				}
+				map.centerAt(here);
+			}
+			
+			
+			
+		
+			
+		
+			
+			private function gresult(evt:ResultEvent):void {
+				
+			
+				tablexml = XML(evt.result);
+			lnum.text=osid;
+				
+				lad.text=tablexml.NewDataSet.Table.ad.toString();
+				mfotoc.titulad=tablexml.NewDataSet.Table.ad.toString();
+				lrey.text=tablexml.NewDataSet.Table.reyi.toString();
+				ltey.text=tablexml.NewDataSet.Table.teyi.toString();
+				lunv.text=tablexml.NewDataSet.Table.unvan.toString();
+				lqeyd.text=tablexml.NewDataSet.Table.qeyd.toString();
+				lboll.text=tablexml.NewDataSet.Table.boll.toString();
+				ltar.text=tablexml.NewDataSet.Table.ytarix.toString();
+ 				mfotoc.iArray = tablexml.NewDataSet.Table.fotolar.toString().split(",");
+			}
+			private function gfault(evt:FaultEvent):void {
+				Alert.show(evt.type);
+				
+			}
+			
+
+			
+			
+			
+			protected function vgroup1_showHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				lnum.text=osid;
+				execSQLResult.token=srv2.execSQL('Data Source=172.17.253.200; Initial Catalog=sdedata; User ID=sde; Password=gissde','DHL','exec sde.obsecid  ' +osid,1000);	
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		
+		<s:WebService  wsdl="{wsdlstr}"     
+					   id="srv2" useProxy="false" showBusyCursor="true"  />
+		
+		
+		
+		
+		<s:CallResponder  id="execSQLResult"  
+						  result="gresult(event);"
+						  fault="gfault(event);"
+						  />
+		
+	 
+		 
+			<fx:String id="oad">3</fx:String>
+			<fx:String id="osid">4</fx:String>
+			 
+		
+		
+	</fx:Declarations>
+	
+	
+	<s:BorderContainer id="hc" x="0" y="0" height="305" backgroundColor="#534d4d"    horizontalCenter="0"  
+					   borderColor="#ccb49f" borderWeight="3" color="#FFFFFF" cornerRadius="8"
+					   fontWeight="normal" percentHeight="100" percentWidth="100">
+		<s:VGroup  id="infoCanvas" paddingBottom="5" paddingLeft="5" paddingRight="5"  paddingTop="3" horizontalCenter="0" horizontalAlign="left" >
+	
+			
+		<s:HGroup>
+			<s:Label text="Nömrəsi:" fontWeight="bold"/>
+			<s:RichText id="lnum" text="yoxdur" maxWidth="310"/>
+		</s:HGroup>
+		
+		<s:HGroup>
+			<s:Label text="Adı:" fontWeight="bold"/>
+			<s:RichText id="lad" text="yoxdur" maxWidth="310"/>
+		</s:HGroup>
+		
+		<s:HGroup>
+			<s:Label text="Rəy:" fontWeight="bold"/>
+			<s:RichText id="lrey" text="yoxdur" maxWidth="310" fontWeight="bold"/>
+		</s:HGroup>
+		<s:HGroup>
+			<s:Label text="Təyinat:" fontWeight="bold"/>
+			<s:RichText id="ltey" text="yoxdur" maxWidth="310"/>
+		</s:HGroup>
+		<s:HGroup>
+			<s:Label text="Rayon:" fontWeight="bold"/>
+			<s:RichText id="lboll" text="yoxdur" maxWidth="310" />
+		</s:HGroup>
+		<s:HGroup>
+			<s:Label text="Ünvan:" fontWeight="bold"/>
+			<s:RichText id="lunv" text="yoxdur" maxWidth="310"/>
+		</s:HGroup>
+		
+		<s:HGroup>
+			<s:Label text="Qeyd:" fontWeight="bold"/>
+			<s:RichText id="lqeyd" text="yoxdur" maxWidth="310"/>
+		
+		</s:HGroup>
+		
+		<s:HGroup>			
+			<s:Label text="Tarix:" fontWeight="bold"/>
+			<s:RichText id="ltar" text="yoxdur" maxWidth="310"/>		
+		</s:HGroup>
+		
+		
+		
+		
+		<s:VGroup id="linkTextGrp" width="100%" visible="false" includeInLayout="false" horizontalAlign="center" />
+		<mx:Image id="infoImage"
+			  height="150"
+			  buttonMode="true"
+		
+			  includeInLayout="false"
+			  maxWidth="{infoCanvas.width}"
+			  useHandCursor="true"
+			  visible="false" horizontalAlign="center"/>
+		
+		<InfoTemplates:MutiImageControl id="mfotoc" width="100%" visible="false" includeInLayout="false" cWidth="250"  />
+			
+			
+		<InfoTemplates:AttRelateInfoButtons id="buttons"
+			zoomToBtnClicked="zoom_clickHandler(event)"
+			zoomToBtnToolTip="Buna görə Böyüt "/>
+	</s:VGroup>
+	</s:BorderContainer>
+</s:VGroup>

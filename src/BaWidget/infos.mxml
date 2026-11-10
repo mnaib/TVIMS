@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				xmlns:InfoTemplates="BaWidget.*"
+				label="{data.id}" width="100%"    
+				  
+		 
+				>
+	<fx:Script>
+		<![CDATA[
+			import com.Azstring;
+			import com.nlib;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.utils.WebMercatorUtil;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.rpc.xml.SimpleXMLDecoder;
+			import mx.utils.StringUtil;
+			import mx.utils.XMLUtil;
+			
+			import spark.components.Button;
+			private var zoomScale:Number = 1000;
+			
+			 
+		 
+	 
+		]]>
+	</fx:Script>	
+ 
+				<s:BorderContainer backgroundColor="white"
+								   borderColor="black"
+								   color="0x353930"
+								   cornerRadius="5"
+								   minHeight="0"
+								   width="250"
+								   maxWidth="400"
+								   minWidth="0">
+					<s:layout>
+						<s:VerticalLayout paddingBottom="5" 
+										  paddingLeft="5"
+										  paddingRight="5"
+										  paddingTop="5"/>
+					</s:layout>
+					
+				  
+					
+					<s:HGroup>
+						<s:Label id="lad" text="{data.oad}"  maxWidth="245" />
+					</s:HGroup>
+					
+					 
+			 
+				 
+				</s:BorderContainer>
+	 
+	 
+</s:ItemRenderer>

@@ -1,0 +1,1015 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:adaptive="com.responsive.*" deactivate="deact(event)" destructionPolicy="never" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" creationComplete="view1_creationCompleteHandler(event)" viewActivate="init(event)" styleName="tvimsScreen">
+ 
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="200" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="200" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="200"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="200" mode="cover"/>
+		
+		<s:DateTimeFormatter id="dateFormatter" dateTimePattern="dd/MM/yyyy/"/>
+		
+	
+	</fx:Declarations>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			import com.Azstring;
+			import com.MatrixTransformer;
+			import com.adobe.serializers.xml.XMLDecoder;
+			
+			import components.*;
+			
+			import flash.display.BitmapData;
+			import flash.events.Event;
+			import flash.events.EventDispatcher;
+			import flash.events.PressAndTapGestureEvent;
+			import flash.events.TimerEvent;
+			import flash.events.TransformGestureEvent;
+			import flash.filesystem.File;
+			import flash.filesystem.FileMode;
+			import flash.filesystem.FileStream;
+			import flash.filters.ColorMatrixFilter;
+			import flash.geom.Matrix;
+			import flash.geom.Point;
+			import flash.ui.Multitouch;
+			import flash.ui.MultitouchInputMode;
+			import flash.utils.ByteArray;
+			import flash.utils.Timer;
+			
+			import mx.binding.utils.ChangeWatcher;
+			import mx.charts.DateTimeAxis;
+			import mx.charts.HitData;
+			import mx.charts.effects.SeriesInterpolate;
+			import mx.charts.series.BarSeries;
+			import mx.charts.series.LineSeries;
+			import mx.charts.series.items.BarSeriesItem;
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.events.MoveEvent;
+			import mx.events.StateChangeEvent;
+			import mx.formatters.DateFormatter;
+			import mx.graphics.codec.JPEGEncoder;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.styles.CSSStyleDeclaration;
+			import mx.styles.IStyleManager2;
+			import mx.utils.ArrayUtil;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.Button;
+			import spark.components.CheckBox;
+			import spark.components.Image;
+			import spark.events.DropDownEvent;
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+			import spark.formatters.NumberFormatter;
+			import spark.managers.PersistenceManager;
+			
+			protected var myCam:CameraUI;
+			private var fname:String;
+			
+			protected var roll:CameraRoll;
+			
+			
+			[Bindable]
+			private static var qeydfil:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private static var qeydtam:ArrayCollection=new ArrayCollection();
+			
+		 
+			
+			[Bindable]
+			private static var faylarr:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private static var fayltam:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			
+			 
+			
+			[Bindable]
+			private var datetext:String="'2011-8-15'";
+			
+			[Bindable]
+			private var fotoids:String="";
+			[Bindable]
+			private var kocur:Boolean=true;
+			[Bindable]
+			private var fotostt2 :String="";
+			
+			[Bindable]
+			private var merhid:int=-1;
+			
+			[Bindable]
+			private var nisbetstr:String="";
+			
+			[Bindable]
+			private var eslad:String='0';
+			[Bindable]
+			private var filenamefoto:File;
+			
+			[Bindable]
+			private var fnamed:String="nofoto.jpg";
+			[Bindable]
+			private var iArray:Array;
+			[Bindable]
+			private var mufo:Mufo;
+			
+		 
+		 
+			
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			[Bindable]
+			private var pressitem:Boolean=false;
+			
+			
+			[Bindable]
+			private static  var remm:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private static var merfil:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private static var merrem:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private var remm4:ArrayCollection=new ArrayCollection();
+			
+			
+			[Bindable]
+			private var meray:Boolean=true;
+			
+			[Bindable]
+			private var lastimage:String="";
+			
+			[Bindable]
+			private var sq1:String="exec [dbo].[MobGetPozMerhele]	@obyekt=";  
+			
+			// Select ISNULL( F.id,0) as fid, ISNULL( F.ad,'yox' )as fad, M.ad, M.id,M.ok,M.dt from OPENDATASOURCE ( 'SQLOLEDB', 'Data Source=172.16.0.18; User ID=gisuser; Password=G1s_2014_sqs' ).[Mufettis].[dbo].[foto] F right join OPENDATASOURCE ( 'SQLOLEDB', 'Data Source=172.16.0.18; User ID=gisuser; Password=G1s_2014_sqs' ).[Mufettis].[dbo].[merhele] M on M.id=ISNULL(F.merhele,M.id) where M.obyekt=@Tint
+			
+	 
+			[Bindable]
+			private var docyol:String='ttnda/Mufettis/cache/';
+			
+		 
+			private var z1:Number=1;
+			private var z2:Number=1;
+			
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+			
+			
+			
+			 
+			
+			
+ 
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+		 
+			}
+			
+			 
+			private function fault6(evt:FaultEvent):void
+			{
+				yfoto.visible=true;
+				yfotoy.visible=true;
+				faylac.visible=true;
+				
+				
+				pressitem=false;
+			}
+			
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				nnad.text=Azstring.Azrec(mufo.oad.toString());
+				
+				//		nnrey.text=mufo.orey.toString();
+				merfil.removeAll();
+				qeydfil.removeAll();
+				faylarr.removeAll();
+				fayltam.removeAll();
+				qeydtam.removeAll();
+				nnunv.text=Azstring.Azrec(mufo.oray.toString()) + ", " + mufo.ounv.toString();
+				nnqeyd.text=Azstring.Azrec(mufo.oqeyd.toString());
+				//		nntey.text=mufo.otey.toString();
+				
+				pressitem=false;
+				
+				merrem.removeAll();
+				
+			 
+		//		execSQLResultmer.token=srv.execSQL(sqs1, 'DML', sq1 + mufo.osid.toString(), 1000);
+				
+				nlib.GetUrl(sq1 + mufo.osid.toString()+',@E='+mufo.usid.toString() ,resultmer);	
+				
+				if (CameraUI.isSupported)
+				{
+					
+					myCam=new CameraUI();
+					myCam.addEventListener(MediaEvent.COMPLETE, onComplete);
+				}
+				
+				if (CameraRoll.supportsBrowseForImage)
+				{
+					trace("camera roll is supported");
+					roll=new CameraRoll();
+					
+					roll.addEventListener(MediaEvent.SELECT, onComplete);
+				}
+				Multitouch.inputMode=MultitouchInputMode.GESTURE;
+				
+				
+				
+			}
+			private function init(event:ViewNavigatorEvent):void
+			{
+				startsql();
+				datass=mufo.osid;
+	 
+				
+			}
+			
+		//	"2012-12-14T01:39:27.71+04:00"
+			public function tarPad(number:String):String
+			{
+				var ret:Array=number.split("T")[0].toString().split("-");
+				if (ret.length<2)  return number;
+				 
+				 
+				return zeroPad(ret[2].toString(),2)+"."+zeroPad(ret[1].toString(),2)+"."+ret[0].toString();
+			}
+		 
+			private function resultmer(event:Event):void
+			{
+				
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				var sid:String="";
+				 
+ 				var merh:ArrayCollection=new ArrayCollection();
+				  	for each (var s:XML in xmlResult.Cedvel)
+				{ 
+					var oob2:Object=new Object();					 
+					oob2.id=s.id.toString();
+					oob2.ad=s.ad.toString();
+					oob2.dt=s.dt.toString();
+					merh.addItem(oob2);
+					sid=sid+s.id.toString()+",";
+				 	
+				}
+ 				merfil=merh;
+ 				merhele.dataProvider=null;
+				merhele.dataProvider=merfil;
+				merhele.selectedIndex=0;
+				if (merhid!=-1)	merhele.selectedIndex=merhid;
+				if (sid.length>1)
+				{
+		 			 
+					sid=sid.substr(0, sid.length - 1)+")";
+		//		execqeyd.token=srv.execSQL(sqs2, 'DML', "SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid , 1000);
+				nlib.GetUrl("SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid ,resultq);
+				}
+				
+			}
+			
+			private function resultq(event:Event):void
+			{
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				var merhd:ArrayCollection=new ArrayCollection();
+				var sid:String="";
+				
+				for each (var s:XML in xmlResult.Cedvel)
+				{
+					
+					
+					var oob2:Object=new Object();
+					
+					oob2.id=s.id.toString(); 
+					oob2.metn=s.metn.toString();
+					oob2.merh= s.merhele.toString() ;
+					oob2.mud=tarPad(s.muddet.toString()); 
+					oob2.ok=s.ok.toString()=="ü"?"OK":"";
+					oob2.tarix=tarPad(s.tarix.toString());
+						oob2.dt=tarPad(s.dt.toString());
+					sid=sid+s.id.toString()+",";
+					merhd.addItem(oob2);
+				}
+				
+ 				qeydfil.source=merhd.source;
+				pozuntu.dataProvider=null;
+				pozuntu.dataProvider=qeydfil;
+				pozuntu.selectedIndex=-1;
+				pozuntu.selectedIndex=qeydfil.length-1;
+				merhele.selectedIndex=merfil.length-1;
+				if (sid.length>1)	sid=sid.substr(0, sid.length - 1);
+			
+		//		execfayl.token=srv.execSQL(sqs2, 'DML', "SELECT *  FROM [Mufettis].[dbo].[fpozuntu] where pozuntu in  ( "+ sid+")", 1000);
+				nlib.GetUrl("SELECT *  FROM [Mufettis].[dbo].[fpozuntu] where pozuntu in  ( "+ sid+")",resultfayl);	
+			}
+		
+			
+			private function plabel(item:Object):String
+			{
+				return item.tarix + " - " + item.mud+(item.ok=='OK'?" - OK":"");
+			}
+
+			private function resultfayl(event:Event):void
+			{
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				var merh:ArrayCollection=new ArrayCollection();
+				
+				
+				for each (var s:XML in xmlResult.Cedvel)
+				{
+					var oob2:Object=new Object();					
+					oob2.id=s.id.toString();
+					oob2.ad=s.ad.toString();
+					oob2.qeyd=s.pozuntu.toString();
+					oob2.dt =tarPad(s.dt .toString());
+					oob2.gen=  oob2.ad.substr( oob2.ad.lastIndexOf( '.' )+1, oob2.ad.length );
+					merh.addItem(oob2);
+				}				
+				fayltam.source=merh.source;				
+				fayll.dataProvider=null;
+				fayll.dataProvider=fayltam;
+				pozuntu.selectedIndex=-1;
+				pozuntu.selectedIndex=qeydfil.length-1;
+				
+			}
+		
+		
+			private function result6(event:ResultEvent):void
+			{
+				var dataf:ByteArray;
+				var aresult:ArrayCollection;
+				var result:Array;
+				aresult=new ArrayCollection([event.result]);
+				
+				result=aresult[0].source;
+				
+				dataf=result[0].bayt;
+				var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + result[0].name.toString());
+				
+				
+				var outStream:FileStream=new FileStream();
+				outStream.open(outFile, FileMode.WRITE);
+				outStream.writeBytes(dataf, 0, dataf.length);
+				// close it 
+				outStream.close();
+				pressitem=false;
+				img.source=null;
+				img.source=outFile.url;
+			
+			}
+			
+			
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			
+	
+			protected function merhele_changeHandler():void
+			{
+				
+				if (merhele.selectedIndex < 0) return;
+				
+				var merr3:Array=new Array();
+				
+				var sx:String=merhele.selectedItem.id.toString();
+				qeydtam.removeAll(); 
+				
+				for (var i:int=0;  i<qeydfil.length; i++)
+				{
+					if (qeydfil[i].merh==sx)						
+						merr3.push(qeydfil[i]);
+					
+				}
+				qeydtam.source=merr3;
+				pozuntu.dataProvider=null;
+				pozuntu.dataProvider=qeydtam;
+				pozuntu.selectedIndex=pozuntu.dataProvider.length-1;
+			if (pozuntu.selectedIndex>-1)	Qeydmm.text=pozuntu.selectedItem.metn.toString();
+				
+			 	mdate.text=tarPad(merfil[merhele.selectedIndex].dt.toString());
+		//	 mdate.text= getdate(merfil[merhele.selectedIndex].dt.toString() as Date);
+			}
+			private function getdate(dd:Date):String
+			{	
+				return zeroPad(dd.date.toString(),2) +"."+zeroPad((dd.month+1).toString(),2)+"."+dd.fullYear;				
+			}
+			private function gettime(dd:Date):String
+			{				
+				return zeroPad(dd.hours.toString(),2) +":"+zeroPad(dd.minutes.toString(),2)+":"+zeroPad(dd.seconds.toString(),2);				
+			}
+			
+			protected function pozuntu_changeHandler():void
+			{
+				// TODO Auto-generated method stub
+				if  (pozuntu.caretIndex==-1) return;
+				
+				var sx:String= pozuntu.selectedItem.id.toString()
+				
+				faylarr.removeAll(); 
+				Qeydmm.text=pozuntu.selectedItem.metn.toString()
+				
+				var merr3:Array=new Array();
+				
+				
+				for (var i:int=0; i < fayltam.length; i++)
+				{
+					if (fayltam[i].qeyd==sx)
+					{
+						
+						merr3.push(fayltam[i]);
+					}
+					
+				}
+				
+				
+				faylarr.source=merr3;
+				fayll.dataProvider=null;
+				fayll.dataProvider=faylarr;	
+				fayll.selectedIndex=faylarr.length-1;
+			}	
+		
+			
+			private function result4(event:Event):void
+			{
+				
+			}
+				// sqlc is a variable we need to define the connection to our database
+			private var sqlc:SQLConnection=new SQLConnection();
+			// sqlc is an SQLStatment which we need to execute our sql commands
+			private var sqls:SQLStatement=new SQLStatement();
+			
+			// ArrayCollection used as a data provider for the datagrid. It has to be bindable so that data in datagrid changes automatically when we change the ArrayCollection
+			
+			// function we call at the begining when application has finished loading and bulding itself
+			private function startsql():void
+			{
+				// first we need to set the file class for our database (in this example test.db). If the Database doesn't exists it will be created when we open it.
+				var db:File=File.applicationStorageDirectory.resolvePath("ttnda/Mufettis/fotolar.db");
+				// after we set the file for our database we need to open it with our SQLConnection.
+	if (!sqlc.connected)			sqlc.openAsync(db);
+				// we need to set some event listeners so we know if we get an sql error, when the database is fully opened and to know when we recive a resault from an sql statment. The last one is uset to read data out of database.
+				sqlc.addEventListener(SQLEvent.OPEN, db_opened);
+				sqlc.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLEvent.RESULT, resault);
+				
+			}
+			
+			private function resault(e:SQLEvent):void
+			{
+				
+			}
+			
+			private function error(e:SQLErrorEvent):void
+			{
+				///	Alert.show(e.toString());
+			}
+			
+			private function db_opened(e:SQLEvent):void
+			{
+				// when the database is opened we need to link the SQLStatment to our SQLConnection, so that sql statments for the right database.
+				// if you don't set this connection you will get an error when you execute sql statment.
+				sqls.sqlConnection=sqlc;
+				// in property text of our SQLStatment we write our sql command. We can also combine sql statments in our text property so that more than one statment can be executed at a time.
+				// in this sql statment we create table in our database with name "test_table" with three columns (id, first_name and last_name). Id is an integer that is auto incremented when each item is added. First_name and last_name are columns in which we can store text
+				// If you want to know more about sql statments search the web.mufo.
+				sqls.text="CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,merad TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				
+				//		sqls.text="CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,merad TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				
+				// after we have connected sql statment to our sql connection and writen our sql commands we also need to execute our sql statment.
+				// nothing will change in database until we execute sql statment.
+				sqls.execute();
+				// after we load the database and create the table if it doesn't already exists, we call refresh method which i have created to populate our datagrid
+				
+				
+			}
+			
+			// function to add item to our database
+			private function aaddItem(pozaad:String, meraad:String, fotostt:String,faylaad:String):void
+			{
+				var vvvv:ByteArray=new ByteArray();
+				var tar:Date=new Date();
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls.text="INSERT INTO fotos (osid,oad,uid,merad,pozad,faylad,filead,tarix,gun,ay,il,icra) VALUES( '" +
+					mufo.osid + "','" + mufo.oad + "','" + mufo.usid + "','" + meraad + "','" + pozaad + "','" + faylaad + "','"  
+					+ fotostt + "','"+ dateFormatter.format(tar).toString() + "'," + 
+					tar.date.toString() + "," + tar.month.toString() + "," + 
+					tar.fullYear.toString() + ", false"+ ");";
+				
+				
+				sqls.execute();
+				
+			}
+			
+			
+			protected function deact(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				sqlc.close();
+				
+			}
+			
+			
+	
+			protected function imtina_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				img.source=null;
+				img.source=lastimage;
+			
+				imtina.visible=false;
+				yaddas.visible=false;
+				serkoc.visible=false;
+				yfoto.visible=true;
+				yfotoy.visible=true;
+				faylac.visible=true;
+				merbut.enabled=true;
+				merad.enabled=true;
+				geri.enabled=true;
+				
+				
+				
+				kocur=true;
+				
+			}
+			
+			
+			protected function faylac_clickHandler(event:MouseEvent):void
+			{
+			 
+				//		Down.token=srv2.qdown('APK','UpdaterDemo.png');
+				if (pressitem)
+					return;	
+				faylac.enabled=false;
+				//		sf := TamToStr(1000000000+Q[6].FieldByName('id').AsInteger)+'.'+Q[6].FieldByName('gen').AsString;
+				
+				//	1000000042.as
+				//	1000000041.as
+				eslad=fayll.selectedItem.ad;
+				var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' +eslad);
+				fname=(1000000000 + parseInt(fayll.selectedItem.id.toString())).toString();
+				fname='p'+fname.substr(1,fname.length-1);
+		//		Down.token=srv2.qdown('Mufettis',fname);
+	//		//	nlib.GetFtpn('Mufettis', fname,downr);
+				nlib.GetFtp('Mufettis', fname,outFile,downr);
+				pressitem=true;
+			
+			
+		  function downr(event:Event):void {
+				
+				 	faylac.enabled=true;
+				pressitem=false;
+				var docac2:Doclanch=new Doclanch();
+				docac2.openDoc(outFile.nativePath);
+			
+				}
+			}
+			
+			private function resultqy(event:Event):void
+			{
+				
+				MobileAlert.show("Qeyd əlavə edildi." , 'Məlumat');	
+		//		execSQLResult2.token=srv.execSQL(sqs2, 'DML', sq1 + data.toString(), 1000);
+				
+				
+			}
+			protected function saxlab_clickHandler(event:MouseEvent):void
+			{
+		//		execqeydmm.token=srv.execSQL(sqs2, 'DML', "UPDATE [Mufettis].[dbo].[pozuntu] SET [metn] = N'" 
+		//			+Qeydmm.text+"',[dt]=getdate()   WHERE [id] =  "+   pozuntu.selectedItem.id.toString(), 1000); 	
+				var prot:String="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+					" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+					"'Mobil', 'Mobil', getdate()"+","+ mufo.usid+", 6 ,8 ,"+ mufo.osid +")  exec Mufettis.dbo.[MobKrit] "+ mufo.osid ;
+				
+				nlib.GetUrl(prot+" "+"UPDATE [Mufettis].[dbo].[pozuntu] SET [metn] = N'" 
+					+Qeydmm.text+"',[dt]=getdate()   WHERE [id] =  "+   pozuntu.selectedItem.id.toString(),resultqmm);	
+				
+			}
+			protected function fayll_changeHandler(event:FlexEvent):void
+			{	fayld.text="" ;
+				img.source=null;
+				if  (fayll.caretIndex==-1) return;
+				 
+			fayld.text=fayll.selectedItem.ad.toString() ;
+			var genext:String=fayll.selectedItem.gen.toString();
+		 
+			 
+			
+			if ((genext=="jpg") || (genext=="png") || (genext=="bmp")	|| (genext=="tif") || (genext=="gif"))
+			{
+				var inFile:File=WorkDir.resolvePath(docyol+fayld.text);	 
+				img.source=inFile.url;
+			}
+			else
+				img.source="assets/nofoto.jpg";
+		
+			}
+			private function nullf(item:String):String {
+				if (item  == '<NULL>')
+					return "";
+				else
+					return item ;
+			}
+			private function resultqmm(event:Event):void
+			{
+			//	var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				MobileAlert.showt(' Dəyişiklər saxlanıldı !', 'Məlumat');
+				var sid:String="";
+				for (var i:int=0;  i<merfil.length; i++)
+				{
+					
+					sid= sid+merfil[i].id+",";
+					
+				}
+				if (sid.length>1)	sid=sid.substr(0, sid.length - 1);		
+		//		execqeyd.token=srv.execSQL(sqs2, 'DML', "SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid+")" , 1000);
+				nlib.GetUrl("SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid+")" ,resultq);
+				
+			}	
+			
+		 
+			
+			protected function merder(dey:Boolean):void
+				{
+					// TODO Auto-generated method stub
+					var popup:tpoz;
+				
+					popup = new tpoz();
+					 popup.osid=mufo.osid;
+					  popup.usid=mufo.usid;
+				if (dey)
+				{popup.mid= "change";
+					popup.okbs=pozuntu.selectedItem.ok=="OK";
+					popup.tit="Pozuntuya dəyişikləri əlavə edin"
+			popup.merhid=pozuntu.selectedItem.id;
+						}
+				else
+				{	popup.okbs=false;
+					popup.mid= "new";
+					popup.tit="Yeni Pozuntu əlavə edin"
+			popup.merhid=merhele.selectedItem.id;
+						}	
+		//		popup.md2=pozuntu.selectedItem.mud;
+		//	popup.md1=pozuntu.selectedItem.tarix;
+					
+				popup.addEventListener(PopUpEvent.CLOSE, calex, false, 0, true);	 
+				popup.open(this,true);
+						PopUpManager.centerPopUp(popup );
+						
+						
+			}	
+			function calex(evts:PopUpEvent):void
+				
+			{	
+				
+				if ( evts.target.mid=="10000") return;
+			
+				var sid:String="";
+				for (var i:int=0;  i<merfil.length; i++)
+				{
+					
+					sid= sid+merfil[i].id+",";
+					
+				}
+				if (sid.length>1)	sid=sid.substr(0, sid.length - 1);		
+			//	execqeyd.token=srv.execSQL(sqs2, 'DML', "SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid+")" , 1000);
+				nlib.GetUrl("SELECT *  FROM [Mufettis].[dbo].[pozuntu] where [merhele] in ("+ sid+")" ,resultq);
+				
+			}		
+			private var pozid:String="";
+			private var	pp: faylsec= new faylsec();
+			protected function fotoy(event:MouseEvent):void
+			{
+			 
+				pozid=pozuntu.selectedItem.id;
+				//		img.source =null; 
+				var oFile:File=new File();
+				//		img.source="assets\Slide5.jpg"
+				//	oFile=File.applicationStorageDirectory;
+				var m_fileReference:flash.net.FileReference;
+				//	m_fileReference = new flash.net.FileReference();
+				var txtFilter:FileFilter = new FileFilter("Text", "*.as;*.jpg;*.doc;*.css;*.html;*.txt;*.xml");
+				
+				//		m_fileReference.browse([txtFilter]);
+				var	pp = new faylsec();
+			
+				pp.x=280;
+				pp.y=100;
+				pp.imgg=img;
+				pp.imgl=fayld;
+				pp.addEventListener(PopUpEvent.CLOSE, fileselect, false, 0, true);	 
+			 
+				pp.open(this, true);
+			
+			}
+			
+			function fileselect(evts:PopUpEvent):void
+				
+			{	
+				
+				if ( evts.target.returnObject==null) return;
+				
+				
+				faylyuk(evts.target.returnObject.url);
+				
+			}		
+			
+			 
+			protected function fotocek(event:MouseEvent):void
+			{
+	 
+				
+				if (CameraUI.isSupported)
+				{
+					
+					myCam=new CameraUI();
+					myCam.launch(MediaType.IMAGE);	
+					myCam.addEventListener(MediaEvent.COMPLETE, onComplete);
+					pozid=pozuntu.selectedItem.id;
+				}
+				
+				
+			}
+			
+			
+			protected function onComplete(evtt:MediaEvent):void
+			{
+				
+				var ff:File=evtt.data.file as File;
+				faylyuk(ff.url);
+				
+				
+				
+			}
+			
+			private function  faylyuk(fys:String):void
+			{
+			
+				var 	fy:File=new File(fys);
+				eslad=fy.name;
+				yfoto.visible=false;
+				yfotoy.visible=false;
+				faylac.visible=false;
+				serkoc.visible= true;
+				imtina.visible=true;
+				yaddas.visible=true;
+				
+		//		if (!sqlc.connected) 
+	//				sqlc.openAsync(db);
+				img.source="assets/nofoto.jpg";
+				
+				var tar:Date=new Date();
+				
+				var 	fotostt2:String ="";
+				fotostt2="x"+datass.toString()+"x"+tar.date.toString() +  tar.month.toString() +   tar.fullYear.toString()+"x"+tar.hours.toString()+ tar.minutes.toString()+tar.seconds.toString()+tar.milliseconds .toString()+"."+fy.extension.toLowerCase();
+				
+				var filemov:File=File.applicationStorageDirectory.resolvePath(docyol + fotostt2);
+				filenamess=fy.name;
+				fy.copyTo(filemov, true);
+				
+				filenamefoto=filemov;
+				if ((filenamefoto.extension=="jpg") || (filenamefoto.extension=="png") || (filenamefoto.extension=="bmp")	|| (filenamefoto.extension=="tif") || (filenamefoto.extension=="gif"))
+					img.source=filenamefoto.url;
+				
+			 
+				
+			}	
+			protected function serkoc_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				kocur=true;
+			//	execfn.token=srv.execSQL(sqs2, 'DHL',"EXEC Mufettis.dbo.MobNovbetiID" , 1000);
+				nlib.GetUrl("EXEC Mufettis.dbo.MobNovbetiID"  ,resultfn);
+					
+			}
+			
+			protected function yaddas_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				kocur=false;
+		//		execfn.token=srv.execSQL(sqs2, 'DHL',"EXEC Mufettis.dbo.MobNovbetiID" , 1000);
+				nlib.GetUrl("EXEC Mufettis.dbo.MobNovbetiID"  ,resultfn);		
+			}
+			
+		 
+			
+			
+			private var filename:String='0';
+		 
+			[Bindable]
+			private var filenamess:String='0';
+			[Bindable]
+			private var datass:String='0';
+			[Bindable]
+			private var fileid:String='0';
+			
+			private function  resultfn(event:Event):void
+			{
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				img.source="assets/nofoto.jpg";
+			//	tablexml =XML(evt.result);
+				//	nid=nullf(tablexml.NewDataSet.Table.id.toString()); 
+				fileid=xmlResult.Cedvel.id.toString();
+				filename=(1000000000 + parseInt(fileid)).toString(); 
+				filename='p'+filename.substr(1,filename.length-1);
+				
+				var zoutFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + filename);
+				var zfilemov:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + filenamefoto.name );
+				
+				zfilemov.copyTo(zoutFile, true);
+				
+				var inFile:File;
+				
+				if (kocur)
+				{
+					inFile=zoutFile;
+					
+					
+				}
+					
+				else
+				{	
+					var appDir:File=File.applicationDirectory;
+					inFile=appDir.resolvePath('assets/fotomob.jpg');
+					
+					var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/foto/' + filename);
+					 
+					
+					zoutFile.copyTo(outFile, true);
+					aaddItem(eslad, datass, filename,filename);
+					
+				}
+				
+				
+		//		var dataf:ByteArray=new ByteArray();
+			//	var inStream:FileStream=new FileStream();
+		//		inStream.open(inFile, FileMode.READ);
+		//		inStream.readBytes(dataf, 0, dataf.length);
+		//		uplods.token=srv2.qup(dataf, filename, "Mufettis");
+				nlib.UpFtp(inFile,  "Mufettis",filename,uploadresults);
+		//		inStream.close();
+				
+				
+				if (filenamefoto.exists)	filenamefoto.deleteFile();
+				
+			}
+			
+			private function uploadresults(event:Event):void
+			{
+				 
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				
+				var		result:String=ss4.soap_Body.qupResponse.qupResult.toString();
+				
+				if (result.substring(0, 6) == "Upload")
+					
+				{ 
+					var prot:String="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+						" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+						"'Mobil', 'Mobil', getdate()"+","+ mufo.usid+", 5  ,16 ,"+ mufo.osid +")" ;
+					
+				//	fotoadd.token=srv.execSQL(sqs2, 'DML', "insert into Mufettis.dbo.fpozuntu(id,pozuntu,ad) Values("+fileid+","+ pozid+",'"+eslad+"')" , 1000);   
+					nlib.GetUrl(prot+"   "+"insert into Mufettis.dbo.fpozuntu(id,pozuntu,ad) Values("+fileid+","+ pozid+",'"+eslad+"')  ",fotoaddresult);	
+					
+					if (!kocur )  MobileAlert.show(' Şəkil Yaddaşa QEYD edildi!', 'Məlumat');
+					   else		  MobileAlert.show(' Şəkil Serverə  yüklənmisdir!', 'Məlumat');
+
+					}
+				
+			}
+			
+			private function  resultfaylss(event:Event):void
+			{
+				
+				
+				
+			}
+			private function fotoaddresult(event:Event):void
+			{
+				
+				serkoc.visible= false;
+				imtina.visible=false;
+				yaddas.visible= false;
+				yfoto.visible=true;
+				yfotoy.visible=true;
+				faylac.visible=true;
+
+				
+				pressitem=false;
+			 
+				var sid="";
+				for (var i:int=0;  i<qeydfil.length; i++)
+				{
+									
+				sid= sid+qeydfil[i].id+",";
+					
+				}
+				if (sid.length>1)	sid=sid.substr(0, sid.length - 1);
+	//			execfayl.token=srv.execSQL(sqs2, 'DML', "SELECT *  FROM [Mufettis].[dbo].[fpozuntu] where pozuntu in  ( "+ sid+")", 1000);
+				nlib.GetUrl("SELECT *  FROM [Mufettis].[dbo].[fpozuntu] where pozuntu in  ( "+ sid+")",resultfayl);		
+				
+			}
+			
+		 
+			
+		]]>
+	</fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Button id="yfoto" x="1001" y="599" width="110.5" height="42.5" label="Şəkil çək" click="fotocek(event)" color="#A102FC" enabled="{(( pozuntu.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" fontSize="20"/>
+	<s:Button id="yfotoy" x="862" y="599" width="110.5" height="42.5" label="Yeni Fayl" click="fotoy(event)" color="#A102FC" enabled="{(( pozuntu.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" fontSize="20"/>
+	<s:Button id="merbut" x="605" y="598" width="70.65" height="43" label="Yeni" click="merder(false)" color="#A102FC" enabled="{(( merhele.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" fontSize="20"/>
+	<s:Button id="texb" x="701" y="598" width="70.65" height="43" label="TBB" click="{navigator.pushView(views.TexYeni)}" color="#A102FC" enabled="{(( merhele.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" fontSize="20"/>
+	<s:Button id="merad" x="505" y="599" width="77.65" height="43" label="Dəyiş" click="merder(true)" color="#A102FC" enabled="{(( pozuntu.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" fontSize="20"/>
+	 <s:Panel x="862" y="326" width="384" height="261">
+	 	<s:Image id="img" visible="true" width="382" height="228" maintainProjectionCenter="true" scaleMode="stretch"/>
+		 <s:Label id="fayld" x="0" y="-32" width="383" height="34" text="Fayl adi" textAlign="center" verticalAlign="middle"/>
+	 </s:Panel>				 
+	<s:Button id="saxlab" x="407.5" y="600" width="70.65" height="43" label="Saxla" enabled="{(( pozuntu.dataProvider.length) &amp;&amp; (mufo.duzelden)) }" accentColor="0x565656" click="saxlab_clickHandler(event)" color="#C545F4" fontSize="18" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="faylac" x="1136.5" y="599.25" width="110.5" height="42.5" label=" Faylı aç" enabled="{fayll.dataProvider.length}" accentColor="0x565656" click="faylac_clickHandler(event)" color="#C545F4" fontSize="18" fontWeight="bold" styleName="customButton"/>
+	
+	<s:SpinnerListContainer x="52" y="128.05" width="276" height="189">
+		<s:SpinnerList id="merhele" width="271" wrapElements="false" height="177" labelField="ad" valueCommit="merhele_changeHandler()" dataProvider="{merfil }"/>
+		
+		
+	</s:SpinnerListContainer>
+	
+	
+	<s:SpinnerListContainer x="407" y="128.05" width="361" height="189">
+		<s:SpinnerList id="pozuntu" width="352" wrapElements="false" height="177" labelField="tarix" labelFunction="plabel" valueCommit="pozuntu_changeHandler()" dataProvider="{qeydfil }"/>
+	</s:SpinnerListContainer>
+	<s:Label id="mdate" x="97" y="320.05" width="194" height="31" color="#5D5252" fontSize="16" fontWeight="bold" text="" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nnnum" visible="false"/>
+	
+	<s:Label id="nnad" x="17" y="10" width="1229" height="59" backgroundAlpha="0.2" backgroundColor="#666363" color="#A102FC" fontSize="20" fontWeight="bold" text="{mufo.oad}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="bb7" x="136.5" y="358" width="88" height="32.5" label="Ünvan" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb8" x="136.5" y="462" width="88" height="32.5" label="Qeyd" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Label id="nnqeyd" x="51" y="498" width="276" height="89" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.oqeyd}" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nnunv" x="51" y="398" width="276" height="58" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.ounv}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="bb3" x="402.5" y="77" width="365" height="36.5" label="Pozuntular" accentColor="0x565656" fontSize="20" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb2" x="861.5" y="77" width="385" height="36.5" label="Fayllar" accentColor="0x565656" fontSize="20" fontWeight="bold" styleName="customButton"/>
+	<s:Label id="podrat0" x="354" y="68" width="15" height="632" backgroundAlpha="0.2" backgroundColor="#666363" fontSize="15" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="podrat1" x="813" y="67" width="15" height="632" backgroundAlpha="0.2" backgroundColor="#666363" fontSize="15" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="bb0" x="50.5" y="77" width="275" height="36.5" label="Mərhələlər" accentColor="0x565656" fontSize="20" fontWeight="bold" styleName="customButton"/>
+	<s:TextArea id="Qeydmm" x="407" y="326" width="361" height="261" editable="true" fontSize="14" fontWeight="bold" selectable="true" selectionHighlighting="whenFocused" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="geri" x="95" y="597" width="148" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	<s:Button id="yaddas" x="1007" y="602" width="133" height="43" label="Yaddaşda saxla" visible="false" click="yaddas_clickHandler(event)" fontSize="15"/>
+	<s:Button id="imtina" x="1167" y="602" width="80" height="43" label="İmtina" visible="false" click="imtina_clickHandler(event)" fontSize="15"/>
+	<s:Button id="serkoc" x="862" y="602" width="131" height="43" label="Serverə köçür" visible="false" click="serkoc_clickHandler(event)" fontSize="15"/>
+	<s:SpinnerListContainer x="862" y="128" width="383" height="190">
+		<s:SpinnerList id="fayll" width="379" height="172" valueCommit="fayll_changeHandler(event)" dataProvider="{faylarr}" labelField="ad" wrapElements="false"/>
+	</s:SpinnerListContainer>
+	
+</adaptive:ResponsiveStage></s:View>

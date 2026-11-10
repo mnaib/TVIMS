@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="init()"
+		 		width="502"
+				 xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="spark.components.*"
+				 >
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer backgroundColor="0x444444" width="100%" borderColor="0xcccccc" borderWeight="4" cornerRadius="10">
+		
+		<s:VGroup width="100%" gap="10" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15">
+			<s:HGroup width="460">
+				<s:VGroup gap="10" width="90">
+					<s:Button label="+" click="incrementDate('day')" width="100%"/>
+					<s:Label text="{day}" width="100%" textAlign="center" fontSize="33" color="0xcccccc"/>
+					<s:Button label="-" click="decrementDate('day')" width="100%"/>
+				</s:VGroup>
+				<s:VGroup gap="10" width="166">
+					<s:Button label="+" click="incrementDate('month')" width="100%"/>
+					<s:Label text="{mn[month].toString()}" width="100%" textAlign="center" fontSize="33" color="0xcccccc"/>
+					<s:Button label="-" click="decrementDate('month')" width="100%"/>
+				</s:VGroup>
+				<s:VGroup gap="10" width="190">
+					<s:Button label="+" click="incrementDate('year')" width="100%"/>
+					<s:Label text="{year}" width="100%" textAlign="center" fontSize="33"  color="0xcccccc"/>
+					<s:Button label="-" click="decrementDate('year')" width="100%"/>
+				</s:VGroup>
+			</s:HGroup>
+			<s:BorderContainer backgroundColor="0xcccccc" width="100%">
+				<s:HGroup width="100%" height="61" paddingBottom="15" paddingLeft="10"
+						  paddingRight="10" paddingTop="15" verticalAlign="middle">
+					<s:Button width="100%" label="OK" click="setDate()"/>
+					<s:Button width="100%" label="İmtina" click="cancelDate()"/>
+				</s:HGroup>
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:BorderContainer>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			private var _currentDate: Date;
+			[Bindable]
+			public function get currentDate(): Date
+			{
+				return _currentDate;
+			}
+			public function set currentDate(value: Date): void
+			{
+				_currentDate = value;
+				updateDateParts();
+			}
+			
+			[Bindable]
+			public var day: int;
+			[Bindable]
+			public var month: int;
+			[Bindable]
+			public var year: int;
+			[Bindable]
+			public  var mn:Array = new Array("Yanvar", "Fevral", "Mart", "Aprel", "May",
+			"İyun", "İyul", "Avgust", "Sentyabr", "Oktyabr", 
+			"Noyabr", "Dekabr");
+
+		 
+			private function init(): void
+			{
+			}
+			private function updateDateParts(): void
+			{
+				day = currentDate.date;
+				month = currentDate.month;
+				year = currentDate.fullYear;
+			}
+			private function incrementDate(type: String): void
+			{
+				updateDate(type, 1);
+			}
+			private function decrementDate(type: String): void
+			{
+				updateDate(type, -1);
+			}
+			private function updateDate(type: String, value: int): void
+			{
+				currentDate = new Date(year, month, day);
+				switch(type)
+				{
+					case 'day':
+						day += value;
+						break;
+					case 'month':
+						month += value;
+						break;
+					case 'year':
+						year += value;
+						break;
+				}
+				currentDate = new Date(year, month, day);
+			}
+			
+			private function setDate(): void
+			{
+				var dpe: DatePickerEvent = new DatePickerEvent(DatePickerEvent.DATE_PICKER_SET);
+				dpe.date = currentDate;
+				dispatchEvent(dpe);
+				PopUpManager.removePopUp(this);
+			}
+			private function cancelDate(): void
+			{
+				var dpe: DatePickerEvent = new DatePickerEvent(DatePickerEvent.DATE_PICKER_CANCEL);
+				dispatchEvent(dpe);
+				PopUpManager.removePopUp(this);
+			}
+		]]>
+	</fx:Script>
+</s:Group>

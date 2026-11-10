@@ -1,0 +1,182 @@
+
+create a skin, copy sdks\4.6.0\frameworks\projects\spark\src\spark\skins\spark\TextInputS kin.mxml 's content.
+
+     change line 251 from "includeIn="normalWithPrompt,disabledWithPrompt"
+
+                             to    "includeIn="normal,normalWithPrompt,disabledWithPrompt"
+
+ 
+or
+In 4.6 the default TextInput skins use StageTextField instead of StyleableTextField.  This may have an effect on tabbing.  You can switch back to StyleableTextField and see if you get the expected behavior.
+
+ 
+2)create a skin as class, copy sdks\4.6.0\frameworks\projects\mobiletheme\src\spark\skins\mobile\Tex tInputSkin.as 's content
+
+
+update
+foto
+gps
+link change auotomatic
+gps data to port sender
+
+
+
+1111.  ids 
+
+jpg.SaveToFile('temp1.jpg');
+  SQLRUN('update ids set foto=foto+1');
+  EMR(Q88, 'select foto from ids', true);
+  id := Q88.Fields[0].AsInteger;
+  s := TamToStr(id + milyard);
+  s[1] := 'f';
+  if not SessiyaRef then
+    exit;
+  if not FtpPutFile(HFTP, pchar('temp1.jpg'), pchar(s + '.jpg'),FTP_TRANSFER_TYPE_BINARY, 0) then
+  begin
+    ShowMessage('Fayl FTP-Serverə düşmədi');
+    exit
+  end;
+  EMR(Q88, 'insert into fyoxlama(id,yoxlama,ad) Values(:id,:yoxlama,:ad)',
+    false);
+    
+    
+  Q88.Parameters.ParamByName('id').Value := id;
+  
+  
+  
+  222.map koordinate obyekt table-ne elave x,y,z
+  
+  
+  3333. rey silmek mus -sahib elave etmek ve tarix Ler   OPARAM PARAM 11 OSENED SENED HAMISI DEFAULT forma 5
+  
+  procedure ParamAdd(obyekt: integer);
+begin
+  EMR(Q88,'insert into oparam(id, obyekt, param) Values(:p0, :p1, :p2)',false);
+  Q88.Parameters[1].Value:=obyekt;
+  EMR(Q99,'select id from param where id not in (select param from oparam where obyekt=:p0)',false);
+  Q99.Parameters[0].Value:=obyekt;
+  QOpen(Q99);
+  ;Q99.First
+  while not Q99.Eof do
+  begin
+    Q88.Close;
+    Q88.Parameters[2].Value:=Q99.Fields[0].AsInteger;
+    Q88.Parameters[0].Value:=obyekt*1000+Q99.Fields[0].AsInteger;
+    QExec(Q88);
+    Q99.Next
+  end
+end;
+
+rocedure Sened19Add(obyekt: integer);
+begin
+  EMR(Q88, 'insert into osened(id, obyekt, sened) Values(:p0, :p1, :p2)',
+    false);
+  Q88.Parameters[1].Value := obyekt;
+  EMR(Q99,
+    'select id from sened where id not in (select sened from osened where obyekt=:p0)', false);
+  Q99.Parameters[0].Value := obyekt;
+  QOpen(Q99);
+  Q99.First;
+  while not Q99.Eof do
+  begin
+    Q88.Close;
+    Q88.Parameters[2].Value := Q99.Fields[0].AsInteger;
+    Q88.Parameters[0].Value := obyekt * 100 + Q99.Fields[0].AsInteger;
+    QExec(Q88);
+    Q99.Next
+  end
+end;
+
+4444  firmalar
+
+
+EnnLoad(24);
+  EMR(Q[24],'select F.*, fn.ad as "fnad", hal.ad as "halad", '+
+            'F.LQN+'' ''+convert(varchar,F.Ldt,3) as "Qeydiyyat" '+
+            'from Lisenziya.dbo.firma F '+
+            'left join Lisenziya.dbo.fn as fn on fn.id=F.fn '+
+            'left join Lisenziya.dbo.hal as hal on hal.id=F.hal '+
+            'where F.ad like :ad and F.LN like :LN '
+            ,false);
+            
+            
+            
+            
+            
+procedure Goster25;
+begin
+  EnnLoad(25);
+  EMR(Q[25],'select I.*, T.ad as "Tad", T.kod as "Tkod" , T.fn '+
+            'from Lisenziya.dbo.izin I '+
+            'left join Lisenziya.dbo.tizin T on T.id=I.tizin '+
+            'where firma=:firma',false);
+  Q[25].SQL.Add('and I.ok<>'' ''');
+  Q[25].SQL.Add('order by Tkod');
+  Q[25].Parameters.ParamByName('firma').Value:=Q[24].FieldByName('id').AsInteger;
+  QOpen(Q[25]);
+  RengColum(R[25]);
+  EnnSet(25)
+end;
+
+procedure Goster26;
+var
+  s: string;
+  i: Integer;
+begin
+  EnnLoad(26);
+  EMR(Q[26],'select O.*, T.ad as "Tad", B.ad as "Bad"  from Lisenziya.dbo.obyekt O  left join umumi.dbo.teyinat T on T.id=O.teyinat  left join umumi.dbo.bolge B on B.id=O.bolge  where O.firma=:firma',false);
+
+  if Form1.chb26.Checked then
+  begin
+    s:='and O.bolge in (999';
+    for i:=0 to say22bolge-1 do
+      if Form22.CBbolge.Checked[i] or (not Form22.Panel2.Visible) then
+        s:=s+','+bolge22[i];
+    Q[26].SQL.Add(s+')')
+  end;
+
+  Q[26].SQL.Add('order by '+TamToStr(nist[26]));
+  if not bist[26] then Q[26].SQL.Add('desc');
+
+  Q[26].Parameters.ParamByName('firma').Value:=Q[24].FieldByName('id').AsInteger;
+
+  QOpen(Q[26]);
+  RengColum(R[26]);
+  EnnSet(26);
+  Clik26
+end;
+            55555 ekspert
+            
+             goster 12 ve 13
+             
+             
+             
+             
+             
+             
+             66666 yoxlama
+             
+             procedure Goster31(id: integer);
+begin
+  Form1.mem30.Text:=Q[30].FieldByName('metn').AsString;
+  Form1.mem30.ReadOnly := (Q[30].FieldByName('tarix').AsDateTime<>BuGun) or (not b_yoxlama);
+  Form1.bb30.Enabled := not Form1.mem30.ReadOnly;
+  Form1.TB30del.Enabled := Form1.bb30.Enabled;
+  Form1.TB31yeni.Enabled := Form1.bb30.Enabled;
+  Form1.TB31redak.Enabled := Form1.bb30.Enabled;
+  Form1.TB31browse.Enabled := Form1.bb30.Enabled;
+  Form1.TB31del.Enabled := Form1.bb30.Enabled;
+
+  EnnLoad(31);
+  EMR(Q[31],'select * from fyoxlama where yoxlama=:yoxlama order by id desc',false);
+  Q[31].Parameters.ParamByName('yoxlama').Value:=Q[30].FieldByName('id').AsInteger;
+  QOpen(Q[31]);
+  EnnSet(31);
+  RengColum(R[31]);
+  if id>0 then
+    Q[31].Locate('id',id,[loPartialKey])
+end;
+
+end.
+             
+             

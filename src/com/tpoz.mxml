@@ -1,0 +1,287 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnablePopUpContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+						   xmlns:s="library://ns.adobe.com/flex/spark"
+						   xmlns:flextras="http://www.flextras.com/mxml"
+						   width="400" height="358" backgroundColor="#97979A" color="#139805"
+						   creationComplete="skinnablepopupcontainer1_creationCompleteHandler(event)"
+						   height.change="246" backgroundColor.change="#45454B"
+						   chromeColor.change="#9404B3" color.change="#FDF7FD"
+						   backgroundColor.new="#45454B" chromeColor.new="#9404B3"
+						   color.new="#FFFFFF">
+	<s:layout>
+		<s:VerticalLayout gap="20" horizontalAlign="center" paddingBottom="10" paddingLeft="30"
+						  paddingRight="30" paddingTop="30"/>
+	</s:layout>
+	 
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.flexets.android.views.components.DatePicker;
+			import com.flexets.android.views.components.DatePickerEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.TextOperationEvent;
+		 
+			[Bindable]
+			public var date:Date=new Date( );
+				[Bindable]
+			public var date1:Date=new Date( );
+			 
+		
+			[Bindable]
+			private static var vezfil:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			public var mid:String;
+			[Bindable]
+			public var tit:String;
+			
+			[Bindable]
+			public var osid:String;
+			[Bindable]
+			public var usid:String;
+			[Bindable]
+			public var mok:String;
+			[Bindable]
+			public var md1:String;
+			[Bindable]
+			public var md2:String;
+			[Bindable]
+			public var merhid:String;
+			 [Bindable]
+			public var okbs:Boolean;
+			
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+		
+			
+		
+			 
+			private function showDatePicker():void
+			{
+				var datePicker:DatePicker=new DatePicker();
+				datePicker.currentDate=date;
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet);
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel);
+				PopUpManager.addPopUp(datePicker, this, true);
+				PopUpManager.centerPopUp(datePicker);
+			
+		  function onDateCancel(event:DatePickerEvent):void
+			{
+			//	var datePicker:DatePicker=event.target as DatePicker;
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet);
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel);
+				PopUpManager.removePopUp(datePicker);
+				}	
+			
+			
+		  function onDateSet(event:DatePickerEvent):void
+			{
+				date=event.date;
+				vaxtb1.text=getvaxt();
+				okey.enabled=true;	
+				md1=date.fullYear+"-"+(date.month+1)+"-"+date.date;
+				onDateCancel(event);
+			 
+		//		PopUpManager.removePopUp(datePicker);
+				
+		}
+			
+			}
+			private function getvaxt():String
+			{
+		 
+		return ((date1.fullYear-date.fullYear)*365+(date1.month-date.month)*30+date1.date-date.date).toString();
+			 
+			}
+			private function showDatePicker1():void
+			{
+				var datePicker1:DatePicker=new DatePicker();
+				datePicker1.accessibilityEnabled=false;
+				datePicker1.accessibilityProperties.silent=true;
+				datePicker1.currentDate=date1;
+				datePicker1.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+				datePicker1.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+				PopUpManager.addPopUp(datePicker1, this,true);
+				PopUpManager.centerPopUp(datePicker1);
+		
+		  function onDateCancel1(event:DatePickerEvent):void
+			{
+			//	var datePicker1:DatePicker=event.target as DatePicker;
+			 
+				datePicker1.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+				datePicker1.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+				PopUpManager.removePopUp(datePicker1);
+			}
+			
+			  function onDateSet1(event:DatePickerEvent):void
+			{
+				date1=event.date;
+				md2=date1.fullYear+"-"+(date1.month+1)+"-"+date1.date;
+				okey.enabled=true;	
+				vaxtb1.text=getvaxt();
+				onDateCancel1(event);
+			//	PopUpManager.removePopUp(datePicker1);
+			}
+				}
+			protected function okey_clickHandler(event:MouseEvent):void
+			{
+			 okey.enabled=false;
+			 var prot:String="";
+				var stt2:String="";
+				if (mid=="new")
+				{ prot="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+					" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+					"'Mobil', 'Mobil', getdate()"+","+ usid+", 5  ,8 ,"+ osid +")" ;
+				stt2=" DECLARE  @ridr int SELECT  @ridr=(max([id])+1)  FROM [Mufettis].[dbo].[pozuntu] INSERT INTO [Mufettis].[dbo].[pozuntu]  	( id,merhele,tarix,muddet) VALUES";
+					stt2=stt2 + " (@ridr  ," + merhid+ ", '" +md1+  "', '" +md2  + "' )";;
+				}
+				else
+				{
+					prot="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+						" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+						"'Mobil', 'Mobil', getdate()"+","+ usid+", 6  ,8 ,"+ osid +")" ;
+					
+					stt2=" update [Mufettis].[dbo].[pozuntu]  set ok=";
+					
+					var stt4:String=okb.selected?"nchar(252)":"''";
+					stt2=stt2+stt4	+",  dt=getdate() where id="+merhid;
+					 
+				}
+					 
+			//	execvez.token=srv.execSQL(sqs2, 'DML', stt2, 1000);
+				nlib.GetUrl(stt2+"  "+prot,resultv);
+				
+			}
+			import components.*;
+			import mx.formatters.DateFormatter;
+			private function resultv(eventt:Event):void
+			{
+				if (mid=="new") MobileAlert.showt(' Yeni pozuntu əlavə  edildi', 'Məlumat');
+					else
+				MobileAlert.showt(' Dəyişiklər saxlanıldı !', 'Məlumat');
+				this.close();
+			}
+			protected function imtina_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+			 
+				mid="10000";
+				this.close();
+				
+			}	
+			
+			
+		
+			protected function execvez_faultHandler(event:FaultEvent):void
+			{
+				 
+				MobileAlert.show(' Xəta baş verdi təkrar edin !', 'Məlumat');
+				this.close();	
+			}
+			
+			protected function skinnablepopupcontainer1_creationCompleteHandler(event:FlexEvent):void
+			{
+			 
+				md2=date1.fullYear+"-"+(date1.month+1)+"-"+date1.date;
+				md1=date.fullYear+"-"+(date.month+1)+"-"+date.date;
+				if (mid=="new")
+					currentState="new";
+				else  currentState="change";
+			
+ //var arr1:Array=md2.split("-");
+ //var arr:Array=md1.split("-");
+				// TODO Auto-generated method stub
+ 	//		date1=  md2  as date;
+ 	///			date= md1 as date;
+			}
+		
+			 
+			protected function vaxtb1_changeHandler(event:TextOperationEvent):void
+			{
+				// TODO Auto-generated method stub
+				var gun:int=parseInt(vaxtb1.text);
+				var il:int=Math.floor(gun/365);
+				var ay:int=Math.floor((gun-il*365)/30);
+				var gunn:int=Math.floor(gun-il*365-ay*30);
+				date1.fullYear=date.fullYear+il; 
+					date1.month=date.month+ay;
+					date1.date =date.date+gunn;
+				okey.enabled=true;	
+					vaxtb0.text=dateFormatter.format(date1);
+	 
+					md2=date1.fullYear+"-"+(date1.month+1)+"-"+date1.date;
+					md1=date.fullYear+"-"+(date.month+1)+"-"+date.date;
+					
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:DateTimeFormatter id="dateFormatter"
+							 timeStyle="none"
+							 dateStyle="medium"
+							 locale="az-Latn-AZ"/>
+	 
+		
+	</fx:Declarations>
+	
+	
+	
+	<s:states>
+		<s:State name="change"/>
+		<s:State name="new"/>
+	</s:states>
+	<s:Label width="278" height="27" fontSize="19" text="{tit}" textAlign="center"
+			 verticalAlign="middle"/>
+	<s:VGroup includeIn="new"  gap="20" horizontalAlign="center" paddingBottom="10" paddingLeft="30"
+			  paddingRight="30" paddingTop="30">
+		
+	
+	<s:HGroup width="279" height="37" gap="8" verticalAlign="middle">
+		<s:Label height="33" text="Tarix" textAlign="center" verticalAlign="middle"/>
+		<s:TextInput id="vaxtb" width="138" color="#8A06B5" editable="false"
+					 text="{dateFormatter.format(date)}" textAlign="center"/>
+		<s:Button width="65" height="34" label="Dəyiş" click="showDatePicker()"/>
+	</s:HGroup>
+	
+	<s:HGroup>
+		<s:TextInput id="vaxtb1" width="65" change="vaxtb1_changeHandler(event)" color="#8A06B5"
+					 styleName="azStyle" text="{getvaxt()}" textAlign="center"/>
+	
+	<s:Label width="62" height="34" text="Gün" textAlign="center" verticalAlign="middle"/>
+	</s:HGroup>
+	<s:HGroup width="279" height="37" gap="8" verticalAlign="middle">
+		<s:Label height="33" text="Tarix" textAlign="center" verticalAlign="middle"/>
+		<s:TextInput id="vaxtb0" width="138" color="#8A06B5" editable="false"
+					 text="{dateFormatter.format(date1)}" textAlign="center"/>
+		<s:Button width="65" height="34" label="Dəyiş" click="showDatePicker1()"/>
+	</s:HGroup>
+		
+	</s:VGroup>
+<s:VGroup includeIn="change" width="317" gap="20" horizontalAlign="center" paddingBottom="10"
+		  paddingLeft="30" paddingRight="30" paddingTop="30">
+	<s:HGroup>
+	<s:Spacer width="40"/>
+	<s:CheckBox id="okb" x="81" width="167" height="37" label="Aradan qaldırılıb"
+				change="{okey.enabled=true}" chromeColor="#FFF6F6" selected="{okbs}"/>
+	</s:HGroup>
+	</s:VGroup>
+	<s:HGroup width="286" height="39" gap="20" textAlign="center">
+		<s:Button id="okey" label="Təsdiq" click="okey_clickHandler(event)"  enabled="false"/>
+		<s:Spacer width="100"/>
+		<s:Button id="imtina" label="İmtina" click="imtina_clickHandler(event)"/>
+	</s:HGroup>
+
+	
+	
+</s:SkinnablePopUpContainer>

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" ?>
+<configuration>
+	<fields>ad,qeyd</fields>
+	<titlefield>ad</titlefield>
+	
+	 
+
+
+ <multiimagefield linkprefix="ftp://usergis:G1s_2014_ada@172.16.0.19/Mufettis/" linksuffix="" nexttooltip="Sonrakı" prevtooltip="Əvvəlki">fotodlar</multiimagefield>
+    
+
+ 
+    <datefields></datefields>
+    
+    <zoomscale>50000</zoomscale>
+    
+    <csvseparator>,</csvseparator>
+    
+    <labels>
+    	<csvdefaultname>Related Records</csvdefaultname>
+    	
+		<exportbtnlabel>Eksport...</exportbtnlabel>
+		
+		<export2csvoptionlabel>Eksport  CSV...</export2csvoptionlabel>
+		
+		<export2txtoptionlabel>Eksport  Txt...</export2txtoptionlabel>
+		
+    </labels>
+
+
+	
+</configuration>

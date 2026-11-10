@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx"
+				width="100%" autoDrawBackground="true">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			protected function checkbox_changeHandler(event:Event):void
+			{
+				var chk:CheckBox = event.currentTarget as CheckBox;
+				var ddl:DropDownListEx = this['outerDocument'] as DropDownListEx;
+				
+				if(chk.selected){
+					ddl.selectedItems.push(data);
+				}else{
+					ddl.selectedItems.splice(ddl.selectedItems.indexOf(data), 1);
+				}
+				
+				ddl.dispatchEvent(new Event("selectedItemsChange"));
+			}
+			
+			override public function set data(value:Object):void{
+				super.data = value;
+				
+				var ddl:DropDownListEx = this['outerDocument'] as DropDownListEx;
+				chkbox.selected = ddl.selectedItems.indexOf(value) != -1;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%">
+		<s:Spacer width="5"/>
+		<s:CheckBox id="chkbox" width="100%" label="{data.ad}" change="checkbox_changeHandler(event)"/>
+	</s:HGroup>
+	
+</s:ItemRenderer>
+ 

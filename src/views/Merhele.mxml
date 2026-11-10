@@ -1,0 +1,1616 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:flextras="http://www.flextras.com/mxml" xmlns:adaptive="com.responsive.*" width="100%" height="100%" creationComplete="view1_creationCompleteHandler(event)" deactivate="deact(event)" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" viewActivate="init(event)" styleName="tvimsScreen"> 
+	
+	
+	
+	<fx:Declarations>
+		<s:Rotate3D target="{redbut}" id="xFade3" angleYFrom="0" angleYTo="360" duration="1000" autoCenterTransform="true" repeatBehavior="reverse"/>
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="200" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="200" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="200"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="200" mode="cover"/>
+		
+		<s:DateTimeFormatter id="dateFormatter" dateTimePattern="dd/MM/yyyy/"/>
+		
+		
+		
+		
+		
+		
+	</fx:Declarations>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			import com.Azstring;
+			import com.MatrixTransformer;
+			import com.adobe.serializers.xml.XMLDecoder;
+			
+			import components.*;
+			
+			import flash.display.BitmapData;
+			import flash.events.Event;
+			import flash.events.EventDispatcher;
+			import flash.events.PressAndTapGestureEvent;
+			import flash.events.TimerEvent;
+			import flash.events.TransformGestureEvent;
+			import flash.filesystem.File;
+			import flash.filesystem.FileMode;
+			import flash.filesystem.FileStream;
+			import flash.filters.ColorMatrixFilter;
+			import flash.geom.Matrix;
+			import flash.geom.Point;
+			import flash.ui.Multitouch;
+			import flash.ui.MultitouchInputMode;
+			import flash.utils.ByteArray;
+			import flash.utils.Timer;
+			
+			import mx.binding.utils.ChangeWatcher;
+			import mx.charts.DateTimeAxis;
+			import mx.charts.HitData;
+			import mx.charts.effects.SeriesInterpolate;
+			import mx.charts.series.BarSeries;
+			import mx.charts.series.LineSeries;
+			import mx.charts.series.items.BarSeriesItem;
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.events.MoveEvent;
+			import mx.events.StateChangeEvent;
+			import mx.formatters.DateFormatter;
+			import mx.graphics.codec.JPEGEncoder;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.styles.CSSStyleDeclaration;
+			import mx.styles.IStyleManager2;
+			import mx.utils.ArrayUtil;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.Button;
+			import spark.components.CheckBox;
+			import spark.components.Image;
+			import spark.events.DropDownEvent;
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			import spark.events.TextOperationEvent;
+			import spark.events.ViewNavigatorEvent;
+			import spark.formatters.NumberFormatter;
+			import spark.managers.PersistenceManager;
+			
+			protected var myCam:CameraUI;
+			
+			
+			protected var roll:CameraRoll;
+			
+			[Bindable]
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			
+			
+			protected var urlLoader:URLLoader=new URLLoader();
+			
+			[Bindable]
+			private var datetext:String="'2011-8-15'";
+			
+			[Bindable]
+			private var fotoids:String="";
+			[Bindable]
+			private var kocur:Boolean=true;
+			[Bindable]
+			private var fotostt2 :String="";
+			
+			[Bindable]
+			private var merhid:int=-1;
+			
+			[Bindable]
+			private var nisbetstr:String="";
+			
+			[Bindable]
+			private var eslad:String='0';
+			[Bindable]
+			private var filenamefoto:File;
+			
+			[Bindable]
+			private var fnamed:String="nofoto.jpg";
+			[Bindable]
+			private var iArray:Array;
+			[Bindable]
+			private var mufo:Mufo;
+			
+			
+			
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			[Bindable]
+			private var pressitem:Boolean=false;
+			
+			
+			[Bindable]
+			private static  var remm:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private static var merfil:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private static var meradlar:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private static var merrem:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private var remm4:ArrayCollection=new ArrayCollection();
+			
+			[Bindable]
+			private var merdeyis:Boolean=false;
+			
+			[Bindable]
+			private var meray:Boolean=true;
+			
+			[Bindable]
+			private var lastimage:String="";
+			
+			[Bindable]
+			private var sq1:String="EXEC Mufettis.dbo.Mobidfoto  ";  
+			
+			// Select ISNULL( F.id,0) as fid, ISNULL( F.ad,'yox' )as fad, M.ad, M.id,M.ok,M.dt from OPENDATASOURCE ( 'SQLOLEDB', 'Data Source=172.16.0.18; User ID=gisuser; Password=G1s_2014_sqs' ).[Mufettis].[dbo].[foto] F right join OPENDATASOURCE ( 'SQLOLEDB', 'Data Source=172.16.0.18; User ID=gisuser; Password=G1s_2014_sqs' ).[Mufettis].[dbo].[merhele] M on M.id=ISNULL(F.merhele,M.id) where M.obyekt=@Tint
+			
+			private var z1:Number=1;
+			private var z2:Number=1;
+			
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+			
+			
+			
+			public function imz():void
+			{
+				
+				img.x=0;
+				img.y=0;
+				img.width=ter.width;
+				img.height=ter.height;
+				img.scaleX=1;
+				img.scaleY=1;
+			}
+			
+			
+			
+			protected function merhele_changeHandler():void
+			{
+				
+				if (merhele.selectedIndex < 0) return;
+				
+				var sx:String=merhele.selectedItem.ad;
+				
+				
+				if (merhele.selectedIndex == 0)
+					
+				{
+					mdate.text="";
+					merrem.removeAll();
+					for (var i:int=0;  i<remm.length; i++)
+					{
+						if (remm[i].fid.toString()!=='f000000000_.jpg')						
+							merrem.addItem(remm[i]);
+						
+					}
+					return;
+				}
+				
+				// bura remm evezine fot date olmalidir foto icinde  ve merfil-e date elave etmek lazimdir
+				mdate.text=merfil[merhele.selectedIndex].dt.toString();
+				var merrr:Array=new Array();
+				
+				
+				merrr=remm.source
+				
+				var merr3:Array=new Array();
+				
+				
+				for (var i:int=0; i < merrr.length; i++)
+				{
+					if (merrr[i].ad == sx)
+					{
+						
+						merr3.push(merrr[i]);
+					}
+					
+				}
+				
+				
+				
+				merrem.removeAll();
+				for (var i:int=0;  i<merr3.length; i++)
+				{
+					if (merr3[i].fid.toString()!=='f000000000_.jpg')						
+						merrem.addItem(merr3[i]);
+					
+				}
+				
+				
+				
+				
+			}
+			
+			
+			
+			protected function merhelead_changeHandler():void
+			{
+				
+				if (mersec.selectedIndex < 0) return;
+				
+				nmer.text=mersec.selectedItem.ad;
+				
+				
+				 
+				
+				// bura remm evezine fot date olmalidir foto icinde  ve merfil-e date elave etmek lazimdir
+				var today = new Date();
+				mdate.text=today.toString();
+		  
+		 
+				
+			}
+			
+			
+			protected function lst_itemClickHandler(evt:ItemClickEvent):void
+			{
+				
+				
+				var fname:String=merrem[evt.index].ffid.toString();
+				
+				//	if (merhele.selectedIndex !== merfil.length - 1)
+				//	                   fname=merrem[evt.index].ffid.toString();
+				
+				var myFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+				
+				img.source=myFile.url;
+				imz(); 
+				//	if (pressitem)					return;
+				
+				if (!myFile.exists)
+				{
+					
+					
+					//	execSQLResult6.token=srv2.qdown('Mufettis', fname);
+					
+					var 	fqov:String='Mufettis'+"/f/"+fname.substr(3,4);	
+					img.source=null;
+					nlib.GetFtp(fqov, fname,myFile,imf);
+					pressitem=true;
+					
+				}
+				else
+				{
+					img.source=myFile.url;		 
+					fnamed=fname;
+					imz();
+					////			   ftar.text=myFile.creationDate.toString();
+				}
+				
+				function imf( ):void
+				{
+					img.source=myFile.url;		 
+					
+					fnamed=fname;
+					imz();
+				}
+			}
+			
+			
+			
+			protected function onPan(e:TransformGestureEvent):void
+			{
+				trace("On pan... " + e.offsetX + " offset Y " + e.offsetY);
+				var prevPoint:Point=new Point(img.x, img.y);
+				img.x+=e.offsetX;
+				img.y+=e.offsetY;
+			}
+			
+			
+			
+			protected function onRotate(e:TransformGestureEvent):void
+			{
+				trace("On rotate...");
+				//img.rotation+=e.rotation;
+			}
+			
+			protected function onSwipe(e:TransformGestureEvent):void
+			{
+				//	trace("On swipe " + e.stageX);
+			}
+			
+			
+			protected function onZoom2(e:TransformGestureEvent):void
+			{
+				
+				
+				if ((e.scaleX < 1) || (e.scaleY < 1))
+				{
+					
+					img.scaleX/=1.03;
+					img.scaleY/=1.03;
+				}
+				else
+				{
+					img.scaleX*=1.03;
+					img.scaleY*=1.03;
+				}
+				
+			}
+			
+			
+			protected function ono(event:MouseEvent):void
+			{
+				var locX:Number=event.localX;
+				
+				var locY:Number=event.localY;
+				var relativeZoom:Number=1.2;
+				
+				if (img.width < ter.width * 6)
+				{
+					
+					img.scaleX*=relativeZoom;
+					img.scaleY*=relativeZoom;
+					
+				}
+				vp.horizontalScrollPosition=locX * img.scaleX - ter.width / 2;
+				vp.verticalScrollPosition=locY * img.scaleY - ter.height / 2;
+				
+				
+				
+			}
+			
+			protected function onZoom(event:TransformGestureEvent):void
+			{
+				
+				var locX:Number=event.localX;
+				var locY:Number=event.localY;
+				if ((event.scaleX < 1) || (event.scaleY < 1))
+				{
+					
+					if (img.width > ter.width)
+					{
+						img.scaleX/=1.02;
+						img.scaleY/=1.02;
+					}
+				}
+				else
+				{
+					if (img.width < ter.width * 6)
+					{
+						img.scaleX*=1.02;
+						img.scaleY*=1.02;
+					}
+					
+				}
+				
+				
+				vp.horizontalScrollPosition=locX * img.scaleX - ter.width / 2;
+				vp.verticalScrollPosition=locY * img.scaleY - ter.height / 2;
+				
+			}
+			
+			
+			[Bindable]
+			private var  getvez:String=" EXEC  [Mufettis].[dbo].[MobGetVez] @userid=";
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+			}
+			
+			
+			
+			private function fault6(evt:FaultEvent):void
+			{
+				
+				pressitem=false;
+			}
+			
+			protected function view1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				nnad.text=Azstring.Azrec(mufo.oad.toString());
+				
+				//		nnrey.text=mufo.orey.toString();
+				
+				 
+				nnqeyd.text=Azstring.Azrec(mufo.oqeyd.toString());
+				//		nntey.text=mufo.otey.toString();
+				
+				pressitem=false;
+				
+				merrem.removeAll();
+				
+				ilist.addEventListener(ItemClickEvent.ITEM_CLICK, lst_itemClickHandler);
+				
+				//	execSQLResult.token=srv.execSQL(sqs1, 'DML', sq1 + mufo.osid.toString(), 1000);
+				nlib.GetUrl(sq1 + mufo.osid.toString(),result);
+					nlib.GetUrl("EXEC Mufettis.dbo.MobGetMerAd  @obid="+mufo.osid+",@userid="+mufo.usid ,resultmerad);
+				
+				if (CameraUI.isSupported)
+				{
+					
+					myCam=new CameraUI();
+					myCam.addEventListener(MediaEvent.COMPLETE, onComplete);
+				}
+				
+				if (CameraRoll.supportsBrowseForImage)
+				{
+					trace("camera roll is supported");
+					roll=new CameraRoll();
+					
+					roll.addEventListener(MediaEvent.SELECT, onComplete);
+				}
+				Multitouch.inputMode=MultitouchInputMode.GESTURE;
+				
+				if (Multitouch.supportsGestureEvents)
+					
+					
+				{
+					
+					for each (var item:String in Multitouch.supportedGestures)
+					{
+						if (item == TransformGestureEvent.GESTURE_ZOOM)
+							img.addEventListener(TransformGestureEvent.GESTURE_ZOOM, onZoom);
+					}
+				}
+				
+			}
+			private function init(event:ViewNavigatorEvent):void
+			{
+				startsql();
+				mersec.visible=false;
+				merhele.visible=true;
+			 if (   parseInt(mufo.ovezid)>6)       
+				 merbut.enabled =false;
+			 nlib.GetUrl(getvez+mufo.usid+",@obid="+mufo.osid ,rayuserr);	
+			 
+			 if ((!mufo.meridian)||(!mufo.paralel))  korrbut.enabled=true;
+				
+			}
+			private function resultmerad(event:Event):void
+			{	
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				mersec.dataProvider=new XMLListCollection(xml.Cedvel);
+				
+				//	axtlist.selectedIndex=remm.length/2;
+			//	mersec.selectedIndex=0;
+				mersec.visible=false;
+				merhele.visible=true;
+			}
+			private function result(event:Event):void
+			{
+				
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				//for each(var s:XML in xmlResult.Cedvel)
+				
+				//	var xmlResult:XML=new XML(evt.result);
+				var remma:ArrayCollection=new ArrayCollection();
+				var merh:ArrayCollection=new ArrayCollection();
+				var fname:String="";
+				var si:int=0;
+				
+				
+				var oob1:Object=new Object;
+				oob1.id=si.toString();		
+				oob1.ad="Bütün mərhələlər";
+				oob1.dt=si.toString();
+				
+				merh.addItem(oob1);
+				
+				for each (var s:XML in xmlResult.Cedvel)
+				{
+					
+					var oob:Object=new Object();
+					var oob2:Object=new Object();
+					oob.id=s.id.toString();
+					oob.ad=s.ad.toString();
+					oob.dt=s.dt.toString();
+					oob2.id=s.id.toString();
+					oob2.ad=s.ad.toString();
+					oob2.dt=s.dt.toString();
+					merh.addItem(oob2);
+					
+					oob.fid="f" + zeroPad(s.fid.toString(), 9) + "_.jpg";
+					
+					
+					if (oob.fid == 'f_.jpg')				 
+						oob.fid='f000000000_.jpg';
+					
+					if ((!(WorkDir.resolvePath('ttnda/Mufettis/cache/' + oob.fid).exists)) && (oob.fid.toString() != 'f000000000_.jpg'))
+						fname=fname + oob.fid + ",";					
+					oob.ffid="f" + zeroPad(s.fid.toString(), 9) + ".jpg";
+					oob.fulfid="file://" + WorkDir.nativePath + "/ttnda/Mufettis/cache/f" + zeroPad(s.fid.toString(), 9) + "_.jpg";				
+					remma.addItem(oob);
+					
+				}
+				
+				
+				
+				remm.source=remma.source;
+				var merr:Array=new Array();
+				
+				merr=merh.source;
+				var merr2:Array=new Array();
+				
+				
+				
+				if (merr.length > 1)
+					
+				{
+					merr2.push(merr[0]);
+					var vard:Boolean;
+					
+					for (var i:int=1; i < merr.length; i++)
+					{
+						vard=true;
+						
+						for (var j:int=0; j < merr2.length; j++)
+						{
+							if (merr[i].ad == merr2[j].ad)
+								// duzelis  olunmalidirb 09.04.2018 ad lar uste uste dusur eyni adi tekrarlayirlar	ID-e 	if (merr[i].ad == merr2[j].ad)
+							{
+								vard=false;
+							}
+							
+						}
+						if (vard)
+						{
+							merr2.push(merr[i]);
+						}
+					}
+				}
+				
+				merfil.source=merr2;
+				mersec.visible=false;
+			merdeyis	= merfil.length  &&  mufo.duzelden && merfil.length;
+			if ( merfil.length > 0){
+				var d:Date = parsesql (merfil[merfil.length-1].dt);///new Date();
+			//	d.setTime(Date.parse(merfil[merfil.length-1].dt));
+				
+				
+				// "2020-10-01T04:22:58.2+04:00"
+				var MS_PER_DAY:uint = 1000 * 60 * 60 * 24*7
+					var date1:Date =new Date(); // Oct. 12, 2001
+				var differenceInMilliseconds:Number =date1.time  -d.time  ;
+				merdeyis	=merdeyis && (differenceInMilliseconds<MS_PER_DAY);
+			}
+				merhele.visible=true;
+				merhele.dataProvider=null;
+				merhele.dataProvider=merfil;
+				merhele.selectedIndex=merfil.length-1;
+				
+				//	 merhele.dispatchEvent(new Event(Event.CHANGE, true));
+				if (merhid==(merfil.length-1)) merhele.selectedIndex=0;
+				if (merhid!=-1)	merhele.selectedIndex=merhid;
+				
+				fname=fname.substr(0, fname.length - 1);
+				
+				
+				if (fname.length > 8) 
+				{	
+					//	execSQLResult5.token=srv2.qdown('Mufettis', fname);
+					var 	fqov:String='Mufettis';//+"/f/"+fname.substr(3,4);	
+					nlib.GetFtpnm(fqov, fname,result5);
+				}
+				else
+				{
+					merrem.removeAll();
+					for (var i:int=0;  i<remm.length; i++)
+					{
+						if (remm[i].fid.toString()!=='f000000000_.jpg')						
+							merrem.addItem(remm[i]);
+						
+					}
+					
+				}
+				
+			}
+			public static function parsesql(date:String):Date
+			{
+				var split:Array = date.split("T");
+				var splitDate:Array = split[0].split("-");
+				var splitTime:Array = split[1].split(":");
+				
+				return new Date(splitDate[0],
+					splitDate[1]-1,
+					splitDate[2],
+					splitTime[0],
+					splitTime[1] );
+			}
+			
+			private function result5(event:Event):void
+			{
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				var db:ByteArray=new ByteArray();
+				
+				var		result:ArrayCollection=ss4.soap_Body.qdownmResponse.qdownmResult.bytestr as ArrayCollection;
+				if (!result){
+				result= new ArrayCollection();
+				result.addItem(ss4.soap_Body.qdownmResponse.qdownmResult.bytestr);
+				}
+				for (var i:int=0; i < result.length; i++)
+					
+				{
+					
+					var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + result[i].name.toString());
+					
+					db=Dekod.decode(result[i].bayt);
+					var outStream:FileStream=new FileStream();
+					outStream.open(outFile, FileMode.WRITE);
+					
+					outStream.writeBytes(db, 0, db.length);
+					// close it 
+					outStream.close();
+					
+				}
+				
+				//	ilist.dataProvider=null;
+				//	ilist.dataProvider=remm ;
+				//	merrem.source=remm.source;
+				merrem.removeAll();
+				for (var i:int=0;  i<remm.length; i++)
+				{
+					if (remm[i].fid.toString()!=='f000000000_.jpg')						
+						merrem.addItem(remm[i]);
+					
+				}
+				
+			}
+			
+			
+			
+			private function merresult(event:Event):void
+			{
+			 
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				xml=xml.normalize();
+				
+				var cemddd:String="";
+				for each (var s:XML in xml.Cedvel)
+				{
+					cemddd+=s.children()[0];
+					
+				}
+				
+				 if (cemddd.indexOf('Ok')>-1)
+					 {
+				nmer.editable=false;
+				merbut.label="Yeni Mərhələ";
+				if (merhele.selectedIndex > -1)
+					nmer.text=Azstring.Azstr(merhele.selectedItem.ad);
+		//		nmer.text="Mərhələ yaradıldı";
+			 	MobileAlert.show(' Mərhələ yaradıldı !', 'Məlumat')
+			
+				 
+				
+				merbut.visible=true;
+			//	merad.visible=true;
+			
+				yfoto.enabled=true;
+				yfotoy.enabled=true;
+				geri.enabled=true;
+				tesmerh.visible=false;
+				imtinamerh.visible=false;
+				img.source=null;
+				//	execSQLResult.token=srv.execSQL(sqs1, 'DML', sq1 + mufo.osid.toString(), 1000);
+				nlib.GetUrl(sq1 + mufo.osid.toString(),result);
+					 }
+					 else{
+					 
+						 MobileAlert.show('Xəta:'+cemddd, 'Məlumat')
+					 }
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			//budey
+			protected function meryarat(event:MouseEvent):void
+			{
+			///	nmer.text="";
+		///		nmer.prompt="Mərhələnin adını bura yazın \n və <<Yarat>>\n  seçin \n və ya <<İmtina>> \n seçin ";
+		///		nmer.editable=true;
+				meray=true;
+				//	merbut.label="Mərhələni Yarat";
+				nmer.setFocus();
+				merbut.visible=false;merad.visible=false;
+				mersec.visible=true;
+				yfoto.enabled=false;
+				yfotoy.enabled=false;
+				geri.enabled=false;
+				tesmerh.label='Yarat';
+				tesmerh.visible=true;
+				imtinamerh.visible=true;
+			}
+			
+			protected function merdey(event:MouseEvent):void
+			{
+				if (merhele.selectedIndex ==(merfil.length-1))
+				{
+				///	nmer.text="";
+				///		nmer.prompt="Mərhələnin adını bura yazın \n və <<Yarat>>\n  seçin \n və ya <<İmtina>> \n seçin ";
+				///		nmer.editable=true;
+				meray=false;
+				//	merbut.label="Mərhələni Yarat";
+				nmer.setFocus();
+				merbut.visible=false;
+				merad.visible=false;
+				mersec.visible=true;
+				yfoto.enabled=false;
+				yfotoy.enabled=false;
+				geri.enabled=false;
+				tesmerh.label='Dəyiş';
+				tesmerh.visible=true;
+				imtinamerh.visible=true;
+				}
+			}
+			// busil
+			protected function merdeyold(event:MouseEvent):void
+			{
+				
+				if (merhele.selectedIndex >0)
+				{
+					
+				///	nmer.editable=true;
+					meray=false;
+					//	merbut.label="Mərhələni Yarat";
+					nmer.setFocus();
+					merbut.visible=false;merad.visible=false;
+					yfoto.enabled=false;
+					mersec.visible=false;
+					yfotoy.enabled=false;
+					geri.enabled=false;
+					tesmerh.label='Dəyiş';
+					tesmerh.visible=true;
+					imtinamerh.visible=true;
+					
+				}
+					
+				else
+					MobileAlert.show('Mərhələni Secin!', 'Diqqət');
+				
+				
+			}
+			
+			protected function bb4_clickHandlerold(event:MouseEvent):void
+			{
+				
+				var stt2:String="";
+				if (meray)
+			 { var prot:String="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+						" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+						"'Mobil', 'Mobil', getdate()"+","+ mufo.usid+", 5  ,7 ,"+ mufo.osid +")" ;
+					
+					stt2=" DECLARE  @ridr int SELECT  @ridr=(max([id])+1)  FROM [Mufettis].[dbo].[merhele] INSERT INTO [Mufettis].[dbo].[merhele]  	( [id],[obyekt],[ad]) VALUES";
+					stt2=stt2 + "(@ridr  ," + mufo.osid + ", N'" + Azstring.Azstr(mersec.selectedItem.ad.toString()) + "' )  "+ prot;
+						}
+						else	{
+				 var prot:String="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+					 " ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+					 "'Mobil', 'Mobil', getdate()"+","+ mufo.usid+", 6  ,7 ,"+ mufo.osid +")  exec Mufettis.dbo.[MobKrit] "+ mufo.osid ;
+				 
+				 stt2="UPDATE [Mufettis].[dbo].[merhele]  SET 	[ad]=  N'" + Azstring.Azstr(mersec.selectedItem.ad.toString()) + "'   where [id]=" + merhele.selectedItem.id.toString()+ "   "+prot;;
+				 
+			//	 stt2="EXEC  [mufettis].[dbo].[MobUpdateMerhele] 	@mobid "++" ,@merad =N'"+Azstring.Azstr(nmer.text) 
+			 }
+				if (mersec.selectedIndex!=-1)
+				{
+					//	merhyarat.token=srv.execSQL(sqs2, 'DML', stt2, 1000);
+					nlib.GetUrl(stt2,merresult);
+				}
+					
+				 
+				
+			}
+			protected function bb4_clickHandler(event:MouseEvent):void
+			{
+				
+				var stt2:String="";
+				 if (mersec.selectedIndex>-1)
+				{
+					nlib.GetUrl("EXEC Mufettis.dbo.MobMerheleYeni  @obyekt="+mufo.osid
+						+",@E="+mufo.usid
+						+",@merad="+mersec.selectedItem.id.toString()   ,merresult);
+				 } 
+			}
+			protected function bb1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub  CANCEL
+				
+				nmer.editable=false;
+				//	merbut.label="Yeni Mərhələ";
+				if (merhele.selectedIndex > -1)
+					nmer.text=Azstring.Azrec(merhele.selectedItem.ad);
+				merbut.visible=true;
+				merad.visible=false;
+				tesmerh.visible=false;
+				imtinamerh.visible=false;
+				
+			 	mersec.visible=false;
+				yfoto.enabled=true;
+				yfotoy.enabled=true;
+				
+				geri.enabled=true;
+			}
+			
+			public function method2(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					merhid=merhele.selectedIndex;
+					
+					if (img.source)
+						lastimage=img.source.toString();
+					
+					if (CameraRoll.supportsBrowseForImage)
+					{
+						
+						
+						roll.browseForImage();
+					}
+					else
+					{
+						trace("Seçmək yoxdur");
+						
+						
+					}
+				}
+				
+			}
+			protected function fotoy(event:MouseEvent):void
+			{
+				//		img.source =null; 
+				
+				//		img.source="assets\Slide5.jpg"
+				
+				
+				if (merfil.length < 1) 
+				{
+					MobileAlert.show(' Mərhələ yaratmaq lazımdır!', 'Diqqət')
+					return;
+				}
+				
+				if (merhele.selectedIndex <1)
+				{
+					MobileAlert.show('Mərhələni Secin!', 'Diqqət');
+					return;
+				}
+				
+				MobileAlert.show( 'Şəkillər bu mərhələyə \n  -'+merhele.selectedItem.ad+'- \n əlavə eiləcək?', 'Mərhələnin seçimi', 9, this, method2);
+				
+			}
+			
+			protected	function fotoytest(evt:MouseEvent):void
+			{
+				
+				
+				
+				var fotoidsstr:String="f007999390.jpg";
+				var inFile:File;
+				inFile=WorkDir.resolvePath('ttnda/Mufettis/foto/' + fotoidsstr);
+				
+				
+				 
+				
+				var 	fqov:String='Mufettis'+"/f/"+fotoidsstr.substr(3,4);	
+				
+				nlib.UpFtp(inFile,  fqov,fotoidsstr,uplodsresult);
+				
+				
+				
+			}
+			protected function fotocek(event:MouseEvent):void
+			{
+				if (merfil.length < 1) 
+				{
+					MobileAlert.show(' Mərhələ yaratmaq lazımdır!', 'Diqqət')
+					return;
+				}
+				
+				if (merhele.selectedIndex <1)
+				{
+					MobileAlert.show('Mərhələni Secin!', 'Diqqət');
+					return;
+				}
+				
+				 MobileAlert.show( 'Şəkillər bu mərhələyə \n  -'+merhele.selectedItem.ad+'- \n əlavə eiləcək?', 'Mərhələnin seçimi', 9, this, method3);
+				
+			}   
+			public function method3(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					
+					merhid=merhele.selectedIndex;
+					
+					if (img.source)
+						lastimage=img.source.toString();
+					
+					
+					if (CameraUI.isSupported)
+					{
+						myCam.launch(MediaType.IMAGE);
+					}
+						
+					else
+					{
+						
+						trace("Seçmək yoxdur");
+						var filemov:File=WorkDir.resolvePath('ttnda/fam.jpg');
+						filenamefoto=filemov;
+						merhele.selectedIndex= merhid;
+						img.source=filenamefoto.url;
+						//	img.source ="assets\Slide5.jpg";
+						img.width=713;
+						img.height=553;
+						yfotoy.visible=false;
+						yfoto.visible=false;
+						merbut.enabled=false;merad.enabled=false;
+					 
+						geri.enabled=false;
+						imtina.visible=true;
+						yaddas.visible=true;
+						serkoc.visible=true;
+						
+					}
+				}
+				
+			}
+			protected function onComplete(evt:MediaEvent):void
+			{
+				
+				if (img.source)
+					lastimage=img.source.toString();
+				
+				img.source=null;
+				
+				var tar:Date=new Date();
+				
+				fotostt2 ="x"+mufo.osid.toString()+"x"+tar.date.toString() +  tar.month.toString() +   tar.fullYear.toString()+"x"+tar.hours.toString()+ tar.minutes.toString()+tar.seconds.toString()+tar.milliseconds .toString();
+				
+				var filemov:File=WorkDir.resolvePath('ttnda/Mufettis/foto/' + fotostt2);
+				eslad=evt.data.file.name; 
+				evt.data.file.copyTo(filemov, true);
+				
+				filenamefoto=filemov;
+				merhele.selectedIndex= merhid;
+				img.source=filenamefoto.url;
+				//	img.source ="assets\Slide5.jpg";
+				img.width=713;
+				img.height=553;
+				yfotoy.visible=false;
+				yfoto.visible=false;
+				merbut.enabled=false;merad.enabled=false;
+		 
+				geri.enabled=false;
+				imtina.visible=true;
+				yaddas.visible=true;
+				serkoc.visible=true;
+				
+				
+				
+			}
+			
+			
+			private function fotoidresult(event:Event):void
+			{
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				var aar:Object= xml.Cedvel as Object;
+				
+				fotoids=aar.fotid.toString();
+				
+				
+				var fotoidsstr:String="f" + zeroPad(fotoids, 9) + ".jpg";
+				var fileext:String="f" + zeroPad(fotoids, 9) + "_.jpg";
+				
+				//	var file:File = File(filenamefoto);
+				
+				var filemov:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fotoidsstr);
+				
+				filenamefoto.moveTo(filemov, true);
+				
+				var stream:FileStream=new FileStream();
+				
+				stream.open(filemov, FileMode.READ);
+				var ba:ByteArray=new ByteArray();
+				stream.readBytes(ba);
+				stream.close();
+				
+				//Transform byteArray     to bitmapdata, to do that i use the function loadBytes
+				
+				var loader:Loader=new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onComplete_loader_contentLoaderInfo);
+				loader.loadBytes(ba);
+				
+				
+				function onComplete_loader_contentLoaderInfo(evt:Event):void
+				{
+					var content:*=loader.content;
+					var bigBMD:BitmapData=new BitmapData(content.width, content.height, true, 0x00000000);
+					bigBMD.draw(content, null, null, null, null, true);
+					var numberFormatter:spark.formatters.NumberFormatter=new spark.formatters.NumberFormatter;
+					numberFormatter.fractionalDigits=4;
+					var nisbet:Number=bigBMD.height / bigBMD.width;
+					
+					
+					///////////////////////////////////////////////////////	
+					nisbetstr=numberFormatter.format(nisbet);
+					var scale:Number=(150 / bigBMD.width);
+					var matrix:Matrix=new Matrix();
+					matrix.scale(scale, scale);
+					var smallBMD:BitmapData=new BitmapData(bigBMD.width * scale, bigBMD.height * scale, true, 0x000000);
+					smallBMD.draw(bigBMD, matrix, null, null, null, true);
+					var jpg:JPEGEncoder=new JPEGEncoder(50);
+					var myJPG:ByteArray=jpg.encode(smallBMD);
+					var filemm:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fileext);
+					
+					stream.open(filemm, FileMode.WRITE);
+					stream.writeBytes(myJPG);
+					stream.close();
+					
+					var inFile:File;
+					
+					if (kocur)
+					{
+						inFile=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fotoidsstr);
+						
+						
+					}
+						
+					else
+					{
+						var appDir:File=File.applicationDirectory;
+						inFile=appDir.resolvePath('assets/fotomob.jpg');
+						aaddItem(eslad, merhele.selectedItem.ad,fotostt2, fotoidsstr);
+						var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/foto/' + fotoidsstr);
+						var filemov:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fotoidsstr );
+						
+						filemov.copyTo(outFile, true);
+						
+					}
+					
+ 
+					var 	fqov:String='Mufettis'+"/f/"+fotoidsstr.substr(3,4);	
+					
+					//		uplods.token=srv2.qup(dataf, fotoidsstr, "Mufettis");
+					nlib.UpFtp(inFile,  fqov,fotoidsstr,uplodsresult);
+					
+					
+					
+				}
+			}
+			
+			
+			
+			
+			private function uplodsresult(event:Event):void
+			{
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				
+				var		result:String=ss4.soap_Body.qupResponse.qupResult.toString();
+				
+				if (result.substring(0, 6) == "Upload")
+					
+				{
+					
+					//	var  fname:String="f" + zeroPad(fotoids, 9) + "_.jpg";
+					
+					var fname:String=result.substr(7, 10) + "_.jpg";
+					
+				
+					
+					
+					var inFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+					var 	fqov:String="Mufettis"+"/f/"+fname.substr(3,4);	
+					
+					//		uploadext.token=srv2.qup(dataf, fname, "Mufettis");
+					nlib.UpFtp(inFile, fqov,fname, uploadextresult);
+					
+					
+				}
+				else
+				{
+					MobileAlert.show(' Şəkil Serverə naməlum səbədən yüklənməmisdir! Əməliyyatı TƏKRAR edin', 'Diqqət')
+				}
+			}
+			
+			
+			
+			private function uploadextresult(event:Event):void
+			{
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				new XMLDocument(event.target.data);
+				var ss:String=(new XMLDocument(event.target.data)).firstChild.firstChild.firstChild.firstChild.firstChild.nodeValue;
+				
+				var		result:String=ss4.soap_Body.qupResponse.qupResult.toString();
+				
+				if (result.substring(0, 6) == "Upload")
+					
+					
+					
+				{
+					if (!kocur )  MobileAlert.show(' Şəkil Yaddaşa QEYD edildi!', 'Məlumat');
+					else		MobileAlert.show(' Şəkil Serverə  yüklənmisdir!', 'Məlumat');
+					//	MobileAlert.show(' Şəkil Serverə  yüklənmisdir!', 'Diqqət')
+					
+					//	if ( merhele.selectedIndex>-1)	nmer.text=merhele.selectedItem.ad;
+					
+					var prot:String="  INSERT INTO [mufettis].[dbo].[prot]"+" " +
+						" ([makadres] ,[ipadres] ,[dt] ,   [E] ,    [emel] ,[emeltip]  ,[n2] ) VALUES ("+
+						"'Mobil', 'Mobil', getdate()"+","+ mufo.usid+", 5  ,10 ,"+ mufo.osid +")" ;
+					
+					var stt2:String="INSERT INTO [Mufettis].[dbo].[foto] 	( [id],[merhele],[ad],[nisbet]) VALUES";
+					
+					// ids ,merheleID,ad,nisbet-real
+					var tar:Date=new Date();
+					merhele.selectedIndex= merhid;
+					
+					stt2=stt2 + "(" + parseInt(result.toString().substr(8, 9)).toString() + ", " + merhele.selectedItem.id+ ", '"+eslad+"' " + "," + nisbetstr.toString() + ")  " +prot;
+					
+					//	fotoadd.token=srv.execSQL(sqs2, 'DML', stt2, 1000);
+					nlib.GetUrl(stt2,fotoaddresult);
+				}
+				else
+				{
+					MobileAlert.show(' Şəkil Serverə naməlum səbədən yüklənməmisdir! Əməliyyatı TƏKRAR edin', 'Diqqət')
+				}
+			}
+			
+			
+			private function fotoaddresult(evt:Event):void
+			{
+				merhele.selectedIndex= merhid;
+				merhele.enabled=true;
+				yfoto.visible=true;
+				yfotoy.visible=true;
+				merbut.enabled=true;merad.enabled=true;
+		 
+				geri.enabled=true;
+				imtina.visible=false;
+				yaddas.visible=false;
+				serkoc.visible=false;
+				//	execSQLResult.token=srv.execSQL(sqs1, 'DML', sq1 + mufo.osid.toString(), 1000);
+				nlib.GetUrl(sq1 + mufo.osid.toString(),result);
+				
+			}
+			
+			
+			
+			// sqlc is a variable we need to define the connection to our database
+			private var sqlc:SQLConnection=new SQLConnection();
+			// sqlc is an SQLStatment which we need to execute our sql commands
+			private var sqls:SQLStatement=new SQLStatement();
+			
+			// ArrayCollection used as a data provider for the datagrid. It has to be bindable so that data in datagrid changes automatically when we change the ArrayCollection
+			
+			// function we call at the begining when application has finished loading and bulding itself
+			private function startsql():void
+			{
+				// first we need to set the file class for our database (in this example test.db). If the Database doesn't exists it will be created when we open it.
+				var db:File=File.applicationStorageDirectory.resolvePath("ttnda/Mufettis/fotolar.db");
+				// after we set the file for our database we need to open it with our SQLConnection.
+				if (!sqlc.connected) sqlc.openAsync(db);
+				// we need to set some event listeners so we know if we get an sql error, when the database is fully opened and to know when we recive a resault from an sql statment. The last one is uset to read data out of database.
+				sqlc.addEventListener(SQLEvent.OPEN, db_opened);
+				sqlc.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls.addEventListener(SQLEvent.RESULT, resault);
+				
+			}
+			
+			private function resault(e:SQLEvent):void
+			{
+				
+			}
+			
+			private function error(e:SQLErrorEvent):void
+			{
+				///	Alert.show(e.toString());
+			}
+			
+			private function db_opened(e:SQLEvent):void
+			{
+				// when the database is opened we need to link the SQLStatment to our SQLConnection, so that sql statments for the right database.
+				// if you don't set this connection you will get an error when you execute sql statment.
+				sqls.sqlConnection=sqlc;
+				// in property text of our SQLStatment we write our sql command. We can also combine sql statments in our text property so that more than one statment can be executed at a time.
+				// in this sql statment we create table in our database with name "test_table" with three columns (id, first_name and last_name). Id is an integer that is auto incremented when each item is added. First_name and last_name are columns in which we can store text
+				// If you want to know more about sql statments search the web.mufo.
+				sqls.text="CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,merad TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				
+				//		sqls.text="CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,mersec TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				
+				// after we have connected sql statment to our sql connection and writen our sql commands we also need to execute our sql statment.
+				// nothing will change in database until we execute sql statment.
+				sqls.execute();
+				// after we load the database and create the table if it doesn't already exists, we call refresh method which i have created to populate our datagrid
+				
+				
+			}
+			
+			// function to add item to our database
+			private function aaddItem(pozaad:String, meraad:String, fotostt:String,faylaad:String):void
+			{
+				var vvvv:ByteArray=new ByteArray();
+				var tar:Date=new Date();
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls.text="INSERT INTO fotos (osid,oad,uid,merad,pozad,faylad,filead,tarix,gun,ay,il,icra) VALUES( '" +
+					mufo.osid + "','" + mufo.oad + "','" + mufo.usid + "','" + meraad + "','" + pozaad + "','" + faylaad + "','"  
+					+ fotostt + "','"+ dateFormatter.format(tar).toString() + "'," + 
+					tar.date.toString() + "," + tar.month.toString() + "," + 
+					tar.fullYear.toString() + ", false"+ ");";
+				
+				
+				sqls.execute();
+				
+			}
+			
+			
+			protected function deact(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				sqlc.close();
+				
+			}
+			
+			protected function foid():void
+			{
+				var stt2:String="SELECT (foto+1)  as fotid FROM [Mufettis].[dbo].[ids]   update  [Mufettis].[dbo].[ids]  set foto=foto+1 ";
+				//fotoid.token=srv.execSQL(sqs2, 'DML', stt2, 1000);
+				
+				nlib.GetUrl(stt2,fotoidresult);
+				merhele.enabled=false;
+			}
+			protected function serkoc_clickHandler(event:MouseEvent):void
+			{
+				
+				kocur=true;
+				foid();
+				
+			}
+			
+			protected function yaddas_clickHandler(event:MouseEvent):void
+			{
+				
+				kocur=false;
+				foid();
+			}
+			protected function imtina_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				img.source=null;
+				img.source=lastimage;
+				img.width=713;
+				img.height=553;
+				imtina.visible=false;
+				yaddas.visible=false;
+				serkoc.visible=false;
+				yfoto.visible=true;
+				yfotoy.visible=true;
+				merbut.enabled=true;merad.enabled=true;
+	 
+				geri.enabled=true;
+				
+				
+				
+				kocur=true;
+				
+			}
+			
+			
+			
+			public function rayuserr(event:Event):void
+			{
+				
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				//var xmlListCollection: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				//	vezray  = new ArrayCollection(xmlListCollection.toArray()); 
+			 
+				 
+				 var vezray:ArrayCollection = new ArrayCollection();	
+				var selvez:Object=new Object();
+				for each (var s:XML in xml.Cedvel)
+				{					
+					var oob:Object=new Object();
+					
+					oob.id=parseInt(s.id.toString() );
+					oob.ad=s.ad.toString();					 
+					vezray.addItem(oob );
+					
+					if (oob.id.toString()==mufo.ovezid) selvez=oob;
+					 
+				}		 		
+				vezsec.dataProvider =vezray;
+				vezsec.selectedItem=selvez ;
+				
+			}	
+			
+			protected function vezsec_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				MobileAlert.show( 'Tikintinin vəziyyəti  \n  -'+vezsec.selectedItem.ad+'- \n dəyişiləcək?', 'Tikintinin vəziyyəti', 9, this, method55);
+				
+			}   
+			public function method55(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					
+					nlib.GetUrl( "EXEC [Mufettis].[dbo].[MobObVezDeyis]  @e=" + mufo.usid.toString() + 
+						",@obyekt="+mufo.osid.toString() + ",@veziyyet="+vezsec.selectedItem.id.toString() 
+						,resultvez,sdsdsd);
+					
+					 
+				}
+				
+			}
+			import mx.utils.StringUtil;
+			private function sdsdsd(event:Event):void {
+				var o:Object = new Object();
+				o.id=parseInt(mufo.ovezid);
+				
+			 
+				o.ad=mufo.ovez;
+			 
+					vezsec.selectedItem=o;
+					
+					
+					
+					
+				mufo.gor=false;
+				
+				MobileAlert.show('Xəta 367: Yenidən daxil edin ! '  , 'Məlumat');//+event.toString()
+				return;  
+				
+			}		
+		private function resultvez(event:Event):void {
+				
+				
+				
+				
+				
+				trace("vezz geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				
+				xml=xml.normalize();
+				
+				var cemddd:String="";
+				for each (var s:XML in xml.Cedvel)
+				{
+					cemddd+=s.children()[0];
+					
+				}
+				 
+				var	aar = xml.Cedvel;
+				
+				 
+					var asid:String= aar.id.toString();
+				if (  asid=="")
+				{
+					MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat');
+					var o:Object = new Object();
+					o.id=parseInt(mufo.ovezid);
+					
+					
+					o.ad=mufo.ovez;
+					
+					vezsec.selectedIndex=o.id-1;
+					return;  
+				}
+				if( (isNaN(Number( StringUtil.trim(asid))))  || ( StringUtil.trim(asid).length==0))
+				{
+					MobileAlert.show('Xəta 25: Yenidən daxil edin ' , 'Məlumat');
+					var o:Object = new Object();
+					o.id=parseInt(mufo.ovezid);
+					
+					
+					o.ad=mufo.ovez;
+					
+					vezsec.selectedIndex=o.id-1;
+					return;  
+				}
+			
+				var aiid:int=parseInt(aar.id.toString());
+					if (  aiid==0)
+				{
+					MobileAlert.show('Xəta 27: '+aar.ad.toString() , 'Məlumat');
+					var o:Object = new Object();
+					o.id=parseInt(mufo.ovezid);
+					
+					
+					o.ad=mufo.ovez;
+					 
+					vezsec.selectedIndex=o.id-1;
+					return;  
+				}
+				 
+				
+				if (aar.vez)	mufo.ovez=aar.ad.toString();
+			 
+				if (aar.vezid)		mufo.ovezid=aar.id.toString();
+				
+				 
+				var o:Object = new Object();
+				o.id=parseInt(mufo.ovezid);
+				
+				
+				o.ad=mufo.ovez;
+				
+				vezsec.selectedIndex=o.id-1;
+				////	ltar.text=tablexml.NewDataSet.Table.ytarix.toString();
+				
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+	 
+			}
+			
+			
+			
+			protected function nnqeyd_changeHandler(event:TextOperationEvent):void
+			{
+				// TODO Auto-generated method stub
+				qeydbut.enabled=true
+			}
+			protected 	function qeydsor (event:PopUpEvent) 
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					nlib.GetUrl("EXEC [Mufettis].[dbo].[MobQeydEt] @userid=" +mufo.usid +
+						",@obid=" +mufo.osid +
+						",@qeyd=N'" + nnqeyd.text+"'"
+						,function  (event) 
+						{
+							MobileAlert.showt(' Qeyd təsdiqləndi ' , 'Məlumat')
+							mufo.oqeyd=nnqeyd.text;
+						});
+				}
+				
+			}
+			protected function qeydbut_clearHandler(event:Event):void
+			{
+				
+				var dd:String="ggg";
+				// TODO Auto-generated method stub
+				MobileAlert.show( ' Qeyd əlavə eiləcək?', 'Qeyd', 9, this, 
+					qeydsor);
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	 
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1290" designHeight="720" width="1290" height="720" includeInLayout="false"><s:Button id="yfoto" x="11" y="530" enabled="{mufo.duzelden}" width="195.5" label="Yeni Şəkil " click="fotocek(event)" color="#A102FC" fontSize="24"/>
+	<s:Button id="yfotoy" x="13" y="591" width="195.5" enabled="{mufo.duzelden}" label="Şəkil  Seçmək" click="fotoy(event)" color="#A102FC" fontSize="24"/>
+	
+	
+	
+	
+	
+	<s:Button id="merbut" x="1075" y="545" width="194.5" enabled="{mufo.duzelden}" label="Yeni Mərhələ " click="meryarat(event)" color="#A102FC" fontSize="24"/> 
+
+	<s:Button id="merad" x="1076" y="495" width="194.5" label="Dəyişmək" click="merdey(event)" color="#A102FC" visible="false" enabled="false" fontSize="24"/>
+	<s:Label id="mdate" x="1075" y="232" width="194" height="31" color="#5D5252" fontSize="16" fontWeight="bold" text="" textAlign="center" verticalAlign="middle"/>
+	
+	
+	
+	
+	
+	
+	<s:Group id="ter" x="216" y="92" width="713" height="553">
+		
+		<s:Rect left="2" right="2" top="2" bottom="2">
+			<s:stroke>
+				<s:SolidColorStroke color="0xD8D8D8" weight="2"/>
+			</s:stroke>
+		</s:Rect>
+		
+		
+		<s:Scroller left="3" right="3" top="3" bottom="3">
+			<s:Group id="vp">
+				
+				
+				
+				
+				<s:Image id="img" visible="true" x="0" y="0" width="{ter.width}" height="{ter.height}" doubleClick="ono(event)" doubleClickEnabled="true" maintainProjectionCenter="true"/>
+				
+			</s:Group>
+			
+			
+			
+			
+			
+		</s:Scroller>
+	</s:Group>
+	
+	
+	
+	<s:List id="ilist" x="937" y="92" width="120" height="553" dataProvider="{merrem}" itemRenderer="skins.CustomItemRenderer">
+		
+		
+		
+		<s:layout>
+			<s:VerticalLayout gap="15" requestedRowCount="1"/>
+		</s:layout>
+		
+		
+	</s:List>
+	
+	<s:SpinnerListContainer x="1071" y="269" visible="{merbut.visible}" width="199" height="219">
+		<s:SpinnerList id="merhele" horizontalCenter="0" top="0" left="0" width="195" wrapElements="false" height="197" labelField="ad" change="merhele_changeHandler()" valueCommit="merhele_changeHandler()" dataProvider="{merfil }" visible="{merbut.visible}"/>
+	 
+		
+	</s:SpinnerListContainer>
+	<s:SpinnerListContainer x="1071" y="269" width="199" visible="{mersec.visible}" height="219">
+		<s:SpinnerList id="mersec" color="red" width="195" wrapElements="false" height="197" labelField="ad" change="merhelead_changeHandler()" valueCommit="merhelead_changeHandler()" dataProvider="{meradlar }" visible="false"/>
+		
+	</s:SpinnerListContainer>
+	<s:Label id="nnnum" visible="false"/>
+	<s:Button id="imtinamerh" visible="false" x="1183.5" y="543" width="82" height="32" label="İmtina" accentColor="0x565656" click="bb1_clickHandler(event)" fontSize="14" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="tesmerh" visible="false" x="1079.5" y="544" width="83" height="32" label="Yarat" accentColor="0x565656" click="bb4_clickHandler(event)" fontSize="14" fontWeight="bold" styleName="customButton"/>
+	<s:Label id="nnad" x="216" y="10" width="833" height="74" backgroundAlpha="0.2" backgroundColor="#666363" color="#A102FC" fontSize="20" fontWeight="bold" text="{mufo.oad}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="qeydbut" click="qeydbut_clearHandler(event)" x="60.5" y="297" width="88" enabled="false" height="32.5" label="Qeyd" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:TextArea id="nnqeyd" x="10" y="336" width="194" height="120" change="nnqeyd_changeHandler(event)" fontSize="14" fontWeight="bold" selectable="true" selectionHighlighting="whenFocused" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle" text="{mufo.oqeyd}" textAlign="center" verticalAlign="middle"/>
+	<s:TextArea id="nmer" x="1076" y="94" width="194" height="131" editable="false" fontSize="14" fontWeight="bold" selectable="true" selectionHighlighting="whenFocused" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle" text="{Azstring.Azrec(merhele.selectedItem.ad)}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="geri" x="1107" y="600" width="148" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	<s:Button id="yaddas" x="40" y="533" width="140" label="Yaddaşda saxla" visible="false" click="yaddas_clickHandler(event)" fontSize="16"/>
+	<s:Button id="imtina" x="40" y="599" width="140" label="İmtina" visible="false" click="imtina_clickHandler(event)" fontSize="16"/>
+	<s:Button id="serkoc" x="40" y="465" width="140" label="Serverə köçür" visible="false" click="serkoc_clickHandler(event)" fontSize="16"/>
+	<s:Label id="ftar" x="216" y="653" width="194" height="26" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="13" y="205" width="184" height="30" fontSize="20" fontWeight="bold" text="Tikintinin vəziyyəti" textAlign="center" verticalAlign="middle"/>
+	<s:Button x="10" y="11" width="188" height="73" enabled="{mufo.duzelden}" label="Obyektdə oldum" iconPlacement="left" icon="@Embed('../assets/mapgps.png')" fontSize="16" click="{navigator.pushView(Oldum,flipTrans) }"/>
+	<flextras:DropDownList id="vezsec" x="8.3" y="237" width="198" enabled="{mufo.duzelden}" change="vezsec_changeHandler(event)" labelField="ad"/>
+	<s:Button id="korrbut" x="11" y="150" width="184" height="40" label="Koordinat" click=" navigator.pushView(Koordinat,flipTrans)" color="#A102FC" enabled="{mufo.ukoor}" fontSize="26"/>
+	<s:Label id="olat" x="90" y="121" width="124" height="21" textAlign="left" verticalAlign="middle" text="{mufo.paralel.toString()}"/>
+	<s:Label id="olong" x="91" y="95" width="124" height="21" textAlign="left" text="{mufo.meridian.toString()}" verticalAlign="middle"/>
+	<s:Label id="mlat2" text="Paralel:  " x="27" y="129" width="79"/>
+	<s:Label id="mlong2" x="19" y="100" width="66" text="Meridian:"/>
+	<s:Button id="redbut" visible="true" x="1080" y="10" width="190" height="74" label="Redaktə" enabled="{mufo.duzelden}" click=" { if (!(mufo.oad.length&gt;2)) xFade3.play() else  navigator.pushView(Redakte,flipTrans) }" fontSize="18" icon="@Embed('../assets/redak.png')" iconPlacement="left"/>
+	
+</adaptive:ResponsiveStage></s:View>

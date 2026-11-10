@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" 
+				   xmlns:flextras="http://www.flextras.com/mxml"
+
+				
+				   creationComplete="init(event)"  >
+	
+	<fx:Script>
+		<![CDATA[			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+			
+			import spark.components.DataGrid;
+			import spark.components.gridClasses.GridColumn;
+			import spark.events.IndexChangeEvent;
+			
+			//the collection on which the search is to be applied
+			[Bindable]
+			public var searchListCollection:ArrayCollection;
+			
+			//use the datagrid for getting the filter field labels
+			[Bindable]
+			public var dataGrid:DataGrid;
+			
+			[Bindable]
+			private var columns:ArrayList;
+			
+		
+			
+			protected function clearHandler(event:MouseEvent):void
+			{
+				searchText.text='';
+				
+				if(searchListCollection!=null){
+					searchListCollection.filterFunction=null;
+					searchListCollection.refresh();
+				}
+			}
+			
+			
+			
+			
+			protected function searchTextChangeHandler(event:Event):void
+			{
+				
+				var sttt:String=searchText.text;
+						
+				var i:int;
+				
+				var   sts:String="";
+				
+				for (i=0; i<sttt.length; i++)
+					
+				{
+					var cd:int=sttt.charCodeAt(i);
+					
+					if (sttt.charCodeAt(i)==1241) 
+					
+						sts+=String.fromCharCode(601);
+				
+					else
+						if (sttt.charCodeAt(i)==1241) 
+							
+							sts+=String.fromCharCode( 399);
+							
+						else
+						
+						sts+=sttt.charAt(i);
+				}
+				
+				//		sttt=chs.toString();
+				
+				searchText.text=sts; 
+				//		u-04D8 -018F
+				//	u-04D9 - 0259
+				
+				
+				//		u-04D8 - 1240 bb.ee
+				//-018F-399 b.e
+				//	u-04D9-1241 kicik e
+				//	- 0259-601 k.e
+				doSearch();
+			}
+			
+			
+		
+			protected function searchind(event:IndexChangeEvent):void
+			{
+				doSearch();
+			}
+			//exposed public method to be called to force search from other pages
+			public function doSearch():void
+			{
+			
+					searchListCollection.filterFunction=searchFilterFunction;
+					searchListCollection.refresh();
+				
+			}
+			
+			private function searchFilterFunction(item:Object):Boolean
+			{
+				
+				
+			
+					
+					
+					//1. starting iteration from index 1 since index 0 is the 'any' column for search
+					for(var i:Number=1;i<columns.length;i++){
+						//2. call the search operation for each row
+						//3. even if one column matches return the row
+						if(searchOperation(item,columns.getItemAt(i) as GridColumn,searchText.text)==true){
+							return true;
+						}
+					}
+				
+				//if none of the columns satisfied the filter then you can return false
+				return false;		
+			}
+			
+			private function searchOperation(item:Object,gridColumn:GridColumn,searchWord:String):Boolean
+			{
+				//when the search text is empty show all text
+				if(searchWord==''){
+					return true;
+				}
+				
+				//for complex object hierarchies walk through the object 
+		//		var charcode = 34; //example, put whatever here 
+		//		var char = String.fromCharCode(charcode); 
+				
+	//			var string_to_edit = 'This is my string.'; 
+	///			
+	///			var new string = string_to_edit.replace(char, 'whatever you are replacing with'); 
+
+				//get the last string object in the chain you are filtering
+				var object:Object=item;
+				
+				var selectedField:String = gridColumn.dataField;
+				
+				var tokens:Array = selectedField.split(".");
+				
+				for(var i:int=0;i<tokens.length;i++){
+					//if the object is null at any instance return false
+					//since we will not be able to walk down a null object tree
+					if(object==null){
+						return false;
+					}
+					object=object[tokens[i]];
+				}
+				
+				//check again if the object is not null
+				if(object==null){
+					return false;
+				}
+				
+				//do the actual search
+				return object.toString().search(new RegExp(searchWord,"i")) > -1;
+			}
+			
+			//we know for sure it is a grid column
+			//we can get the drop down label
+			protected function getGridColumnLabel(item:GridColumn):String
+			{
+				return item.headerText;
+			}
+			
+			protected function init(event:FlexEvent):void
+			{
+				// get all the columns
+				this.width=dataGrid.width;
+				this.height=40;
+				columns=dataGrid.columns as ArrayList;
+				//insert the any column and make it invisible
+				var anyColumn:GridColumn=new GridColumn();
+				anyColumn.headerText='Rayon';
+				anyColumn.dataField='rayon';
+				anyColumn.visible=false;
+				columns.addItemAt(anyColumn,0);
+    //                                      fieldSelector.selectedIndex=0;
+			}
+		//text 	enabled="{fieldSelector.selectedIndex!=-1}"
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Rect x="0" y="0" height="101%" width="101%">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xC4DF9B" />
+				<s:GradientEntry color="0xA3D39C" />
+			</s:LinearGradient>
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke color="0xA3D39C"/>
+		</s:stroke>
+	</s:Rect> 
+	
+	<s:HGroup x="0" y="0" width="100%" height="100%" verticalAlign="middle" >
+		<s:Spacer width="5" />
+		<s:TextInput id="searchText" width="65%" change="searchTextChangeHandler(event)"  prompt="axtariş üçün"  styleName="azStyle"   paddingBottom="0" paddingTop="0"  height="32" enabled="true"/>
+		<s:Spacer width="5" />
+		<s:Button id="clear" width="21%" height="29" label="Sil" click="clearHandler(event)"/>
+		<s:Spacer width="5" />
+	</s:HGroup>
+	
+</s:BorderContainer>

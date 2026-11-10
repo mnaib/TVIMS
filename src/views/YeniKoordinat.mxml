@@ -1,0 +1,441 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:google="com.mapgoogle.*" xmlns:esri="http://www.esri.com/2008/ags" destructionPolicy="never" title="Müfettiş" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" viewActivate="view1_viewActivateHandler(event)" creationComplete="requestMapLayout()" resize="requestMapLayout()" styleName="tvimsScreen">
+	
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" mode="cube" duration="1000" direction="right"/>
+		<s:ZoomViewTransition id="zoomTrans" mode="out" duration="1000"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1000"/>
+		<s:SlideViewTransition id="slideTrans" mode="cover" duration="1000" direction="left"/>
+	
+		
+		<esri:Extent id="exst" xmin="4809530" ymin="4763106" xmax="5626489" ymax="5106767"/>
+		
+		
+	 
+		
+ 
+	</fx:Declarations>
+	
+	<fx:Script><![CDATA[
+		
+			import com.*;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.ExtentEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			 
+			import com.esri.ags.utils.WebMercatorUtil;
+			
+			import components.*;
+			
+			import flash.sensors.Geolocation;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.styles.CSSStyleDeclaration;
+			import mx.styles.IStyleManager2;
+			import mx.utils.ArrayUtil;
+			import mx.utils.ObjectUtil;
+			import mx.utils.StringUtil;
+			
+			import spark.components.supportClasses.StyleableTextField;
+			import spark.events.ViewNavigatorEvent;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private  var mappo:MapPoint ;
+		 
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager = new PersistenceManager;
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo= persistenceManager.getProperty("mufo") as Mufo;
+			 
+				
+			}
+			
+			// when mouse (cursor) is on the map ...
+		
+			private function result(evt:ResultEvent):void
+			{
+				
+				var xmlResult:XML=new XML(evt.result);
+			
+				
+				if (xmlResult.NewDataSet.Table.cavab.toString()=="ok")
+					
+				{
+				MobileAlert.showt(' Koordinat Qəbul edildi' , 'Məlumat');
+				mufo.meridian=longitude.text;
+				mufo.paralel=latitude.text;
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+				navigator.popView(flipTrans);
+				}
+				else
+				{
+					MobileAlert.show(' Koordinatda SƏHV var' , 'Məlumat')
+				}
+			}
+			 
+			 
+			
+			
+			
+			// ... show coordinates of current (mouse) location
+		 
+			
+			protected var geo:Geolocation;    
+			public var sevv:String= "0";    
+			
+			/*
+			public function GeolocationTest()
+			{            
+			super();
+			stage.align = StageAlign.TOP_LEFT;
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			setUpTextField();
+			
+			if (Geolocation.isSupported) 
+			{ 
+			geo = new Geolocation(); 
+			if (!geo.muted) 
+			{ 
+			geo.addEventListener(GeolocationEvent.UPDATE, geoUpdateHandler); 
+			} 
+			geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
+			} 
+			else 
+			{ 
+			log.text = "Geolocation not supported"; 
+			} 
+			}
+			
+			public function geoUpdateHandler(event:GeolocationEvent):void 
+			{ 
+			log.text = "latitude : " + event.latitude.toString() + "\n"; 
+			log.appendText("longitude : " + event.longitude.toString() + "\n");
+			} 
+			
+			public function geoStatusHandler(event:StatusEvent):void 
+			{ 
+			if (geo.muted)
+			geo.removeEventListener(GeolocationEvent.UPDATE, geoUpdateHandler);
+			else
+			geo.addEventListener(GeolocationEvent.UPDATE, geoStatusHandler);
+			}
+*/
+			
+			protected function myloc_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				maps.scale=2000;
+				maps.zoomTo(mappo);
+			}
+			
+			protected function view1_viewActivateHandler(event:ViewNavigatorEvent):void
+				
+			{
+				
+				if (Geolocation.isSupported) 
+				{ 
+					geo = new Geolocation(); 
+					
+					geo.addEventListener(StatusEvent.STATUS, geoStatusHandler);
+					addEventListener(ViewNavigatorEvent.REMOVING,onRemove);
+					
+					if (!geo.muted) 
+						geo.addEventListener(GeolocationEvent.UPDATE, onUpdate); 
+					else
+						MobileAlert.show(' GPS-i işə salmaq lazımdır ' , 'Məlumat');
+					
+					
+				} 
+				else 
+				{ 
+					MobileAlert.show(' GPS qurğusu yoxdur ' , 'Məlumat')
+				} 
+			
+				 
+				
+			}
+			
+			public function geoStatusHandler(event:StatusEvent):void 
+			{ 
+			if (geo.muted){
+			geo.removeEventListener(GeolocationEvent.UPDATE, onUpdate);
+			MobileAlert.show(' GPS-i işə salmaq lazımdır ' , 'Məlumat');
+			}
+			else{
+				MobileAlert.showt(' GPS-i işə salındı ' , 'Məlumat');
+			geo.addEventListener(GeolocationEvent.UPDATE, geoStatusHandler);
+			}	
+			}
+			protected function onUpdate(event:GeolocationEvent):void
+			{
+				trace("Update event called");
+				const mapint:MapPoint = new MapPoint(event.longitude, event.latitude,  new SpatialReference(4326))
+				const parmer:MapPoint = WebMercatorUtil.geographicToWebMercator(mapint) as MapPoint;
+				gpspoint.x=parmer.x;
+				gpspoint.y=parmer.y; 
+				mappo=parmer;
+				olong.text =mapint.x.toFixed(6) ; 
+				olat.text =mapint.y.toFixed(6);
+				    /*   latitude.text= "Paralel:    " + event.latitude.toFixed(6) ; 
+					longitude.text = "Meridian:   " + event.longitude.toFixed(6) ;
+					altitude.text =  "Səviyyə:    " + event.altitude.toFixed(6) ; */
+					  latitude.text=  event.latitude.toFixed(6) ; 
+					longitude.text =   event.longitude.toFixed(6) ;
+					altitude.text = event.altitude.toFixed(6) ;
+					verticalAccuracy.text =  "H.dəq :     "+ event.verticalAccuracy.toFixed(2) ;
+					horizontalAccuracy.text ="V.dəq:      " + event.horizontalAccuracy.toFixed(2);
+					speed.text =     "Surət:      " + event.speed.toFixed(2) ;
+					heading.text =   "İstiqamət:  "+ event.heading.toFixed(2) ;
+					
+					gpsp.refresh();
+				// auto-scroll the text area to the latest text
+		//		StyleableTextField(log.textDisplay).scrollV = StyleableTextField(log.textDisplay).scrollV+1;
+			}
+			
+			protected function onRemove(event:ViewNavigatorEvent):void
+			{
+				geo.removeEventListener(GeolocationEvent.UPDATE, onUpdate);				
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				binapoint.x=gpspoint.x;
+				binapoint.y=gpspoint.y;
+				
+				const mapPoint:MapPoint =new MapPoint(binapoint.x, binapoint.y, new SpatialReference(102100));
+				const latlong:MapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+				olong.text =latlong.x.toFixed(6);
+				olat.text =latlong.y.toFixed(6);
+				myGraphicPic.refresh();
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				olong.text=mlong.text;
+				olat.text=mlat.text
+				const mapint2:MapPoint = new MapPoint(parseFloat(mlong.text), parseFloat(mlat.text),  new SpatialReference(4326))
+				const mat:MapPoint = WebMercatorUtil.geographicToWebMercator(mapint2) as MapPoint;
+				binapoint.x=mat.x;
+				binapoint.y=mat.y;
+		        	sevv="0";
+				myGraphicPic.refresh();
+			}
+			
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				// UPDATE  koord where obyektid=mufo.osid).toString().toString()
+				sevv= mx.utils.StringUtil.trim(altitude.text.split("    ")[1]);
+		if (sevv=="")	  sevv="0";
+				const latlong:MapPoint = WebMercatorUtil.webMercatorToGeographic(binapoint) as MapPoint;
+			 
+				// UPDATE [Mufettis].[dbo].[obyekt]		SET		[meridian] =5555,[paralel] = 5555,[seviyye] = 555	WHERE id=1 select 100 as okey
+		//		var stt2:String=" UPDATE  [Mufettis].[dbo].[obyekt]  SET  [meridian] ="+	olong.text+" , [paralel] ="+olat.text+", [seviyye] = "+sevv+"  	WHERE id="+mufo.osid;
+	//var stt2:String="EXEC  [Mufettis].[dbo].[MobObyektKoordinat]  "+mufo.osid +","+ mufo.usid+","+ longitude.text+","+latitude.text +","+altitude.text;
+
+		// 	koorupd.token=srv.execSQL(sqs2, 'DML', stt2, 1000);
+				
+			
+				mufo.meridian=longitude.text;
+				mufo.paralel=latitude.text;
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+					MobileAlert.showt(' Koordinat Qəbul edildi' , 'Məlumat');
+				navigator.popView(flipTrans);	
+			}
+
+
+            // V3: Map is a direct child of View. Its interactive surface is never transformed.
+            private var mapLayoutPending:Boolean = false;
+            private function requestMapLayout():void {
+                if (mapLayoutPending) return;
+                mapLayoutPending = true;
+                callLater(applyMapLayout);
+            }
+            private function applyMapLayout():void {
+                mapLayoutPending = false;
+                var vw:Number = this.width;
+                var vh:Number = this.height;
+                if (isNaN(vw) || isNaN(vh) || vw < 200 || vh < 220) return;
+                var pad:Number = 10;
+                var headHeight:Number = (vh < 500) ? 46 : 60;
+                var contentTop:Number = headHeight + pad * 2;
+                nad.x = pad;
+                nad.y = pad;
+                nad.width = vw - pad * 2;
+                nad.height = headHeight;
+                var mapX:Number = pad;
+                var mapY:Number = contentTop;
+                var mapW:Number;
+                var mapH:Number;
+                var infoX:Number;
+                var infoY:Number;
+                var infoW:Number;
+                var infoH:Number;
+                if (vw >= vh && vw >= 710) {
+                    // Wide screens: map on left, scrollable details on right.
+                    infoW = vw >= 1120
+                        ? Math.min(525, Math.max(460, vw * 0.39))
+                        : Math.min(380, Math.max(265, vw * 0.35));
+                    mapW = Math.max(230, vw - infoW - pad * 3);
+                    mapH = Math.max(150, vh - mapY - pad);
+                    infoX = mapX + mapW + pad;
+                    infoY = mapY;
+                    infoH = mapH;
+                } else {
+                    // Narrow screens: large map above a separately scrolling detail panel.
+                    mapW = Math.max(150, vw - pad * 2);
+                    var avail:Number = Math.max(170, vh - mapY - pad);
+                    mapH = Math.max(135, Math.min(vh * 0.52, avail - 112));
+                    mapH = Math.min(mapH, avail - 56);
+                    infoX = pad;
+                    infoY = mapY + mapH + pad;
+                    infoW = mapW;
+                    infoH = Math.max(46, vh - infoY - pad);
+                }
+                maps.x = mapX;
+                maps.y = mapY;
+                maps.width = mapW;
+                maps.height = mapH;
+                mapInfoScroll.x = infoX;
+                mapInfoScroll.y = infoY;
+                mapInfoScroll.width = infoW;
+                mapInfoScroll.height = infoH;
+                mapInfoCanvas.width = infoW;
+                if (infoW >= 475) {
+                    mapObjectPanel.x = Math.round(Math.max(0, (infoW - 454) / 3));
+                    mapObjectPanel.y = 6;
+                    mapGpsPanel.x = mapObjectPanel.x * 2 + 220;
+                    mapGpsPanel.y = 6;
+                    mapInfoCanvas.height = 716;
+                } else {
+                    mapGpsPanel.x = Math.max(0, Math.round((infoW - 226) / 2));
+                    mapGpsPanel.y = 6;
+                    mapObjectPanel.x = Math.max(0, Math.round((infoW - 220) / 2));
+                    mapObjectPanel.y = 718;
+                    mapInfoCanvas.height = 1430;
+                }
+                // Map controls remain View children so empty overlay containers never block gestures.
+                myloc.x = mapX + 12;
+                myloc.y = mapY + Math.min(158, Math.max(92, (mapH - 44) / 2));
+                mapSatelliteControl.x = mapX + Math.max(2, mapW - 128);
+                mapSatelliteControl.y = mapY + 12;
+                mapStreetControl.x = mapSatelliteControl.x;
+                mapStreetControl.y = mapY + 53;
+                maps.invalidateSize();
+                maps.invalidateDisplayList();
+            }
+
+]]></fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>		
+		<s:Label width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>	
+				<s:layout><s:BasicLayout/></s:layout><esri:Map id="maps" x="250" y="84" width="802" height="726" extent="{exst}" multiTouchEnabled="true" multiTouchRotationEnabled="true">
+				<google:GoogleMapLayer id="gmap"/>  
+ 
+		<google:GoogleSatLayer id="gsat" visible="false"/>  
+
+		
+		
+		
+		<esri:GraphicsLayer id="myGraphicsLayer">
+		
+		
+		<esri:Graphic id="gpsp" toolTip="GPS-in koordinatı">
+			<esri:geometry>
+				<esri:MapPoint id="gpspoint" x="-13163000" y="4035000" spatialReference="{new SpatialReference(102100)}"/>
+			</esri:geometry>
+			
+			<esri:symbol>
+				<esri:PictureMarkerSymbol source="@Embed('../assets/mapgps.png')"/>
+			</esri:symbol>
+		</esri:Graphic>
+		
+			
+			<esri:Graphic id="myGraphicPic" toolTip="BİNA-nın koordinatı">
+				<esri:geometry>
+					<esri:MapPoint id="binapoint"/>
+				</esri:geometry>
+				
+				<esri:symbol>
+					<esri:PictureMarkerSymbol source="@Embed('../assets/binamap.png')"/>
+				</esri:symbol>
+				
+			</esri:Graphic>
+			
+		
+		</esri:GraphicsLayer>
+		
+	</esri:Map>
+	<s:Label id="nad" x="250" y="5" width="802" height="74" backgroundAlpha="0.2" backgroundColor="#666363" color="#A102FC" fontWeight="bold" text="{mufo.oad}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="myloc" x="12" y="88" width="44" height="44" alpha="0.5" icon="@Embed('../assets/myloc.png')" click="myloc_clickHandler(event)"/>
+	<s:Button x="12" y="88" width="118" height="35" label="Peyk" alpha="0.5" click="{gmap.visible=false ,gsat.visible=true}" fontSize="16" id="mapSatelliteControl"/>
+	<s:Button x="12" y="88" width="118" height="35" label="Xəritə" alpha="0.5" click="{gmap.visible=true, gsat.visible=false}" fontSize="16" id="mapStreetControl"/>
+ 
+	
+	<s:Scroller id="mapInfoScroll" horizontalScrollPolicy="off" verticalScrollPolicy="auto" width="300" height="300"><s:Group id="mapInfoCanvas" width="300" height="700"><s:Group id="mapObjectPanel" width="220" height="700"><s:Rect left="0" right="0" top="0" bottom="0" radiusX="8" radiusY="8"><s:fill><s:SolidColor color="0xFFFFFF"/></s:fill></s:Rect><s:Label id="nrey" x="6.0" y="40.0" width="190" height="82" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.orey}" textAlign="center" verticalAlign="middle"/>
+	<s:Button id="bb7" x="61.5" y="152.0" width="88" height="32.5" label="Ünvan" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb8" x="56.5" y="430.0" width="88" height="32.5" label="Qeyd" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	<s:Button id="bb0" x="60.5" y="293.0" width="88" height="32.5" label="Təyinat" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/> 
+	<s:Label id="nqeyd" x="0.0" y="467.0" width="194" height="128" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.oqeyd}" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nunv" x="2.0" y="188.0" width="194" height="69" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.ounv}" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="ntey" x="0.0" y="330.0" width="194" height="56" backgroundAlpha="0.2" backgroundColor="#666363" text="{mufo.otey}" textAlign="center" verticalAlign="middle"/>
+				
+
+	
+	<s:Button id="bb2" x="61.5" y="1.0" width="88" height="35.5" label="Rəyi" accentColor="0x565656" fontSize="16" fontWeight="bold" styleName="customButton"/>
+	
+	</s:Group><s:Group id="mapGpsPanel" width="226" height="700"><s:Rect left="0" right="0" top="0" bottom="0" radiusX="8" radiusY="8"><s:fill><s:SolidColor color="0xFFFFFF"/></s:fill></s:Rect><s:Button id="gps" visible="false" x="34.0" y="327.0" width="171" label="GPS Seç" click="button1_clickHandler(event)" color="#A102FC" fontSize="26"/>
+				<s:Button id="mous" visible="false" x="34.0" y="414.0" width="171" label="Mousu Seç" click="button2_clickHandler(event)" color="#A102FC" fontSize="26"/>
+	<s:Button x="34.0" y="567.0" width="171" label="Qəbul et" enabled="{mufo.duzelden}" id="qebul" click="button3_clickHandler(event)" color="#A102FC" fontSize="26"/>
+	
+	<s:Label x="48.0" y="93.0" text="GPS Məlumatları:" fontWeight="bold"/>
+	<s:Label visible="false" x="38.0" y="340.0" width="149" fontWeight="bold" text="Mousun kordinatı"/>
+	<s:Label id="latitude" x="22.0" y="178.0" width="175" textAlign="center"/>
+	<s:Label id="longitude" x="22.0" y="130.0" width="175" textAlign="center"/>
+	
+	<s:Label id="mlat" visible="false" x="91.0" y="360.0" width="121" textAlign="left" verticalAlign="middle"/>
+	<s:Label id="mlong" visible="false" x="91.0" y="389.0" width="124" textAlign="left" verticalAlign="middle"/>
+	<s:Label x="36.0" y="427.0" width="149" fontWeight="bold" text="Obyektin kordinatı"/>
+	<s:Label id="olat" x="74.0" y="486.0" width="121" textAlign="left" verticalAlign="middle"/>
+	<s:Label id="olong" x="75.0" y="454.0" width="124" textAlign="left" verticalAlign="middle"/>
+	<s:Label id="mlat2" text="Meridian:" x="17.0" y="455.0" width="79"/>
+	<s:Label id="mlat0" text="Meridian" x="66.0" y="110.0" width="79"/>
+	<s:Label id="mlat3" text="Səviyyə" x="76.0" y="205.0" width="79"/>
+	<s:Label id="mlong2" text="Paralel:  " x="23.0" y="489.0" width="66"/>
+	<s:Label id="mlong0" text="Paralel:  " x="23.0" y="489.0" width="66"/>
+	<s:Label id="mlong3" text="Paralel:  " x="72.0" y="159.0" width="66"/>
+	
+	<s:Label id="mlat1" visible="false" x="22.0" y="363.0" width="79" text="Meridian: "/>
+	<s:Label id="mlong1" visible="false" x="25.0" y="392.0" width="66" text="Paralel:  "/>
+	
+	<s:Label id="altitude" x="24.0" y="224.0" width="175" textAlign="center"/>
+	<s:Label id="verticalAccuracy" x="24.0" y="269.0" width="175"/>
+	<s:Label id="horizontalAccuracy" x="24.0" y="296.0" width="175"/>
+	<s:Label id="speed" x="24.0" y="323.0" width="175"/>
+	<s:Label id="heading" x="24.0" y="350.0" width="175"/>
+	<s:Button x="34.0" y="636.0" id="geri" width="171" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	
+</s:Group></s:Group></s:Scroller></s:View>

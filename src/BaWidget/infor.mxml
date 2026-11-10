@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				xmlns:InfoTemplates="BaWidget.*"
+				label="{data.oad}" width="100%"  
+				creationComplete="itemrenderer1_creationCompleteHandler(event)" 
+			 dataChange="itemrenderer1_dataChangeHandler(event)"
+				show="itemrenderer1_showHandler(event)"
+				>
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Map;
+			import com.esri.ags.geometry.MapPoint;
+			import com.nlib;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.rpc.xml.SimpleXMLDecoder;
+			import mx.utils.StringUtil;
+			import mx.utils.XMLUtil;
+			
+			import spark.components.Button;
+			private var zoomScale:Number = 1000;
+			
+			private function zoom_clickHandler(event:MouseEvent):void
+			{ 
+				var map:Map=FlexGlobals.topLevelApplication.map;
+			 
+				var here:MapPoint = map.toMap(new Point(map.infoWindow.anchorX, map.infoWindow.anchorY));
+				if (map.scale > zoomScale)
+				{
+					map.level++;
+					map.level++;
+				}
+				map.centerAt(here);
+			}
+			
+			
+			private var zoomSc:Number = 5000000;
+			
+			private function zoom_clickHand(event:MouseEvent):void
+			{ 
+				var map:Map=FlexGlobals.topLevelApplication.map;
+				
+				var here:MapPoint = map.toMap(new Point(map.infoWindow.anchorX, map.infoWindow.anchorY));
+				if (map.scale < zoomSc)
+				{
+					map.level--;
+					
+				}
+				map.centerAt(here);
+			}
+			
+			protected function itemrenderer1_showHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				var sw:int=2;
+			}
+			
+			protected function itemrenderer1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				var se:int=2;
+				
+				
+				mfotoc.nextButtonToolTip = "Sonrakı";
+				mfotoc.prevButtonToolTip = "Əvvəlki";
+				
+				
+		//		linkprefix="ftp://usergis:G1s_2014_ada@172.16.0.19/Mufettis/" linksuffix=""
+				
+				mfotoc.multiImgPre = "";
+				mfotoc.multiImgSuf = "";
+			}
+			private var s:int=100;
+			[Bindable]
+			private var tpage:int=0;
+			protected function itemrenderer1_dataChangeHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+			//	execSQLResult.token=srv2.execSQL('Data Source=ttnda.az; Initial Catalog=sdedata; User ID=sde; Password=gissde','DHL','exec sde.obsecid  ' +adstr,1000);
+				nlib.GetCedvel("exec mufettis.dbo.Mobobsecidm " +data.id ,rregion);	
+			s++;	
+			trace("tekrra :"+data.id);
+			}
+			private function rregion(event:Event):void
+			{
+				trace("tekrra  geldi:"+data.id);
+				var xml:XML=new XML(event.target.data);
+				//		var xmllist: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				//		lreg.dataProvider=xmllist;
+				//	var remma4:ArrayCollection=evt.result.Tables.Cedvel.Rows;
+				
+				var	ssoaota :XMLDocument = new XMLDocument(event.target.data);
+			 
+				
+				var aaa:SimpleXMLDecoder=new SimpleXMLDecoder();
+				
+				var fassd:Object=aaa.decodeXML(ssoaota);
+				
+				var  aar:Object=fassd.Envelope.Body.CedvelResponse.CedvelResult.diffgram.DocumentElement.Cedvel;
+ 
+			//	if  (aar.rvar.toString()=="1" )   reybut.visible=true;
+		//		else reybut.visible=false;
+				 
+			 if (aar.ad)	lad.text=aar.ad.toString();				
+		 if (aar.vez)		 lrey.text	=aar.vez.toString();		
+			 if (aar.unvan)	lunv.text =aar.unvan.toString();
+			 if (aar.teyi)	ltey.text =aar.teyi.toString();
+		 if (aar.qeyd)		lqeyd.text =aar.qeyd.toString();
+		 if (aar.vaxt)		ltar.text =aar.vaxt.toString();
+		 if (aar.boll)		lboll.text =aar.boll.toString();
+		 mfotoc.iArray = aar.fotolar.toString().split(","); 
+		 tpage=  aar.fotolar.toString().split(",").length;
+	/*	 if (!(aar.boll.toString()=="nofoto.jpg"))
+		 { 
+			 
+			 mfotoc.includeInLayout=true;
+		mfotoc.visible=true;
+ 	 mfotoc.iArray = aar.fotolar.toString().split(","); 
+	 
+				trace("tekrra : bitdi"+data.id);
+				
+		 }
+		 else
+		 {
+			 mfotoc.includeInLayout=false;
+			 mfotoc.visible=false;
+			 mfotoc.iArray = aar.fotolar.toString().split(","); 
+			 trace("tekrra : bitdi"+data.id);
+		 }*/
+			}
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			import com.Dekod;
+		private	var bbt:ByteArray=new ByteArray();
+			private	var bbax:String="0";
+			private function reyHand(event:MouseEvent):void
+			{	
+			 
+					var 	fname:String="-" + zeroPad(data.id.toString(), 7)+".doc";	
+					fname="-0009948.doc";
+				nlib.GetFtpF('eksper', fname,downexr);
+				bbax="1";
+				 
+				
+			
+			
+				
+				
+				 
+			}
+			
+		private		function downexr(event:Event ):void {
+					
+				 
+					 
+						trace("GetFtp HAZIR" +event.toString()+"  "  +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						var	ssoaota :XMLDocument = new XMLDocument(event.target.data);
+						var fad:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.firstChild.nodeValue;
+						var ffile:String=ssoaota.firstChild.firstChild.firstChild.firstChild.firstChild.lastChild.firstChild.nodeValue;
+						
+						trace("SERVIS DECODE Yazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						//	var deccoder:Base64Decoder  =new Base64Decoder();
+						
+						//	deccoder.decode(soawtao);
+						trace("SERVIS DECODE222 Yazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						
+						// var bbt:ByteArray= deccoder.toByteArray();
+					 bbt= Dekod.decode(ffile);
+						trace("SERVIS FAYL Yazir" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+						var outFile:FileReference=new FileReference();
+					 
+						outFile.save(bbt,'rey.doc');
+						
+		//				reybut.dispatchEvent(new MouseEvent("zoomToBtnClicked"));	
+				/*		navigateToURL(myURLRequest, "_self");	
+					var nb:Button=new Button;
+					nb.visible=false;
+					nb.addEventListener(MouseEvent.CLICK,hyjk);
+						nb.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+						
+						function hyjk(event:MouseEvent ):void {	
+						var outFile:FileReference=new FileReference();
+						
+						outFile.browse()
+							//.save(bbt,'rey.doc');
+						}*/
+					
+				}		
+			
+		]]>
+	</fx:Script>	
+ 
+				<s:BorderContainer backgroundColor="white"
+								   borderColor="black"
+								   color="0x353930"
+								   cornerRadius="5"
+								   minHeight="0"
+								   width="100%"
+								   minWidth="0">
+					<s:layout>
+						<s:VerticalLayout paddingBottom="5" 
+										  paddingLeft="5"
+										  paddingRight="5"
+										  paddingTop="5"/>
+					</s:layout>
+					
+					<s:HGroup>
+						<s:Label text="Nömrəsi:" fontWeight="bold"  />
+						<s:RichText id="lnum" text="{data.id}" />
+					</s:HGroup>
+					
+					<s:HGroup>
+						<s:Label text="Adı:" fontWeight="bold"/>
+						<s:RichText id="lad" text="{data.oad}" />
+					</s:HGroup>
+					
+					<s:HGroup>
+						<s:Label text="Vəziyyəti:" fontWeight="bold"/>
+						<s:RichText id="lrey" text="yoxdur" />
+					</s:HGroup>
+					<s:HGroup>
+						<s:Label text="Təyinat:" fontWeight="bold"/>
+						<s:RichText id="ltey" text="yoxdur" />
+					</s:HGroup>
+					<s:HGroup>
+						<s:Label text="Rayon:" fontWeight="bold"/>
+						<s:RichText id="lboll" text="{data.oad}" maxWidth="310" />
+					</s:HGroup>
+					<s:HGroup>
+						<s:Label text="Ünvan:" fontWeight="bold"/>
+						<s:RichText id="lunv" text="yoxdur" maxWidth="310"/>
+					</s:HGroup>
+					
+					<s:HGroup>
+						<s:Label text="Qeyd:" fontWeight="bold"/>
+						<s:RichText id="lqeyd" text="yoxdur" maxWidth="310"/>
+						
+					</s:HGroup>
+					
+					<s:HGroup>			
+						<s:Label text="Son Tarix:" fontWeight="bold"/>
+						<s:RichText id="ltar" text="yoxdur" maxWidth="310"/>		
+					</s:HGroup>
+					
+					<s:VGroup horizontalAlign="center"  height="100%" width="100%" >
+					
+					<InfoTemplates:MutiImageControl id="mfotoc"  visible="true" includeInLayout="true" minWidth="450"  height="100%" width="100%" horizontalCenter="0"   />
+					</s:VGroup>
+					
+					<s:HGroup horizontalAlign="center" horizontalCenter="0" width="100%" >
+						
+						<s:HGroup horizontalAlign="center"  gap="70" >
+							<InfoTemplates:AttRelateInfoButtons id="buttons"  
+																zoomToBtnClicked="zoom_clickHandler(event)"
+																zoomToBtnToolTip="Buna görə Böyüt ">
+								 
+								
+							</InfoTemplates:AttRelateInfoButtons>
+							 <s:Label  id="seh" text="{(mfotoc.iCurrIndx+1).toString()}/{tpage}"/>
+							<InfoTemplates:AttRelateInfoButtonm id="butto"
+																zoomToBtnClicked="zoom_clickHand(event)"
+																zoomToBtnToolTip="Buna görə Kiçilt ">
+								 
+								
+							</InfoTemplates:AttRelateInfoButtonm>
+						</s:HGroup>
+					</s:HGroup>
+				</s:BorderContainer>
+	 
+	 
+</s:ItemRenderer>

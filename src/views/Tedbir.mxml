@@ -1,0 +1,493 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:flextras="http://www.flextras.com/mxml" xmlns:timePicker="com.datetime.*" xmlns:adaptive="com.responsive.*" viewActivate="view2_ActivateHandler(event)" destructionPolicy="never" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			
+			
+			import com.*;
+			import com.flexets.android.views.components.DatePicker;
+			import com.flexets.android.views.components.DatePickerEvent;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			
+			import spark.components.gridClasses.GridColumn;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var firmaarr:ArrayCollection = new ArrayCollection();	
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			
+			[Bindable]
+			public var date1:Date=new Date();
+			
+			private function showDatePicker():void
+			{
+				var datePicker:DatePicker=new DatePicker();
+				datePicker.currentDate=date1;
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet);
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel);
+				PopUpManager.addPopUp(datePicker, this, true);
+				PopUpManager.centerPopUp(datePicker);
+			}
+			import mx.managers.PopUpManager;
+			private function onDateSet(event:DatePickerEvent):void
+			{
+				date1=event.date;
+				onDateCancel(event);
+				
+			}
+			private function onDateCancel(event:DatePickerEvent):void
+			{
+				var datePicker:DatePicker=event.target as DatePicker;
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet);
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel);
+			}
+			
+			[Bindable]
+			private var faylarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var senedarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var pararr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var tablexml:XML = new XML();
+			
+			
+			
+			
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				//	ad.text=mufo.uad.toString();
+				
+			}
+			[Bindable]
+			private var remm4:ArrayCollection = new ArrayCollection();	
+			
+			
+			/// 7436 7640
+			
+			protected function view2_ActivateHandler(event:Event):void            {    
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				nad.text=mufo.oad.toString();
+				
+				nrey.text=mufo.orey.toString();
+				ntey.text=mufo.otey.toString();
+				nunv.text=mufo.oray.toString() + ", " + mufo.ounv.toString();
+				nqeyd.text=mufo.oqeyd.toString();
+				
+				
+				//	senedc.token=srv.execSQL(sqs,'DML','select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid ,1000)		
+				nlib.GetUrl(
+					'select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid,
+					senedr);			
+				
+				
+				
+			}  
+			
+			
+			
+			
+			
+			
+		 
+			protected function execSQLResult1_faultHandler(event:FaultEvent):void
+			{
+				//		inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+			}
+			
+			
+			
+			
+		 	
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+			
+	 
+			
+			
+			private function senedr(event:Event):void {
+				
+				
+				senedarr.removeAll();
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+			 		for each(var s:XML in xmlResult.Cedvel )
+				{      
+					senedarr.addItem(s);      
+				}				
+				
+				sened.dataProvider=senedarr;
+				
+				
+				
+				sened.selectedIndex=0;
+				metntext.text= sened.selectedItem.metn.toString();
+				
+			/* 	var stemo:String='select  M.ad as "sif", Q.Layiheci as "lay", Q.ad as "isi", T.ad as "tey", Mer.ad as "mer",MM.ad as "mal", Q.tarixyr as "reyt",Rey.ad as "rey" from Ekspertiza.dbo.qovluq Q left join umumi.dbo.mus M on M.id=Q.mus left join Ekspertiza.dbo.teyinat T on T.id=Q.teyinat left join Ekspertiza.dbo.soz Mer on Mer.id=Q.mer left join  Ekspertiza.dbo.malmen MM on MM.id=Q.malmen left join Ekspertiza.dbo.soz Rey on Rey.id=Q.yekun where Q.id='+ sened.selectedItem.id.toString() ; //firmaarr[0].nomre.toString();
+				
+				//	'select O.*, T.ad as "tad", B.ad as "bad"  from Lisenziya.dbo.obyekt O  left join umumi.dbo.teyinat T on T.id=O.teyinat  left join umumi.dbo.bolge B on B.id=O.bolge  where O.firma=';
+				
+				//	parc.token=srv.execSQL(sqs,'DML',stemo ,10000)
+				
+				nlib.GetUrl(stemo,parr); */	
+				
+				
+			}
+	 		
+			private function faylaxtar(event:MouseEvent):void
+			{
+				
+				
+				faylarr.removeAll();
+				
+				///select I.*, T.ad as "Tad", T.kod as "Tkod" , T.fn  from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma=:firma
+				
+				
+				
+				//var steme:String='select T.ad as "Fad" from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma='+firmaarr[firma.selectedIndex].id.toString();
+				var steme:String="select id, ad, dt from Mufettis.dbo.ftedbir where tedbir="+ sened.selectedItem.id.toString();
+				//select T.ad as "Fad" from Lisenziya.dbo.izin I  left join Lisenziya.dbo.tizin T on T.id=I.tizin  where firma='+firmaarr[firma.selectedIndex].id.toString();
+				
+		//***		faylac.token=srv.execSQL(sqs,'DML',steme ,10000)
+				nlib.GetUrl(steme,faylr);
+				
+			}
+			
+			private function faylr(event:Event):void {
+				
+				faylarr.removeAll();
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+					faylarr.addItem(s);      
+				}				
+				
+		 
+				 		
+				if (faylarr.length>0) 
+				{   fayl.enabled=true;
+					fayl.dataProvider=faylarr;
+				}
+				
+		//**		Down2.token=srv2.Connect(serr, uss, pass);
+				
+			//	nlib
+			}
+			
+			
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+			
+			private function parr(evt:Event):void {
+				//**			senedc.token=srv.execSQL(sqs,'DML','select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid ,1000)	;
+				nlib.GetUrl(
+					'select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid,
+					senedr);			
+				
+			
+	//		<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><CedvellsResponse xmlns="http://tempuri.org/"><CedvellsResult>H4sIAAAAAAAEALNxyU8uzU3NK3HNSQVRCvp2ACc8jEgTAAAA</CedvellsResult></CedvellsResponse></soap:Body></soap:Envelope>
+			}
+			import spark.events.IndexChangeEvent; 
+	 
+			
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			
+			
+			private function tnullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					
+					return tarPad(item[column.dataField].toString());
+			} 
+			public function tarPad(number:String):String
+			{
+				var ret:Array=number.split(" ");
+				if (ret.length<2)  return number;
+				var set:String=ret[0].toString();
+				ret=set.split("/");
+				
+				if (ret.length<2) ret=set.split("-");
+				if (ret.length<2) ret=set.split(".");
+				if (ret.length<2) return number;
+				return zeroPad(ret[1].toString(),2)+"."+zeroPad(ret[0].toString(),2)+"."+ret[2].toString();
+			}
+		
+			
+			
+			private function goster(event:MouseEvent):void
+			{
+				 
+				
+				//	var outFile:File=WorkDir.resolvePath('ttnda/cache/' + faylarr[fayl.selectedIndex].fayl.toString());
+				var 	fname:String="t" + zeroPad(faylarr[fayl.selectedIndex].id.toString(), 7);	
+			  
+				  	var    outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+				 
+					
+					nlib.GetFtp('Mufettis', fname,outFile,downer);
+				 
+					
+					function downer( ):void {
+					 
+						var docac2:Doclanch=new Doclanch();
+						docac2.openDoc(outFile.nativePath);
+						
+					}
+					
+					
+					
+					
+			 
+				
+				
+				
+			}
+			
+			
+			
+			protected function yenis(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				//**			sadd.token=srv.execSQL(sqs,'DML','select id , ad from  Mufettis.dbo.inzib ' ,10000);
+				
+				nlib.GetUrl('select id , ad from  Mufettis.dbo.inzib ' ,rsadd);
+				yenisb.enabled = false;
+				yeniaddb.enabled=true;
+				yenicancelb.enabled=true;
+				sad.enabled=true;
+				sqeyd.enabled=true;
+				sdrop.enabled=true;
+			}
+			import mx.utils.StringUtil;
+			
+			protected function yeniadd(event:MouseEvent):void
+			{
+				
+			 
+				if ((sdrop.selectedIndex>-1)&&(StringUtil.trim(sad.text).length>0))
+				{	
+					var stt:String="DECLARE  @ridr int SELECT  @ridr=(max([id])+1)  FROM [Mufettis].[dbo].[tedbir]   INSERT INTO [Mufettis].[dbo].[tedbir]  	(id,obyekt,nomre,tarix,inzib ) VALUES";
+					
+					stt=stt+"(@ridr  ,"+mufo.osid+ ",N'"+Azstring.Azstr(sad.text)+"' , '"+(date1.month+1).toString()+"/"+date1.date.toString()+"/"+date1.fullYear.toString()+ "', "+(sdrop.selectedIndex+1).toString()+")";
+					
+					//**			supd.token=srv.execSQL(sqs, 'DML', stt, 1000)
+					
+					nlib.GetUrl(stt,rupd);
+					
+				}
+				else MobileAlert.show(' Parametrlər düzgün deyil\n ' , 'Məlumat')
+			}
+			
+			
+			protected function yenicancel(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				yenisb.enabled = true;
+				yeniaddb.enabled=false;
+				yenicancelb.enabled=false;
+				sad.enabled=false;
+				sqeyd.enabled=false;
+				sdrop.enabled=false;
+				//sad.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].ad);
+				//	text=Azstring.Azrec(sifararr[sifarish.selectedIndex].qeyd);
+				
+			}
+			
+			private function rupd(evt:Event):void
+			{
+				yenisb.enabled = true;
+				yeniaddb.enabled=false;
+				yenicancelb.enabled=false;
+				sad.enabled=false;
+				sqeyd.enabled=false;
+				sdrop.enabled=false;
+				//	sifarc.token=srv.execSQL(sqs,'DML','select  M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id  ' ,15000)
+				//	MobileAlert.show(mufo.osid+'Sifarişçi əlavə edildi '+'/n'+'Yeniden Sifarişçini seçin'  , 'Məlumat')
+				//**			senedc.token=srv.execSQL(sqs,'DML','select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid ,1000)	;	
+		
+				nlib.GetUrl(
+					'select T.*, I.ad from Mufettis.dbo.tedbir T, Mufettis.dbo.inzib I where T.inzib=I.id and T.obyekt='+mufo.osid,
+					senedr);
+			}
+			
+			 [Bindable]
+			private var saddarr:ArrayCollection = new ArrayCollection();	
+			
+			private function rsadd(event:Event):void
+			{
+				
+				mufo.gor=false;
+				
+				
+				saddarr.removeAll();
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+				     	saddarr.addItem(s); 
+				}				
+				
+				 
+				 
+				
+				sdrop.dataProvider=saddarr;
+				sdrop.selectedIndex=0;
+				
+			}
+			private function getGridColumnLabel(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			import spark.components.gridClasses.GridColumn;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent;
+			protected function axg_selectionChangeHandler(event:GridSelectionEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				metntext.text= sened.selectedItem.metn.toString();
+				
+				
+			}
+			
+			protected function yenisb0_clickHandler(event:MouseEvent):void
+			{
+				
+				
+				var stt:String=" update [Mufettis].[dbo].[tedbir] set metn=" + "N'"+Azstring.Azstr(metntext.text)+"' ,dt=getdate() where id= "+sened.selectedItem.id.toString();
+				
+				//**			parc.token=srv.execSQL(sqs, 'DML', stt, 1000)	
+				 nlib.GetUrl(stt,parr);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<s:DateTimeFormatter id="dateFormatter" timeStyle="none" dateStyle="medium" locale="az-Latn-AZ"/>
+		<s:FlipViewTransition id="flipTrans" mode="cube" duration="1000" direction="right"/>
+		<s:ZoomViewTransition id="zoomTrans" mode="out" duration="1000"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1000"/>
+		<s:SlideViewTransition id="slideTrans" mode="cover" duration="1000" direction="left"/>
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%" id="titul" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="172" y="152" width="431" height="52" fontSize="27" fontWeight="bold" text="Tədbirlər" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="442" y="76" color="#0C66D6" text="Unvan:"/>
+	<s:Label id="nad" x="18" y="21" width="1235" height="50" backgroundAlpha="0.2" backgroundColor="#666363" color="#7D049B" fontSize="21" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="807" y="76.2" color="#0C66D6" text="Qeyd:"/>
+	<s:Label x="1130" y="75.9" color="#0C66D6" text="Təyinat:"/>
+	<s:Label id="ntey" x="1045" y="92.5" width="208" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nqeyd" x="660" y="93.25" width="348" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="121" y="76" color="#0C66D6" text="Rəy:"/>
+	<s:Label id="nrey" x="18" y="93" width="262" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nunv" x="326" y="93.25" width="287" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	
+	
+	
+	<s:DataGrid id="sened" x="18" y="212" width="573" height="219" horizontalScrollPolicy="auto" doubleClick="faylaxtar(event)" selectionChange="axg_selectionChangeHandler(event)" selectionMode="singleRow" doubleClickEnabled="true" textAlign="left" verticalScrollPolicy="auto">
+		
+		<s:columns>
+			<s:ArrayList> 
+				
+				<s:GridColumn dataField="id" labelFunction="nullLabelFunction" width="123" headerText="№"/>
+				<s:GridColumn dataField="ad" labelFunction="nullLabelFunction" width="150" headerText="Növ"/>
+				
+				<s:GridColumn dataField="tarix" labelFunction="tnullLabelFunction" width="150" headerText="Tarix"/>
+				
+				<s:GridColumn dataField="nomre" labelFunction="nullLabelFunction" width="150" headerText="Nömrə"/>
+				
+				
+				
+			</s:ArrayList>
+			
+		</s:columns>
+	</s:DataGrid>
+	<s:DataGrid id="fayl" x="620" y="212" width="161" height="378" horizontalScrollPolicy="auto" textAlign="left" verticalScrollPolicy="auto" enabled="false" doubleClick="goster(event)" doubleClickEnabled="true">
+		
+		<s:columns>
+			<s:ArrayList> 
+				
+				<s:GridColumn dataField="fayl" headerText="Fayl"/>
+				
+			</s:ArrayList>
+			
+		</s:columns>
+	</s:DataGrid>
+	
+	<s:Button x="959" y="631" width="235" height="39" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	<s:TextArea id="metntext" x="18" y="444" width="573" height="141"/>
+	<s:Button id="yenisb" x="943" y="212" width="256" height="32" label="Yeni Tədbir" enabled="{mufo.duzelden}" click="yenis(event)" color="#050505" fontSize="19"/>
+	<s:Button id="yeniaddb" x="868" y="562" width="175" height="32" label="Təsdiq et" click="yeniadd(event)" color="#050505" enabled="false" fontSize="19"/>
+	<s:Button id="yenicancelb" x="1059" y="562" width="188" height="32" label="İmtina" click="yenicancel(event)" color="#050505" enabled="false" fontSize="19"/>
+	<flextras:DropDownList id="sdrop" x="943" y="309" width="256" height="32" enabled="false" labelFunction="getGridColumnLabel"/>
+	
+	<s:Button id="yenisb0" x="102" y="595" width="337" height="41" label="Mətnin düzəlişini yadda saxla" click="yenisb0_clickHandler(event)" color="#050505" enabled="{mufo.duzelden}" fontSize="19"/>
+	<s:Label x="1016" y="374" width="84" height="25" fontSize="17" fontWeight="bold" text="Nömrə" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="1000" y="278" width="129" height="25" fontSize="17" fontWeight="bold" text="Tədbirin növü" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="1034" y="468" width="50" height="25" fontSize="17" fontWeight="bold" text="Tarix" textAlign="center" verticalAlign="middle"/>
+	<s:TextInput id="sad" x="943" y="403" width="256" enabled="false" styleName="azStyle"/>
+	<s:HGroup id="sqeyd" x="943" y="497" width="256" height="37" enabled="false">
+		<s:TextInput id="vaxtb" width="170" editable="false" text="{dateFormatter.format(date1)}" textAlign="center"/>
+		<s:Button width="78" height="34" label="Dəyiş" click="showDatePicker()"/>
+	</s:HGroup>
+</adaptive:ResponsiveStage></s:View>

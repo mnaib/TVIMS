@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" 
+		xmlns:esri="http://www.esri.com/2008/ags"
+		xmlns:samp="com.*"	
+		xmlns:google="com.mapgoogle.*"
+		xmlns:flash="flash.text.*"				 
+		creationComplete="start(event)" styleName="tvimsScreen">
+	
+	<fx:Declarations>
+		<s:FlipViewTransition id="flipTrans"
+							  direction="right"
+							  duration="200"
+							  mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans"
+							  duration="200"
+							  mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans"
+								   duration="300"/>
+		<s:SlideViewTransition id="slideTrans"  
+							   direction="left"
+							   duration="300"
+							   mode="cover"/>
+		
+		<esri:SpatialReference id="gsp" wkid="102100"/>
+		 
+		 
+	</fx:Declarations>
+	 
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.GraphicEvent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			import com.esri.ags.utils.WebMercatorUtil;
+			 
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.messaging.messages.SOAPMessage;
+			import mx.rpc.xml.IXMLDecoder;
+			import mx.rpc.xml.SimpleXMLDecoder;
+			import mx.utils.StringUtil;
+			import mx.utils.XMLUtil;
+			import spark.events.TextOperationEvent;
+			
+			
+			[Bindable]
+			private var m_fullExtent:Extent;
+			
+			
+			
+			[Bindable]
+			public var mufo:Mufo;
+			
+			[Bindable]
+			[Embed(source="/assets/Red_glow.swf")]
+			private var _watchImage:Class;
+			
+			public static const LAT:String = "lat";
+			public static const LON:String = "lon";
+			public var oldid:int=0;
+		 
+			 
+			[Bindable] private var messageGraphics:ArrayCollection;
+			[Bindable] private var messages:ArrayCollection;
+			[Bindable] private var lays:ArrayCollection;
+			[Bindable] private var isOurMouse:Boolean;
+			[Bindable] private var skp:String='';
+			
+			[Embed("../assets/phone.png")]
+			[Bindable]
+			private  var phone:Class; 
+			
+		 
+			[Embed(source="../assets/tabs.png")]
+			[Bindable]
+			private  var tabsym:Class; 
+			
+			[Embed("../assets/sms.png")]
+			[Bindable]
+			private  var mail:Class;
+			
+			[Embed("../assets/video.png")]
+			[Bindable]
+			private  var vid:Class; 
+			
+			[Embed("../assets/navi.png")]
+			[Bindable]
+			private  var navi:Class;
+			 
+			public static function format(decDeg:Number, decDir:String):String
+			{
+				var d:Number = Math.abs(decDeg);
+				const deg:Number = Math.floor(d);
+				d = d - deg;
+				var min:Number = Math.floor(d * 60);
+				const av:Number = d - min / 60;
+				var sec:Number = Math.floor(av * 60 * 60);
+				if (sec == 60)
+				{
+					min++;
+					sec = 0;
+				}
+				if (min == 60)
+				{
+					deg++;
+					min = 0;
+				}
+				const smin:String = min < 10 ? "0" + min + "' " : min + "' ";
+				const ssec:String = sec < 10 ? "0" + sec + "\"" : sec + "\"";
+				const sdir:String = (decDir == LAT) ? (decDeg < 0 ? "S " : "N ") : (decDeg < 0 ? "W " : "E ");
+				return sdir + deg + "\xB0 " + smin + ssec;
+			}
+			
+			private function graphicAddHandler(event:GraphicEvent):void
+			{
+				var graphic:Graphic = event.graphic;
+				graphic.addEventListener(MouseEvent.CLICK, clickHandler);
+				
+			}
+			
+			
+		 
+			
+			private function clickHandler(event:MouseEvent):void
+			{
+				
+				
+				
+				const graphic:Graphic = event.currentTarget as Graphic;
+				if (graphic)
+				{
+					 
+					
+					const mapPoint:MapPoint = MapPoint(graphic.geometry);
+					
+					const ll:MapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+					map.infoWindow.label= "  "+graphic.attributes.uad.toString() ;
+					track.text= graphic.attributes.uad.toString() ;
+					skp= graphic.attributes.skype.toString() ;
+					ad.text = graphic.attributes.userad.toString();
+					veziyyet.text = graphic.attributes.oad;
+					heyecan.text = graphic.attributes.tel;
+					heyecan0.text = graphic.attributes.ptel;
+					 
+				
+				
+			       
+					content.userad = graphic.attributes.userad.toString();
+					content.uad = graphic.attributes.uad.toString();
+					content.oad = graphic.attributes.oad.toString();
+					content.tel = graphic.attributes.tel.toString();
+					content.ptel = graphic.attributes.ptel.toString();
+					content.skype = graphic.attributes.skype.toString();
+					content.vaxt = graphic.attributes.vaxt;
+					
+					 
+					
+					mer.text=ll.x.toFixed(5)
+					par.text=ll.y.toFixed(5)
+					const point:Point = map.toScreen(mapPoint);
+				//	point.y -= symbol.size / 2;
+				//	point.y -=15;
+			
+					
+					 
+					
+					map.infoWindow.show(map.toMap(point));
+					map.centerAt(mapPoint);	
+				 
+				}
+					
+				 
+			}
+			
+		 
+ 
+			 
+			
+			
+			protected function start(event:FlexEvent):void
+			{ 
+				 
+				
+				
+				var mainApp:TTNDATVIMS = parentDocument as TTNDATVIMS;
+				
+				mufo=mainApp.mufo;
+				
+				
+				
+				messageGraphics = new ArrayCollection();
+				 
+				nlib.GetCedvel("exec mufettis.dbo.MobGetKoor " ,rregion);
+				m_fullExtent=map.extent;
+				
+				
+			}
+			private function rregion(event:Event):void
+			{
+				var xml:XML=new XML(event.target.data);
+				//		var xmllist: XMLListCollection= new XMLListCollection(xml.Cedvel);
+				//		lreg.dataProvider=xmllist;
+				//	var remma4:ArrayCollection=evt.result.Tables.Cedvel.Rows;
+				
+				var	ssoaota :XMLDocument = new XMLDocument(event.target.data);
+				var sdsd:SOAPMessage=new SOAPMessage;
+				sdsd.body=event.target.data;
+				
+				var aaa:SimpleXMLDecoder=new SimpleXMLDecoder();
+				
+				var fassd:Object=aaa.decodeXML(ssoaota);
+				
+				var fard:Array =fassd.Envelope.Body.CedvelResponse.CedvelResult.diffgram.DocumentElement.Cedvel as Array ;
+				
+				for each (var s:Object in fard)
+				{
+					
+					
+					
+					var mmm:String="<NULL>";
+					var ppp:String="<NULL>";
+					
+					
+					
+					ppp=StringUtil.trim(s.Paralel.toString());
+					mmm =StringUtil.trim(s.Meridian.toString());
+					
+					if (!( (mmm=="<NULL>") || (ppp=="NULL") || (mmm=="0") || (ppp=="0") ) || (mmm==" ") || (ppp==" ") )
+						
+					{
+						
+						const mapint2:MapPoint = new MapPoint(parseFloat(mmm), parseFloat(ppp),   new SpatialReference(4326))
+						const mat:MapPoint = WebMercatorUtil.geographicToWebMercator(mapint2) as MapPoint;
+						
+						//		const mapint2:MapPoint = new MapPoint(tmsPoint.x, tmsPoint.y,  new SpatialReference(4326))
+						//			const mat:MapPoint = WebMercatorUtil.geographicToWebMercator(mapint2) as MapPoint;
+						//			ObjectID	UserID	ObyektID	Qeyd	Mesaj	Paralel	Meridian	Seviyye	yt	syt	uad	oad
+						//			1	65	0	0555557076		49.843377	40.379041	0.000000	2014-12-08 21:04:28.000	2014-12-08 21:05:46.000	Naib	
+						
+						
+						var attributes:Object= { "userad": "","uad": "","oad": "","tel": "","ptel": "","vaxt": "","skype": ""} ;
+						
+						//		var observation:Observation = event.observation;
+						
+						
+						
+						
+						if (s.Uad)			attributes.uad = s.Uad.toString();
+						if (s.Oad)				attributes.oad = s.Oad.toString();
+						if (s.Tel)				attributes.tel = s.Tel.toString();
+						if (s.Ptel)				attributes.ptel =  s.Ptel.toString();
+						
+						if (s.Ytt)				attributes.vaxt =  s.Ytt.toString().replace("/",".").replace("/",".");
+						
+						
+						
+						var	graphic:Graphic = new Graphic(mat,null,
+							attributes);
+						
+						
+						graphic.addEventListener(MouseEvent.CLICK, clickHandler);
+						//	if (!(oldid==observation.getTrackID().toString()))
+						//			symbol.color=0x0990FF ;
+						
+						
+						
+						messageGraphics.addItem(graphic);				
+						
+						
+						
+						
+					}
+					
+				}
+				
+				
+			}
+			 
+			protected function zeng(ss:String):void
+			{
+				// TODO Auto-generated method stub
+				var u:URLRequest = new URLRequest("tel:" +ss);
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			protected function vidik():void
+			{
+			 
+				var u:URLRequest = new URLRequest("skype:" + skp+ "?call&video=true " );
+				navigateToURL(u,"_self"); 
+				
+				
+			}
+			
+			protected function mesaj(ss:String ):void
+			{
+				// TODO Auto-generated method stub
+				var u:URLRequest = new URLRequest("sms:" +ss);
+				navigateToURL(u,"_self"); 
+			}
+			protected function content_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var i:int=1;
+			}
+			
+			private function atad2(item:Object, column:GridColumn):String {
+				var ss:Graphic=item as Graphic;
+				 
+				return ss.attributes.uad.toString;
+			}
+			private function atad(item:Object, column:GridColumn):String {
+				var ess:Graphic=item as Graphic;
+				var ss:Object=new Object;
+				 ss=ess.attributes as Object;
+				return ss.uad.toString;
+			}
+			
+			protected function gridMessages_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+			var frg:Graphic=	gridMessages.selectedItem as Graphic;
+			
+			frg.dispatchEvent(new  MouseEvent(MouseEvent.CLICK));
+		//	map.dispatchEvent(new  MouseEvent(MouseEvent.CLICK));
+		//	frg.dispatchEvent(new  MouseEvent(MouseEvent.ROLL_OVER));
+			
+			}
+			private function filteruser(item:Object):Boolean {	
+				var ss:Graphic=item as Graphic;
+	
+				return ss.attributes.uad.toString().toLowerCase().indexOf(muft.text.toLowerCase())!=-1;
+			}
+			protected function muft_changeHandler(event:TextOperationEvent):void
+			{			
+				var factoryMethodsXLC:ArrayCollection =ArrayCollection(gridMessages.dataProvider);			 
+							
+				if (muft.text.length<1)  {
+					factoryMethodsXLC.filterFunction = null;
+					factoryMethodsXLC.refresh();
+				} else {
+					factoryMethodsXLC.filterFunction = filteruser;
+					factoryMethodsXLC.refresh();					
+				}
+			}
+			
+			public function myTextFunction(point:MapPoint, attributes:Object):String
+			{
+				
+				return attributes.uad.replace(' ','\n'); 
+			}
+			
+			protected function map_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+		//	if (map.infoWindow.visible)	map.infoWindow.hide();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="bback"
+				  click="navigator.popView(slideTrans)"
+				  icon="@Embed('../assets/back40.png' )"/>
+		 
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%"
+				 color="white"
+				 horizontalCenter="0"
+				 text="İstifadəçi: {data}"
+				 textAlign="center"
+				 verticalAlign="middle"/>
+	</s:titleContent>
+	<s:HGroup  horizontalCenter="center" verticalAlign="middle" includeInLayout="false"  visible="false">
+			<s:Spacer width="254" height="10"/>
+			<s:Label id="labelStatus" fontSize="20"/>
+			<s:Spacer width="200" height="10"/>
+		</s:HGroup>
+	<s:Panel width="20%" height="100%" textAlign="center" visible="false">
+				<s:VGroup x="10" width="100%" height="100%" gap="7" horizontalAlign="center"
+						  textAlign="center">
+					
+					
+					
+					<s:Label width="65" height="21" fontSize="14" text="Adı:" textAlign="center"
+							 verticalAlign="middle"/>
+					<s:TextInput id="track"  y="52" width="90%" fontSize="14" text="Müfəttiş" editable="false"/>
+					<s:Label width="65" height="21" fontSize="14" text="İstifadəçi" textAlign="center"
+							 verticalAlign="middle"/>
+					
+					<s:TextInput id="ad"  y="113" width="90%"  fontSize="14" text="adı" editable="false"/>
+					
+					<s:Label  y="145" width="65" height="21" fontSize="14" text="Obyekt" textAlign="center"
+							  verticalAlign="middle"/>
+					<s:TextInput id="veziyyet"  y="171" width="90%"  fontSize="14" text="obyekt" editable="false"/>
+					<s:Label  y="203" width="87" height="21" fontSize="14" text="Telefon" textAlign="center"
+							  verticalAlign="middle"/>
+					
+					<s:TextInput id="heyecan" y="235" width="90%"  editable="false" fontSize="14"
+								 text="yoxdur"/>
+					
+					<s:HGroup gap="25" >
+					
+						
+						<s:Button id="xmobilbww" width="50" height="50"    buttonMode="true"		visible="{heyecan.text.length>4}"								 
+								  click="{zeng(heyecan.text)}"  skinClass="skins.iconbutt"
+								  icon="{phone}"/>
+						
+						<s:Button id="xmobilbwwu" width="50" height="50"    buttonMode="true"		visible="{heyecan.text.length>4}"								 
+								  skinClass="skins.iconbutt" click="{mesaj(heyecan.text)}"
+								  icon="{mail}"/>
+						
+					</s:HGroup>
+					
+					
+					<s:Label text="Planşetin Telefonu" fontSize="14"  textAlign="center"
+							 verticalAlign="middle"/>
+					<s:TextInput id="heyecan0" width="90%" editable="false" fontSize="14" text="yoxdur"/>
+					<s:HGroup horizontalAlign="left" gap="25">
+						<s:Button id="xmobild" width="50" height="50"    buttonMode="true" 	 visible="{skp.length>4}"								 
+								  click="{vidik()}"  skinClass="skins.iconbutt"
+								  icon="{vid}"/>
+						<s:Button id="xmobilbwwt" width="50" height="50"    buttonMode="true"		visible="{heyecan0.text.length>4}"								 
+								  click="{zeng(heyecan0.text)}"  skinClass="skins.iconbutt"
+								  icon="{phone}"/>
+						
+						<s:Button id="xmobilbwwy" width="50" height="50"    buttonMode="true"		visible="{heyecan0.text.length>4}"								 
+								  skinClass="skins.iconbutt" click="{mesaj(heyecan0.text)}"
+								  icon="{mail}"/>
+					</s:HGroup>	
+					
+					
+					<s:Label  y="265" width="88" height="19" text="Meridian" textAlign="center"
+							  verticalAlign="middle"/>
+					<s:TextInput id="mer"  y="292" width="90%"  height="29" fontSize="14" text="45.427" editable="false"/>
+					
+					<s:Label  y="329" width="88" height="19" text="Paralel" textAlign="center"
+							  verticalAlign="middle"/>
+					<s:TextInput id="par"  y="356" width="90%"  height="29" fontSize="14" text="39.2582" editable="false"/>
+				</s:VGroup>
+				
+			</s:Panel>
+			
+			
+	<s:VGroup width="100%" height="100%" gap="1" horizontalAlign="center" verticalAlign="top">
+		
+		
+		<s:HGroup   horizontalAlign="center" paddingTop="6" paddingLeft="4"	width="100%" height="90%">
+			<s:VGroup   horizontalAlign="center" width="20%" height="100%" >
+				
+				<s:TextInput id="muft" x="531" y="48" height="41"  width="90%" change="muft_changeHandler(event)" 
+							 prompt="Müfəttişin adını yazın" styleName="azStyle"
+							 tabEnabled="true" textAlign="center"/>
+			<s:DataGrid id="gridMessages" width="100%" height="100%" dataProvider="{messageGraphics}" fontSize="18"  click="gridMessages_clickHandler(event)"
+						rowHeight="30">
+				  
+				<s:columns   >
+					<s:ArrayList >  
+						<s:GridColumn dataField="attributes.uad"  headerText="Müfəttişin Adı"   sortable="true"  sortDescending="true"   itemRenderer="com.gpsr"/>
+						
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+			
+			</s:VGroup>
+			
+			<esri:Map id="map" width="80%" height="100%" logoVisible="false"    click="map_clickHandler(event)"
+					   multiTouchEnabled="true" multiTouchRotationEnabled="true"
+					   >
+				
+				
+				<esri:extent>
+					<esri:Extent   xmin="4817530" ymin="4570106" xmax="5732489" ymax="5176767"  >
+						<esri:SpatialReference wkid="102100"/>
+					</esri:Extent>
+				</esri:extent>
+				
+				<esri:infoWindowContent >
+					<samp:InfoWindowRollOverContent id="content"    />
+				</esri:infoWindowContent>
+				
+				
+				 
+				<google:GoogleSatLayer  id="gsat"  visible="false"  />  
+				<google:GoogleMapLayer  id="gmap" visible="true"   />  
+				
+				<esri:GraphicsLayer id="glay"   graphicProvider="{messageGraphics}"  spatialReference="{gsp}"
+									graphicAdd="graphicAddHandler(event)" 
+									>
+					<esri:symbol> 
+						
+						<esri:CompositeSymbol id="aSymbol"  >
+						 
+							<esri:PictureMarkerSymbol id="symbol" height="75" width="40"  source="{tabsym}" /> 
+							<esri:TextSymbol   textFunction="myTextFunction"    backgroundColor="0x0f0fff" 
+											   placement="start" yoffset="10" color="0xfd0a9f"   > 
+								<flash:TextFormat bold="true"  size="18" /> 
+							</esri:TextSymbol> 
+						</esri:CompositeSymbol> 
+					</esri:symbol>
+					
+					
+					
+				</esri:GraphicsLayer>
+			</esri:Map>
+		</s:HGroup>
+	</s:VGroup>
+	<s:VGroup    right="10"  top="10" horizontalAlign="center">
+		
+		<s:Button  width="90" height="30" label="Peyk" alpha="0.7"
+				   click="{gmap.visible=false, gsat.visible=true}" fontSize="14"/>
+		<s:Button  width="90" height="30" label="Xəritə" alpha="0.7"
+				   click="{gmap.visible=true, gsat.visible=false}" fontSize="14"/>
+		 
+		<s:Button   width="65" height="65"    buttonMode="true" icon="{navi}" click="{map.extent=m_fullExtent}"  skinClass="skins.iconbutt" alpha="0.6" />
+	</s:VGroup>
+	 
+	 
+	
+</s:View>

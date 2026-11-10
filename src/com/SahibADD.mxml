@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="init()"
+		 		width="502"
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 xmlns:components="spark.components.*"
+				 xmlns:flextras="http://www.flextras.com/mxml"
+				 >
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer backgroundColor="0x444444" width="100%" borderColor="0xcccccc" borderWeight="4" cornerRadius="10">
+				
+		<s:VGroup width="100%" gap="10" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15">
+				<s:Label width="100%" height="42" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="30" text="{titad}" textAlign="center" verticalAlign="top"/>
+		
+			
+			<s:HGroup width="460">
+				<s:VGroup gap="10" width="100%" >
+				<s:HGroup gap="10"  width="100%">
+				 
+					<s:Label width="100" height="29" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="20" text="Ad" textAlign="center" verticalAlign="middle"/>
+					<s:TextInput id="sad" width="100%"   textAlign="left" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle" />
+				</s:HGroup>
+				
+				<s:HGroup gap="10"   width="100%" >
+				 
+					<s:Label width="100" height="31" color="0xcccccc" fontSize="20" text="Qeyd"
+							 textAlign="center" verticalAlign="middle"/>
+					<s:TextInput id="ssen"  width="100%"   textAlign="left" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle"   />
+				</s:HGroup>
+					<s:HGroup gap="10"   width="100%" >
+				 
+					<s:Label width="100" height="43" color="0xcccccc" fontSize="20" text="Tip"
+							 textAlign="center" verticalAlign="middle"/>
+			       <flextras:DropDownList id="stip"   dataProvider="{_tipler}"  labelField = "ad"   width="100%"  />
+				</s:HGroup>	
+					
+				</s:VGroup>
+				
+				
+			</s:HGroup>
+			<s:BorderContainer backgroundColor="0xcccccc" width="100%">
+				<s:HGroup width="100%" height="61" paddingBottom="15" paddingLeft="10"
+						  paddingRight="10" paddingTop="15" verticalAlign="middle">
+					<s:Button width="100%" label="OK" click="setDate()"/>
+					<s:Button width="100%" label="İmtina" click="cancelDate()"/>
+				</s:HGroup>
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:BorderContainer>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.flextras.mobile.autoCompleteComboBox.AutoCompleteComboBoxMobile;
+			import components.MobileAlert;
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			[Bindable]
+			public var cavab:Object = new Object();
+				[Bindable]
+			public var cavabbox:AutoCompleteComboBoxMobile;
+			
+			[Bindable]
+			public var req:String;
+			
+				[Bindable]
+			public var titad:String="Əlavə et";
+			private var _tipler: ArrayCollection;
+			
+			[Bindable]
+			public function get tipler(): ArrayCollection
+			{
+				return _tipler;
+			}
+			public function set tipler(value: ArrayCollection): void
+			{
+				_tipler = value;
+			 
+			}
+			 
+		 
+			private function init(): void
+			{
+			}
+			  
+		 
+			private function setDate(): void
+			{
+				var stt:String="";
+				if (sad.text.length<3 ) 
+				{ sad.setFocus();
+			 			return;
+				}
+				stt=stt+ ",@ad=N'" +  Azstring.Azstr(sad.text)+ "'"  ;
+				
+				if ( ssen.text.length<3 ) 
+				{  ssen.setFocus();
+			 			return;
+				}
+				stt=stt+ ",@sad=N'" +  Azstring.Azstr(ssen.text)+ "'"  ;
+				
+				
+			 	
+				if( stip.selectedIndex>-1) stt=stt+ ",@tipid  =" +  stip.selectedItem.id.toString() 
+				else {
+					
+					stip.setFocus();
+					stip.selectedIndex=-1;
+					stip.openDropDown();
+					
+					//MobileAlert.show(' Parametrlər düzgün deyil\n (M/M seçilməyib )' , 'Məlumat');
+					return;
+				}
+				
+				
+		  	nlib.GetUrl( req+stt ,tallresult);
+			
+			}
+			public function tallresult(event:Event):void
+			{	var xml2:XML=new XML(event.target.data);
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				xml=xml.normalize();
+				
+			 
+				
+				cavab.id=parseInt(xml.Cedvel.id.toString());
+				
+				if (cavab.id==-1) {
+					 MobileAlert.show('Sahib əlavə etmək icazeniz yoxdur ' , 'Məlumat');
+					 PopUpManager.removePopUp(this);
+					 return; 
+				}
+				cavab.ad=xml.Cedvel.ad.toString();
+				cavabbox.dataProvider.addItem(cavab);
+				cavabbox.selectedItem=cavab;
+				PopUpManager.removePopUp(this);
+			}
+			private function cancelDate(): void
+			{
+			 
+				PopUpManager.removePopUp(this);
+			}
+		]]>
+	</fx:Script>
+</s:Group>

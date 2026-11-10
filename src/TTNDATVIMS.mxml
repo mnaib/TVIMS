@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+							xmlns:s="library://ns.adobe.com/flex/spark"
+							xmlns:mx="library://ns.adobe.com/flex/mx"
+				     applicationDPI="160"
+							applicationComplete="onApplicationComplete()"
+                            resize="onViewportResized()" 
+							creationComplete="creationCompleteHandler(event);"
+							firstView="views.Login"  
+							navigatorStateLoading="onRestoring(event)"
+							navigatorStateSaving="onPersisting(event)" persistNavigatorState="true"
+							preinitialize="viewnavigatorapplication1_preinitializeHandler(event)"
+							splashScreenImage="@Embed('assets/fhnttnda.jpg')"
+							splashScreenScaleMode="letterbox">
+	
+	
+	<fx:Declarations>
+		
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style source="styles/TVIMSTheme.css"/>
+	
+	
+	<fx:Script>
+		<![CDATA[
+		
+			import components.*;
+
+			import flash.events.UncaughtErrorEvent;
+			
+			import com.*;
+			
+			import mx.events.FlexEvent;
+			
+			import org.osmf.events.TimeEvent;
+			
+			import spark.managers.PersistenceManager; 
+			
+			[Bindable]
+			public var wtr:String="dddddddddddddddddd";
+			
+			[Bindable]
+			public var mufo:Mufo = new Mufo();
+			
+		  
+			import com.Soket;
+			
+			
+			
+			[Bindable]
+			public var socet:Soket;
+			
+			
+			
+			// Set the default push and pop transitions of the navigator 
+			// to use the flip transition.
+			protected function creationCompleteHandler(event:FlexEvent):void {
+		
+				
+				
+			}
+			
+			
+			// GOSTERICILER: real DPI, Flex runtime DPI, logical viewport ve orientation.
+            // applicationDPI bu sinifde MXML-den secilir; calisma vaxti set edilmir.
+            private function onViewportResized():void
+            {
+                if (stage == null) return;
+                trace("TVIMS screen: view=" + int(width) + "x" + int(height)
+                    + " | stage=" + stage.stageWidth + "x" + stage.stageHeight
+                    + " | screenDPI=" + int(flash.system.Capabilities.screenDPI)
+                    + " | runtimeDPI=" + int(runtimeDPI)
+                    + " | applicationDPI=" + int(applicationDPI)
+                    + " | orientation=" + (width > height ? "landscape" : "portrait"));
+            }
+
+            protected function onApplicationComplete():void
+			{
+								// Handle orientation change events if auto-orient is true
+			//	if (stage.autoOrients)
+		//		{
+		//			this.stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGE, onOrientationChange);
+		//		}
+
+				socet = new Soket();
+				// Request to be notified when the display state changes (minimized, maximized)
+				addEventListener(NativeWindowDisplayStateEvent.DISPLAY_STATE_CHANGING, onDisplayStateChange);
+		 //	sendtimer.addEventListener(TimerEvent.TIMER, gonder);
+				if (!(mufo.interval==null)) socet.interval=parseInt(mufo.interval);
+			//	sendtimer.start();
+			 mufo.ipadres="https://service.ttnda.az";
+		    
+				// Request to be notified when this application is activated (brought forward as the active window)
+				// or deactivated
+				NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, onActivate);
+				NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, onDeactivate);
+
+				// Invoke listener - request to be notified when the AIR app is invoked (started), this could occur from the command line, UI or
+				// from opening an associated file
+				NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onInvoke);
+
+				// Get notified whan a global error occurs
+				loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onError);
+
+				// Capture exiting event
+		//	NativeApplication.nativeApplication.addEventListener(Event.EXITING,onAppExiting);
+		 
+				// Set the idle mode to KEEP AWAKE
+				NativeApplication.nativeApplication.systemIdleMode = SystemIdleMode.KEEP_AWAKE;
+				
+			//	navigator.pushView(views.Login,mufo);
+				stage.frameRate=24;
+                callLater(onViewportResized); 
+				
+			//	socet.ad =mufo.uad;
+				 
+			//	socet.start();
+				
+					
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+				
+			}
+			
+			 
+
+		
+		private function initView():void {
+				 
+			}
+			// Handle device orientation changes
+			protected function onOrientationChange(event:StageOrientationEvent):void
+			{
+				trace("Orientation changed from " + event.beforeOrientation + " to " + event.afterOrientation);
+				switch (event.afterOrientation)
+				{
+					case StageOrientation.DEFAULT:
+						trace("Default orientation");
+						break;
+					case StageOrientation.ROTATED_RIGHT:
+						trace("Rotated right");
+						break;
+					case StageOrientation.ROTATED_LEFT:
+						trace("Rotated left");
+						break;
+					case StageOrientation.UPSIDE_DOWN:
+						trace("Upside down");
+						break;
+					case StageOrientation.UNKNOWN:
+						trace("Unknown");
+						break;
+				}
+			}
+
+			// The application display state has changed
+			protected function onDisplayStateChange(e:NativeWindowDisplayStateEvent):void
+			{
+				trace("Display State Changed from " + e.beforeDisplayState + " to " + e.afterDisplayState);
+				
+			}
+
+			// The application is now in the foreground and active, restore the frameRate to the default
+			protected function onActivate(event:Event):void
+ 			{
+				trace("Handling application activate event");
+				persistenceManager.getProperty("mufo");
+			//	onNetworkChange(event);	
+			//	persistenceManager.setProperty("mufo",mufo);	
+			}
+
+			// Handle the application being sent to the background, garbage collect and lower frame rate to use less resources
+			protected function onDeactivate(event:Event):void 
+			{
+				trace("Handling application deactivate event");
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();
+	//	System.gc();
+			//	stage.frameRate=2;
+				
+			} 
+
+			// Called when application is first invoked
+			protected function onInvoke(invokeEvt:InvokeEvent):void 
+			{
+				trace("Handling invoke event");
+			persistenceManager.getProperty("mufo");
+			}
+
+			// Handle Global Errors
+			protected function onError(e:UncaughtErrorEvent):void
+			{
+    			e.preventDefault();
+    			trace("An error has occurred and been caught by the global error handler: " + e.error.toString(), "My Global Error Handler");
+			}
+
+			// Called when application exits
+			protected function onAppExiting(e:Event):void
+			{
+			//	mufo=null;
+				trace("Handling application exit  event");
+			}
+
+			// Handles when the HTTP Network status has changed.
+			
+
+			// Called when application is about to persist data (can call cancel if this is not desired)
+			protected function onPersisting(e:FlexEvent):void
+			{
+				trace("Handling persisting event");
+		persistenceManager.setProperty("mufo",mufo);
+		persistenceManager.save();
+			}
+
+			// Called when application is about to restore data (can call cancel if this is not desired)
+			protected function onRestoring(e:FlexEvent):void
+			{
+				trace("Handling restoring event");
+			 	persistenceManager.getProperty("mufo");
+			}
+			
+			
+			
+			protected function viewnavigatorapplication1_preinitializeHandler(event:FlexEvent):void{  
+	         
+				flash.net.registerClassAlias("mufo",com.Mufo);
+				flash.net.registerClassAlias("socet",com.Soket);
+				
+				mufo.gor = true; 
+				mufo.uad="Qonaq";
+				mufo.oad="Obyekt yoxdur";
+				mufo.osid="0";
+				mufo.interval="60000";
+				mufo.userad="obyekt";
+				mufo.uservez="normal";
+				mufo.userxeb="yoxdur";
+				persistenceManager.setProperty("mufo",mufo);
+				persistenceManager.save();	
+			
+			
+		 
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+
+	<s:navigationContent>
+		<s:Button accessibilityShortcut="dfg" click="navigator.popToFirstView()"
+				  icon="@Embed('assets/home40.png')" toolTip="Əsas səhifəyə qayıtmaq"/>
+	</s:navigationContent>
+	
+	 
+	 
+</s:ViewNavigatorApplication> 

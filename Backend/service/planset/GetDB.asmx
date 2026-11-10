@@ -1,0 +1,1 @@
+﻿<%@ WebService Language="C#" CodeBehind="GetDB.asmx.cs" Class="WebDB.GetDB" %>

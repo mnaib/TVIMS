@@ -1,0 +1,693 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:components2="views.components.*" xmlns:adaptive="com.responsive.*" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" viewActivate="view1_activateHandler(event)" deactivate="deact(event)" width="100%" height="100%" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.*;
+			import com.adobe.serializers.xml.XMLDecoder;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			import mx.utils.StringUtil;
+			
+			import spark.events.GridSelectionEvent;
+			import spark.events.ViewNavigatorEvent;
+			import spark.managers.PersistenceManager;
+			[Bindable]
+			private var mufo:Mufo;
+			
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+			}
+			[Bindable]
+			private var	xmlListColl: XMLListCollection;
+			[Bindable]
+			private var firmaarr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var sifararr:ArrayCollection = new ArrayCollection();	
+			
+			[Bindable]
+			private var licarr:ArrayCollection = new ArrayCollection();	
+			protected var myCam:CameraUI;
+			
+			[Bindable]
+			private var obyarr:ArrayCollection = new ArrayCollection();	
+			  
+			[Bindable]
+			private var filenamefoto:File;
+			[Bindable]
+			private var filename:String='0';
+			[Bindable]
+			private var eslad:String='0';
+			[Bindable]
+			private var filenamess:String='0';
+			 
+			[Bindable]
+			private var fileid:String='0';
+			[Bindable]
+			private var kocur:Boolean=true;
+			[Bindable]
+			private var stopp:Boolean=true;
+			[Bindable]
+			private var actindex:int=-1;
+			[Bindable]
+			private var indexarr:Vector.<Object>;
+			[Bindable]
+			private var numItems:int=0;
+			 
+			[Bindable]
+			private var tablexml:XML = new XML();
+			import flash.data.SQLConnection;
+			import flash.data.SQLStatement;
+			import flash.errors.SQLError;
+			import flash.events.Event;
+			import flash.events.SQLErrorEvent;
+			import flash.events.SQLEvent;
+			import flash.events.TimerEvent;
+			import flash.filesystem.File;
+			import flash.utils.Timer;
+			 
+			import mx.collections.ArrayCollection;
+			import mx.utils.ObjectUtil;			
+		 
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			// sqlc is a variable we need to define the connection to our database
+			[Bindable] 	private var sqlc:SQLConnection = new SQLConnection();
+			// sqlc is an SQLStatment which we need to execute our sql commands
+			
+			// ArrayCollection used as a data provider for the datagrid. It has to be bindable so that data in datagrid changes automatically when we change the ArrayCollection
+			[Bindable]
+			private var dp:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var icrast:String=' where icra=0';
+			[Bindable]
+			private var docyol:String='ttnda/Mufettis/foto/';
+			
+			[Bindable]
+			private var db:File=File.applicationStorageDirectory.resolvePath( "ttnda/Mufettis/fotolar.db" );
+			[Bindable]
+			private var cacheyol:String='ttnda/Mufettis/cache/ ';
+			// function we call at the begining when application has finished loading and bulding itself
+			private function start():void
+			{
+				// first we need to set the file class for our database (in this example test.db). If the Database doesn't exists it will be created when we open it.
+				// 	var db:File=File.applicationStorageDirectory.resolvePath("ttnda/fotolar.db");
+				
+				
+				//  var db:File = WorkDir.resolvePath();after we set the file for our database we need to open it with our SQLConnection.
+				sqlc.addEventListener(SQLEvent.OPEN, db_opened);
+				sqlc.addEventListener(SQLErrorEvent.ERROR, error1);
+				
+				
+				db.parent.createDirectory() ;
+				//	var db:File = WorkDir.resolvePath(docyol+"fotolar.db");var db:File = File.applicationStorageDirectory.resolvePath(docyol+"fotolar.db");
+				sqlc.openAsync(db);
+				
+				// we need to set some event listeners so we know if we get an sql error, when the database is fully opened and to know when we recive a resault from an sql statment. The last one is uset to read data out of database.
+				
+				
+				
+				
+			}
+			
+		
+			
+			private function db_opened(e:SQLEvent):void
+			{
+				// when the database is opened we need to link the SQLStatment to our SQLConnection, so that sql statments for the right database.
+				// if you don't set this connection you will get an error when you execute sql statment.				
+				// in property text of our SQLStatment we write our sql command. We can also combine sql statments in our text property so that more than one statment can be executed at a time.
+				// in this sql statment we create table in our database with name "test_table" with three columns (id, first_name and last_name). Id is an integer that is auto incremented when each item is added. First_name and last_name are columns in which we can store text
+				// If you want to know more about sql statments search the web.mufo.
+				//	sqls.text = "CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,merad TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				
+				var sqls:SQLStatement = new SQLStatement();
+				sqls.sqlConnection = sqlc;			
+				sqls.text="CREATE TABLE IF NOT EXISTS fotos ( id INTEGER PRIMARY KEY AUTOINCREMENT, osid TEXT, oad TEXT, uid TEXT ,merad TEXT ,pozad TEXT ,faylad TEXT,filead TEXT,tarix TEXT,il INTEGER,ay INTEGER ,gun INTEGER, icra BOOLEAN);";
+				// after we have connected sql statment to our sql connection and writen our sql commands we also need to execute our sql statment.
+				// nothing will change in database until we execute sql statment.
+				sqls.addEventListener(SQLErrorEvent.ERROR, error);
+		//		sqls.addEventListener(SQLEvent.RESULT, resault);	
+				sqls.execute();
+				// after we load the database and create the table if it doesn't already exists, we call refresh method which i have created to populate our datagrid				
+				refresh();
+			}
+			
+			
+			
+			
+			// function to call when we want to refresh the data in datagrid
+			private function refresh(e:TimerEvent = null):void
+			{
+				// timer object which we need if sql statment is still executing so that we can try again after 10 milliseconds.
+				var timer:Timer = new Timer(10,1);
+				timer.addEventListener(TimerEvent.TIMER, refresh);
+				
+				var sqls1:SQLStatement = new SQLStatement();
+				sqls1.sqlConnection = sqlc;			
+				sqls1.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls1.addEventListener(SQLEvent.RESULT, resault);	
+				
+				
+				if ( !sqls1.executing )// we need to check if our sql statment is still executing our last sql command. If so we use Timer to try again in 10 milliseconds. If we wouldn't check we could get an error because SQLStatment can't execute two statments at the same time.
+				{
+					// sql statment which returns all the data from our "test_table". To retrive only data from first_name and last_name columns we would use "SELECT first_name,last_name FROM test_table"
+					sqls1.text = "SELECT * FROM fotos "+icrast;
+					//  icrast = " where icra=false"  islemir  =0,1
+					sqls1.execute();
+					firma.selectedIndex=0;
+				}
+				else
+				{
+					timer.start();
+				}
+			}
+			
+			// method that gets called if we recive some resaults from our sql commands.
+			//this method would also get called for sql statments to insert item and to create table but in this case sqls.getResault().data would be null
+			private function resault(e:SQLEvent):void
+			{
+				// with sqls.getResault().data we get the array of objects for each row out of our database
+				var datag:Array = e.currentTarget.getResult().data;
+				// we pass the array of objects to our data provider to fill the datagrid
+				dp = new ArrayCollection(datag);
+			dp.refresh();	
+			}
+			
+			// method to remove row from database.
+			private function remove():void
+			{
+				var sqls2:SQLStatement = new SQLStatement();
+				sqls2.sqlConnection = sqlc;			
+				sqls2.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls2.addEventListener(SQLEvent.RESULT, resault);	
+				if (firma.selectedIndex>-1) {
+					// sql statment to delete from our test_table the row that has the same number in number column as our selected row from datagrid
+					sqls2.text = "DELETE FROM fotos WHERE id="+dp[firma.selectedIndex].id;
+					sqls2.execute();
+					refresh();
+				}
+			}
+			// method which gets called when we recive an error  from sql connection or sql statment and displays the error in the alert
+			
+			
+			protected function icrasw_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				if (icrast==' where icra=1' ) 
+					//	if (icrasw.selected) 
+					icrast=' where icra=false'; 
+				else
+					icrast='';
+				refresh();
+			}
+			
+			protected function temizle(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function update(event:MouseEvent):void
+			{
+				
+			}
+		 
+			protected function icradeyish(event:MouseEvent):void
+			{
+				if (!sqlc.connected) 
+					sqlc.openAsync(db);
+				MobileAlert.show('Bu əməliyyat çox təsadüf hallarda  seçilir.'+'\n'+'Ona görə də məsləhət almadan bunu etməyin. '+'\n'+'Bu Siyahıda olan Şəkillərin hamısı bır dəfəlik silinəcək.'+'\n'+'Şəkillərin hamısı Serverə köçürülmüş olmalıdır'+'\n'+'Siyahını silmək İstəyirsinizmi?', 'DİQQƏT', 9, this, siyahisil);
+				
+			}
+			
+			
+			
+			public function siyahisil(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					var sqls3:SQLStatement = new SQLStatement();
+					sqls3.sqlConnection = sqlc;			
+					sqls3.addEventListener(SQLErrorEvent.ERROR, error);
+					sqls3.addEventListener(SQLEvent.RESULT, resault);	
+					sqls3.text = "DELETE FROM fotos WHERE id>0";
+					sqls3.execute();
+					refresh();
+					
+				} 
+			}
+			
+			
+			private function cevirok(sid:String):void
+			{
+				var sqls11:SQLStatement = new SQLStatement();
+				sqls11.sqlConnection = sqlc;			
+				sqls11.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls11.addEventListener(SQLEvent.RESULT, resault);	
+				sqls11.text = "UPDATE fotos  SET icra=true WHERE id="+sid ;
+				sqls11.execute();
+				
+				refresh();
+			}
+			
+			private function error(e:SQLErrorEvent):void
+			{
+				MobileAlert.show(e.toString(),"Xəta",1);
+			}
+			
+			
+			private function error1(e:SQLErrorEvent):void
+			{
+				MobileAlert.show(e.toString(),"Xəta1",1);
+			}
+			
+			protected function view1_activateHandler(event:ViewNavigatorEvent):void
+			{
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				start();
+			}
+			
+			
+			private function licaxtar(event:GridSelectionEvent):void
+			{
+				if (firma.selectedIndex>-1) {
+					//			titult.text=dp[firma.selectedIndex].titul.toString();	
+					//		mezmunt.text=dp[firma.sezarlectedIndex].mezmun.toString();
+					//		tarixt.text=dp[firma.selectedIndex].tarix.toString();
+					//		icrat.selected=dp[firma.selectedIndex].icra;
+					imgf.source="assets/nofoto.jpg"; 
+					var inFile:File=WorkDir.resolvePath(docyol +dp[firma.selectedIndex].faylad);
+					fad.text=dp[firma.selectedIndex].pozad;
+					
+					if ((inFile.extension=="jpg") || (inFile.extension=="png") || (inFile.extension=="bmp")	|| (inFile.extension=="tif") || (inFile.extension=="gif"))
+						imgf.source=inFile.url;
+					
+				}
+				
+			}
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+			
+			
+			protected function execSQLResult1_faultHandler(event:FaultEvent):void
+			{
+				//		inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+				
+				//MobileAlert.show(' Servis işləmir ! Əməliyyatı TƏKRAR edin', 'Diqqət')
+			}
+			
+			private function aaddItem(pozaad:String, meraad:String, fotostt:String,faylaad:String):void
+			{
+				var vvvv:ByteArray=new ByteArray();
+				var tar:Date=new Date();
+				
+				//	var db:File = WorkDir.resolvePath(docyol+"fotolar.db");var db:File = File.applicationStorageDirectory.resolvePath(docyol+"fotolar.db");
+				var ds:String=dateFormatter.format(tar).toString();
+				ds=ds..substr(0,ds.length-1);
+				var sqls01:SQLStatement = new SQLStatement();
+				sqls01.sqlConnection = sqlc;			
+				sqls01.addEventListener(SQLErrorEvent.ERROR, error);
+				sqls01.addEventListener(SQLEvent.RESULT, resault);	
+				// in this sql statment we add item at the end of our table with values first_name.text in column first_name and last_name.text for column last_name
+				sqls01.text="INSERT INTO fotos (osid,oad,uid,merad,pozad,faylad,filead,tarix,gun,ay,il,icra) VALUES( '" + 
+					mufo.osid + "','" + mufo.oad + "','" + mufo.usid + "','" + meraad + "','" + 
+					pozaad + "','" + faylaad + "','"   + fotostt + "','"+ ds + "'," + tar.date.toString() + "," + tar.month.toString() + "," + tar.fullYear.toString() + ", false"+ ");";
+				//	sqls.text="select * from fotos";
+				sqls01.execute();
+				refresh();
+			}
+			
+			
+			private function filtsifar( ):void
+			{
+				
+			}
+			
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			private function okLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == true)
+					return "OK";
+				else
+					return "";
+			}
+			import spark.events.IndexChangeEvent; 
+			
+			
+			
+			
+			
+			
+			
+			protected function deact(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				sqlc.close();
+				
+				
+			}
+			
+			
+			
+			
+			private function koc(event:MouseEvent):void
+			{
+				if (firma.selectedItems.length<1) return;
+				if (!sqlc.connected) 
+					sqlc.openAsync(db);
+				MobileAlert.show(' Secilmiş   -'+firma.selectedItems.length.toString()+'-faylın serverə'+'\n'+ 'yüklənməsini istəyirsinizmi?', 'DİQQƏT', 9, this, kocet);
+			}
+			
+			public function kocet(event:PopUpEvent):void
+			{
+				if (event.data == MobileAlert.YES)
+				{
+					
+					indexarr = firma.selectedItems;
+					numItems = indexarr ? indexarr.length : 0;
+					if (numItems<1) return;
+					grip.enabled=false;
+					grip.alpha=0.3;
+					stopb.visible=true;
+					stopb.label="Dayandır"
+					stopb.enabled=true;
+					actindex=0;
+					
+					uplodall();
+					
+				} 
+			}
+			
+			
+			private function uplodall():void
+			{	
+				if (( actindex <numItems)&&stopp)
+				{
+					//		kocs.enabled=false;
+					//		tkocs.enabled=false;
+					
+					//		tsil.enabled=false;
+			
+					var fotoidsstr:String= indexarr[actindex].faylad;
+					var inFile:File;
+					inFile=WorkDir.resolvePath(docyol +  indexarr[actindex].faylad);
+				 
+					if (!sqlc.connected) 
+						sqlc.openAsync(db);
+			//		uplods.token=srv2.qup(dataf, fotoidsstr, "Mufettis");
+					var 	fqov:String="Mufettis"+"/f/"+fotoidsstr.substr(3,4);	
+					if (indexarr[actindex].pozad=='sened') 	fqov='Mufettis'+"/fd/"+fotoidsstr.substr(4,4)
+					
+					else fqov="Mufettis"+"/f/"+fotoidsstr.substr(3,4);	
+					 
+			if  (inFile.exists)		nlib.UpFtp(inFile, fqov,fotoidsstr, uplodsresult);
+			else 	{
+				cevirok( indexarr[actindex].id.toString());					
+				actindex++;	
+				davam.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+				MobileAlert.show(' Şəkil Serverə naməlum səbədən yüklənməmisdir! Fayl Silinibdir (yoxdur) '+inFile.nativePath, 'Məlumat');
+			}
+					 
+					if (!sqlc.connected) 
+						sqlc.openAsync(db);
+					
+				}
+				else
+				{
+					
+					numItems=0;
+					stopb.visible=false;
+					actindex=0;
+					stopp=true;
+					grip.enabled=true;
+					grip.alpha=1;
+					indexarr.length=0;
+				}
+			}	
+			private function uplodsresult(event:Event):void
+			{
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				
+				var		result:String=ss4.soap_Body.qupResponse.qupResult.toString();
+				
+				if (result.substring(0, 6) == "Upload")
+					
+						
+				{
+					MobileAlert.showt(' Şəkil  '+ indexarr[actindex].pozad+'  Serverə  yüklənmisdir!', 'Məlumat');
+					cevirok( indexarr[actindex].id.toString());					
+					actindex++;					
+					var fss:String=StringUtil.trim(result.split(',')[1]);
+					var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/foto/' + fss);
+					var filemov:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fss );
+					
+					outFile.moveTo(filemov, true);
+					//	uplodall();
+					davam.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+				}
+				else
+				{
+					MobileAlert.show(' Şəkil Serverə naməlum səbədən yüklənməmisdir! Əməliyyatı TƏKRAR edin', 'Məlumat')
+				}
+			}
+			
+			
+			
+			
+			
+			
+			protected function capet(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				
+				var outFile:File=WorkDir.resolvePath(docyol + dp[firma.selectedIndex].faylad);
+				var docac2:Doclanch=new Doclanch();
+				docac2.openDoc(outFile.nativePath);
+			}
+			import mx.managers.PopUpManager;
+			import flash.net.FileFilter;
+			
+			import spark.events.PopUpEvent;
+			private 	 var filterTesto:FileFilter = new FileFilter("All", "*.*;");
+			
+			
+			/*
+			CREATE PROCEDURE FaylNext 
+			@fayl int out 
+			AS 
+			UPDATE sekv SET fayl = fayl + 1 
+			SELECT @fayl = fayl FROM sekv
+			*/
+		
+	 
+			
+			
+			private function tkocsil(event:MouseEvent):void
+			{
+				if (!sqlc.connected) 
+					sqlc.openAsync(db);
+				var len:int = dp.length;
+				for (var i:int = 0; i < len; i++)
+					if (dp[i].icra)
+					{
+						//	var outFile:File=WorkDir.resolvePath(docyol + dp[i].filead);
+						var outFile:File=WorkDir.resolvePath(docyol + dp[i].faylad);
+						var filemov:File=WorkDir.resolvePath(cacheyol + dp[i].faylad );
+						
+						outFile.moveTo(filemov, true);
+						
+					}
+				refresh();
+			
+			}
+			
+			
+			
+		
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="300" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="300" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="300"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="300" mode="cover"/>
+	
+	 
+	
+		<s:CallResponder id="uplods" fault="execSQLResult1_faultHandler(event)" result="uplodsresult(event);"/>
+		<s:DateTimeFormatter id="dateFormatter" dateTimePattern="dd/MM/yyyy/"/>
+		<s:RadioButtonGroup id="radiogroup1"/>
+		
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label id="titul" width="244" color="white" horizontalCenter="-481" text="İstifadəçi: {mufo.uad}" textAlign="left" verticalAlign="middle"/>
+		<s:Label id="titul0" width="772" color="white" fontSize="20" horizontalCenter="19" text="Şəkillərin serverə köçürülməsi " textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1290" designHeight="720" width="1290" height="720" includeInLayout="false"><s:Group id="grip">
+		
+		
+		
+		<s:DataGrid id="firma" x="460" y="42" width="805" height="532" selectionMode="multipleRows" dataProvider="{dp}" horizontalScrollPolicy="on" selectionChange="licaxtar(event)" rowHeight="40" fontSize="20" skinClass="components.CheckBoxDataGridSkin" textAlign="left" verticalScrollPolicy="on">
+			
+			<s:columns>
+				<s:ArrayList>
+					
+					
+					
+					
+					<s:GridColumn dataField="oad" headerText="" width="42" sortable="false" editable="false">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:GridItemRenderer>
+									<fx:Script>
+										<![CDATA[
+											override public function prepare(hasBeenRecycled:Boolean):void
+											{
+												cb.selected = grid.selectionContainsIndex(rowIndex);
+											}
+										]]>
+									</fx:Script>
+									<components:DataGridCheckBox id="cb" left="2" top="2" skinClass="spark.skins.mobile.CheckBoxSkin"/>
+								</s:GridItemRenderer>
+							</fx:Component>
+						</s:itemRenderer>
+						<s:headerRenderer>
+							<fx:Component>
+								<s:GridItemRenderer>
+									<fx:Script>
+										<![CDATA[
+											import spark.components.DataGrid;
+											override public function prepare(hasBeenRecycled:Boolean):void
+											{
+												var items:Vector.<Object> = grid.selectedItems;
+												var numItems:int = items ? items.length : 0;
+												cb.selected = grid.dataProvider.length == numItems;
+												cb.partial = numItems > 0;
+											 
+												owner.addEventListener("selectionChange", selectionChangeHandler);
+											}
+											
+											override public function discard(willBeRecycled:Boolean):void
+											{
+												owner.removeEventListener("selectionChange", selectionChangeHandler);											
+											}
+											
+											private function selectionChangeHandler(event:Event):void
+											{
+												var items:Vector.<Object> = grid.selectedItems;
+												var numItems:int = items ? items.length : 0;
+												cb.selected = grid.dataProvider.length == numItems;
+												cb.partial = numItems > 0;
+											}
+											
+											private function cbChanged():void
+											{
+												if (!cb.selected)
+												{
+													// uncheck everything
+													DataGrid(owner).selectedIndex = -1;
+												}
+												else
+												{
+													var n:int = DataGrid(owner).dataProvider.length;
+													var arr:Array = [];
+													for (var i:int = i; i < n; i++)
+														arr.push(i);
+													DataGrid(owner).selectedIndices = Vector.<int>(arr);
+												}
+											}
+										]]>
+									</fx:Script>
+									
+									<components:TriStateCheckBox id="cb" left="2" top="2" skinClass="spark.skins.mobile.CheckBoxSkin" change="cbChanged()"/>
+								</s:GridItemRenderer>
+							</fx:Component>
+						</s:headerRenderer>
+					</s:GridColumn>
+					
+					<s:GridColumn dataField="oad" headerText="Adı" width="235" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer"/>
+					
+					<s:GridColumn dataField="merad" headerText="Qeyd" width="180" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer"/>
+					
+					
+					
+					<s:GridColumn dataField="tarix" headerText="Tarix" width="122" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer"/>
+					
+					<s:GridColumn dataField="pozad" headerText="Fayl" width="154" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer"/>
+					<s:GridColumn dataField="id" headerText="Sıra" width="70" labelFunction="nullLabelFunction" headerRenderer="components.HeaderRenderer"/>
+					
+					
+					
+				</s:ArrayList>
+				
+			</s:columns>
+			
+			
+		</s:DataGrid>
+		
+		<s:Button id="kocs" x="597" y="600" width="184.5" height="43" label="Köçür" fontSize="22" click="koc(event)"/>
+		
+		<s:Button id="tsil" x="18" y="596" width="184.5" height="43" label="Siyahını  Sil" fontSize="22" click="icradeyish(event)"/>
+		
+		<s:Button x="222" y="594" width="184.5" height="43" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+		
+		<s:Button x="956" y="601" width="184.5" height="43" fontSize="22" label="Çap" click="capet(event)"/>
+		<s:Image id="imgf" x="18" y="175" width="399" height="366"/>
+		
+	
+		<s:Label id="fad" x="18" y="42" width="399" height="78" textAlign="center"/>
+		
+	</s:Group>
+	
+	<s:Button id="stopb" x="397" y="269" width="359.5" height="141" label="Dayandır" click="{stopp=false;stopb.enabled=false; stopb.label='Gözləyin...'}" color="#FC4902" visible="false" fontSize="24"/>
+	<s:Button id="davam" x="4" y="269" click="uplodall()" visible="false"/>
+	
+	
+	
+	
+	
+</adaptive:ResponsiveStage></s:View>

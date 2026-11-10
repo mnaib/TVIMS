@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnablePopUpContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+						   xmlns:s="library://ns.adobe.com/flex/spark"
+						   width="366" height="582" backgroundColor="#9BACA3" 
+						   creationComplete="init();">
+	
+			
+		<fx:Script>
+			<![CDATA[
+				import mx.collections.ArrayCollection;
+				import mx.events.FlexEvent;
+				
+				import spark.components.Image;
+				import spark.events.IndexChangeEvent;
+				[Bindable] private var currentDirectory:File;
+				[Bindable] private var files:ArrayCollection;
+				
+				[Bindable]  public var returnObject: File=new File();
+				[Bindable]  public var imgg:Image;
+		
+				[Bindable]  public var imgl:Label;
+				
+				private function init():void{ 
+					var tempFold:File = File.applicationStorageDirectory.resolvePath("DCIM/Camera");
+					
+					if((tempFold.exists)&&  (tempFold.isDirectory)) 
+					{
+						changeDir( tempFold  );
+						trace("The directory exists.");
+					}
+					else
+					{
+						changeDir( File.applicationStorageDirectory );
+						trace("The directory does not exists.");
+					}
+					 
+					
+				}
+				
+				private function changeDir(file:File):void{
+					if(file.isDirectory){
+						var parent:File = file.parent;
+						
+						currentDirectory = file;
+						
+						files = new ArrayCollection( currentDirectory.getDirectoryListing().sort(fileSort) );
+					}
+				}
+				
+				private function fileSort(file1:File, file2:File):int{
+					if(file1.isDirectory && !file2.isDirectory)
+						return -1;
+					else if(!file1.isDirectory && file2.isDirectory)
+						return 1; 
+					else
+						return file1.name.localeCompare( file2.name );
+				}
+				
+				private function doubleClick():void{
+					if(fileList.selectedItem == null)
+						return;
+					
+					var selectedFile:File = fileList.selectedItem;
+					
+					if(selectedFile.isDirectory)
+						changeDir(selectedFile);
+					else{ 
+						returnObject =selectedFile;
+						
+						super.close(true);   
+					}
+				}
+				
+				private function up():void{
+					changeDir( currentDirectory.parent );
+				}
+				
+				protected function button1_clickHandler(event:MouseEvent):void
+				{
+					// TODO Auto-generated method stub
+					doubleClick();
+				}
+				
+				protected function button2_clickHandler(event:MouseEvent):void
+				{
+					// TODO Auto-generated method stub
+					returnObject =null;
+					super.close(true); 
+				}
+				
+				
+
+				
+				protected function fileList_caretChangeHandler(event:FlexEvent):void
+				{
+					// TODO Auto-generated method stub
+					if(fileList.selectedItem == null)
+						return;
+					
+					var selectedFile1:File = fileList.selectedItem;
+			//		fad.text=selectedFile1.name;
+					 fad.text=selectedFile1.nativePath;
+					if(!selectedFile1.isDirectory)
+					{
+					imgl.text=selectedFile1.name;
+					sec.enabled=true;
+					 if ((selectedFile1.extension=="jpg") || (selectedFile1.extension=="png") || (selectedFile1.extension=="bmp")	|| (selectedFile1.extension=="tif") || (selectedFile1.extension=="gif")) imgg.source=selectedFile1.url;
+					 else imgg.source="assets/nofoto.jpg";
+					}
+					else
+					{
+						sec.enabled=false;
+					}
+						
+				}
+				
+			]]>
+		</fx:Script>
+	 
+		<s:VGroup   width="100%" height="572" paddingBottom="10" paddingLeft="10"
+				  paddingRight="10" paddingTop="10">
+			<s:Label id="fad" width="100%" height="55" color="#0E369D" fontSize="15" text=" "
+					 textAlign="center" verticalAlign="middle"/>
+			<s:HGroup width="100%" gap="40" verticalAlign="top">	
+				<s:Button width="48" height="48" buttonMode="true" click="up();"
+						  enabled="{currentDirectory.parent != null}"
+						  icon="@Embed('../assets/Open.png')"   iconPlacement="top"/>
+				
+				<s:Button width="48" height="48" label=" "
+						  click="button1_clickHandler(event)" icon="@Embed('../assets/Close.png')"/>
+				<s:Button id="sec" width="81" height="48" label="Seç"
+						  click="button1_clickHandler(event)" enabled="false"
+						  icon="@Embed('../assets/Accept.png')"/>
+				<s:Button width="48" height="48" label="X" click="button2_clickHandler(event)"
+						  color="#FA0808" fontSize="30" icon=" "/>
+			</s:HGroup>
+			<s:List  id="fileList"  width="100%"  height="100%" valueCommit="fileList_caretChangeHandler(event)" 
+				 dataProvider="{files}"
+					doubleClick="doubleClick();" doubleClickEnabled="true" labelField="name">
+			</s:List>
+		</s:VGroup>
+	
+ 
+
+</s:SkinnablePopUpContainer>

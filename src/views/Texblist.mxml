@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*" xmlns:flextras="http://www.flextras.com/mxml" xmlns:timePicker="com.datetime.*" xmlns:adaptive="com.responsive.*" viewActivate="view2_ActivateHandler(event)" destructionPolicy="never" width="100%" height="100%" preinitialize="view1_initializeHandler(event)" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			
+			
+			
+			import com.*;
+			import com.flexets.android.views.components.DatePicker;
+			import com.flexets.android.views.components.DatePickerEvent;
+			
+			import components.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.LoadEvent;
+			import mx.rpc.soap.SOAPResult;
+			
+			import spark.components.gridClasses.GridColumn;
+			import spark.managers.PersistenceManager;
+			 ;	
+			protected var WorkDir:File=File.applicationStorageDirectory;
+		 
+			[Bindable]
+			public var date1:Date=new Date();
+			
+		 
+			[Bindable]
+			private var senedarr:ArrayCollection = new ArrayCollection();	
+			
+		  
+			
+			
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+		mufo=persistenceManager.getProperty("mufo") as Mufo;
+				 
+		//		mufo.osid='8175';
+				//	ad.text=mufo.uad.toString();
+				
+			}
+			 
+			
+			/// 7436 7640
+			
+			protected function view2_ActivateHandler(event:Event):void            {    
+				
+			 	mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				nad.text=mufo.oad.toString();
+				
+				nrey.text=mufo.orey.toString();
+				ntey.text=mufo.otey.toString();
+				nunv.text=mufo.oray.toString() + ", " + mufo.ounv.toString();
+				nqeyd.text=mufo.oqeyd.toString();
+				
+				nlib.GetUrl('exec Mufettis.dbo.MobTexlist '+mufo.osid ,senedr);		
+				
+		//		senedc.token=srv.Cedvel('exec Mufettis.dbo.MobTexlist  '+mufo.osid);				//			firmac.token=srv.execSQL(sqs,'DML','select * from [Mufettis].[dbo].[eksper] where obyekt='+mufo.osid+' order by id desc' ,1000)
+	 			
+			}  
+			
+			
+			
+			
+			 
+			
+			
+			
+			
+			
+			private function showTwoColumns2(rowItem:Object):String
+			{
+				return rowItem.rayon+"\  "+ rowItem.ad+"\  "+rowItem.id;
+			}
+			
+			private function showTwoColumns(rowItem:Object):String
+			{
+				return rowItem.rayon;
+			}
+			
+		
+			private function senedr(event:Event):void {
+				
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+							 
+	 		sened.dataProvider=new XMLListCollection(xmlResult.Cedvel);
+			sened.selectedIndex=-1;
+			sened.selectedIndex=0;
+			}
+			
+			private function faylaxtar(event:MouseEvent):void
+			{
+				
+				if (sened.selectedIndex>-1)
+				{
+					
+				var 	fname:String="t"+zeroPad(sened.selectedItem.id,9)+".jpg"
+			 
+				var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+			 
+				nlib.GetFtp('Mufettis', fname,outFile,downer);
+				
+				
+				
+				
+				function downer( ):void {
+					var docac2:Doclanch=new Doclanch();
+					docac2.openDoc(outFile.nativePath);
+					
+				}
+				
+				
+				}
+				 
+			}
+			
+		
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+		
+			
+			private function nullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					return item[column.dataField];
+			}
+			
+			private function nullLabelFunctionv(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					if (item[column.dataField] == "1")
+					return "var";
+				else return "";
+			}
+			
+			 
+			
+			private function tnullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					
+					return tarPad(item[column.dataField].toString());
+			} 
+			public function tarPad(number:String):String
+			{
+				
+		var ret:Array=number.split(" ");
+				if (ret.length<2)  return number;
+				var set:String=ret[0].toString();
+				ret=set.split("/");
+				
+				if (ret.length<2) ret=set.split("-");
+				if (ret.length<2) ret=set.split(".");
+				if (ret.length<2) return number;
+				return zeroPad(ret[1].toString(),2)+"."+zeroPad(ret[0].toString(),2)+"."+ret[2].toString();
+			 
+			 
+			}
+			private function ttnullLabelFunction(item:Object, column:GridColumn):String {
+				if (item[column.dataField] == '<NULL>')
+					return "";
+				else
+					
+					return ttarPad(item[column.dataField] as Date);
+			} 
+			public function ttarPad(dd:Date):String
+		
+			{
+		return		zeroPad(dd.date.toString(),2) +"."+zeroPad((dd.month+1).toString(),2)+"."+dd.fullYear+
+			" " +zeroPad((dd.hours+1).toString(),2) + ":" + zeroPad((dd.minutes+1).toString(),2) + ":"+zeroPad((dd.seconds+1).toString(),2);			
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+		
+			
+			protected function yenis(event:MouseEvent):void
+			{
+				navigator.pushView(views.TexYeni);
+			
+			 
+			}
+			import mx.utils.StringUtil;
+			
+			
+			
+			protected function yenicancel(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				yenisb.enabled = true;
+			 
+				 
+				//sad.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].ad);
+				//	text=Azstring.Azrec(sifararr[sifarish.selectedIndex].qeyd);
+				
+			}
+			
+		
+			private function getGridColumnLabel(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			import spark.components.gridClasses.GridColumn;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent;
+			protected function axg_selectionChangeHandler(event:GridSelectionEvent):void
+			{
+			 	if (sened.selectedItem.foto.toString()==1) yenisb1.enabled=true;
+			                                                  	else yenisb1.enabled=false;
+				
+			}
+			
+			protected function yenisb0_clickHandler(event:MouseEvent):void
+			{
+				sened.selectedItem.id
+				navigator.pushView(views.Texbax,sened.selectedItem.id);
+				
+			}
+			
+	 
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<s:DateTimeFormatter id="dateFormatter" timeStyle="none" dateStyle="medium" locale="az-Latn-AZ"/>
+		<s:FlipViewTransition id="flipTrans" mode="cube" duration="200" direction="right"/>
+		<s:ZoomViewTransition id="zoomTrans" mode="out" duration="200"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="200"/>
+		<s:SlideViewTransition id="slideTrans" mode="cover" duration="200" direction="left"/>
+		 
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%" id="titul" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="330" y="156" width="431" height="41" fontSize="27" fontWeight="bold" text="Texniki baxış blankları" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="442" y="76" color="#0C66D6" text="Unvan:"/>
+	<s:Label id="nad" x="18" y="21" width="1235" height="50" backgroundAlpha="0.2" backgroundColor="#666363" color="#7D049B" fontSize="21" fontWeight="bold" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="807" y="76.2" color="#0C66D6" text="Qeyd:"/>
+	<s:Label x="1130" y="75.9" color="#0C66D6" text="Təyinat:"/>
+	<s:Label id="ntey" x="1045" y="92.5" width="208" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nqeyd" x="660" y="93.25" width="348" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="121" y="76" color="#0C66D6" text="Rəy:"/>
+	<s:Label id="nrey" x="18" y="93" width="262" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	<s:Label id="nunv" x="326" y="93.25" width="287" height="55" backgroundAlpha="0.2" backgroundColor="#666363" textAlign="center" verticalAlign="middle"/>
+	
+	
+	
+	<s:DataGrid id="sened" x="18" y="195" width="990" height="451" selectionChange="axg_selectionChangeHandler(event)" variableRowHeight="false" rowHeight="60" textAlign="center">
+		
+		<s:columns>
+			<s:ArrayList> 
+				
+				<s:GridColumn dataField="id" labelFunction="nullLabelFunction" width="80" headerText="№"/>
+				<s:GridColumn dataField="obyekt" labelFunction="nullLabelFunction" width="100" headerText="Obyekt №"/>
+				<s:GridColumn dataField="ad" labelFunction="nullLabelFunction" width="120" headerText="Müfəttiş"/>
+			
+				<s:GridColumn dataField="yt" labelFunction="nullLabelFunction" width="170" headerText="Tarix"/>
+				
+					<s:GridColumn dataField="mal" labelFunction="nullLabelFunction" width="140" headerText="M.mən"/>
+				
+				<s:GridColumn dataField="s9" labelFunction="nullLabelFunction" width="250" itemRenderer="com.gridboxl" headerText="Pozuntu"/>
+				
+				<s:GridColumn dataField="aktiv" labelFunction="nullLabelFunction" width="50" headerText="A"/>
+				
+					<s:GridColumn dataField="foto" labelFunction="nullLabelFunctionv" width="80" headerText="TBB">
+						   
+					</s:GridColumn>
+			</s:ArrayList>
+			
+		</s:columns>
+	</s:DataGrid>
+	
+	<s:Button x="1043" y="594" width="210" height="52" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	<s:Button id="yenisb" x="1043" y="435" width="210" height="55" label="Yeni TBB" enabled="{mufo.duzelden}" click="yenis(event)" color="#C50BF3" fontSize="22"/>
+	 
+	
+	<s:Button id="yenisb0" x="1045" y="195" width="208" height="58" label="Baxmaq" click="yenisb0_clickHandler(event)" color="#050505" enabled="{mufo.duzelden}" fontSize="22"/>
+	<s:Button id="yenisb1" x="1044" y="312" width="209" height="58" enabled="false" label="TBB surəti" click="faylaxtar(event)" color="#050505" fontSize="22"/>
+	<s:CheckBox id="acer" x="40" y="654" label="Sözləri tam yerləsdir" change="{sened.variableRowHeight=acer.selected}"/>
+</adaptive:ResponsiveStage></s:View>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Version 2.2.2 - Mar 30, 2011 - Developed By Robert Scheitlin -->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+				xmlns:InfoTemplates="BaWidget.*"
+				
+			 	  close="closeMe()"
+				  creationComplete="init()"
+			   >
+	<s:layout>
+		<s:HorizontalLayout/>
+	</s:layout>
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.ListEvent;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			public var iimageURL:Array;
+			
+			[Bindable]
+			public var widL:int=600;
+			[Bindable]
+			public var hidL:int=700;
+			
+			[Bindable]
+			public var curin:int=0;
+			
+			[Bindable]
+			public var adtitul:String="Şəkil" ;
+			
+			[Bindable]
+			public var multiImgPred:String;
+			
+			[Bindable]
+			public var multiImgSufd:String;
+			
+			[Embed(source="../assets/images/w_close.png")]
+			private var wCloseBtnClass:Class;
+			
+	     	private function closeMe():void
+			{
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			private function init():void
+			{
+				
+				this.title=adtitul;
+				mfotocar.iArray=iimageURL;
+					mfotocar.iiCurrIndx=curin;	
+			}
+			
+			
+		]]>
+	</fx:Script>
+
+	
+		
+	
+	
+	<InfoTemplates:MutiControl id="mfotocar"    iArray="{iimageURL}"
+							   visible="true"  
+							   multiImgPre="{multiImgPred}" 
+							   multiImgSuf="{multiImgSufd}"
+							   cHeight="{this.height}" cWidth="{this.width}"
+								
+								  includeInLayout="true"
+						 
+							
+									  />
+
+	
+
+	
+	
+		
+</s:TitleWindow>
+
+
+	

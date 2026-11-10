@@ -1,0 +1,724 @@
+<?xml  version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:components="components.*"
+		xmlns:flextras="http://www.flextras.com/mxml"
+		xmlns:timePicker="com.datetime.*"
+		width="100%" height="100%" backgroundColor="#FFFFFF" destructionPolicy="never"
+		preinitialize="view1_initializeHandler(event)" viewActivate="view2_ActivateHandler(event)" styleName="tvimsScreen">
+	
+	<fx:Script>
+		<![CDATA[
+			import cmodule.as3_jpeg_wrapper.CLibInit;
+			
+			import com.*;
+			import com.adobe.serializers.xml.XMLDecoder;
+			
+			import components.*;
+			
+			import flashx.textLayout.container.ScrollPolicy;
+			import flashx.textLayout.elements.Configuration;
+			import flashx.textLayout.elements.TextFlow;
+			
+			import mx.collections.XMLListCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.managers.PersistenceManager;
+			import spark.utils.TextFlowUtil;
+			protected var WorkDir:File=File.applicationStorageDirectory;
+			
+			
+			[Bindable]
+			private var mufo:Mufo;
+			private var persistenceManager:PersistenceManager=new PersistenceManager;
+			
+			
+			var sert:String='<p align="left"><b>Obyekt: </b>Qaradağ rayonu, Qızıldaş qəsəbəsində Mədəniyyət Mərkəzi (kitabxana daxil olmaqla)tikintisi<br><b>Ünvan: </b>Qaradağ rayonu Qızıldaş qəsəbəsi<br><b>Təyinat: </b>Mədəniyyət obyekti<br><b>Sifarişçi: </b>Azərbaycan Respublikası Mədəniyyət və Turizm Nazirliyi&nbsp;</p>';
+			protected function view1_initializeHandler(event:FlexEvent):void
+			{
+				
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+				
+			}
+			
+			import flashx.textLayout.conversion.TextConverter;
+			
+			protected function view2_ActivateHandler(event:Event):void    
+			{  
+				var sdsd:Date=new  Date();
+				vaxt.text= getdate(sdsd)+" "+gettime(sdsd);	
+				mufo=persistenceManager.getProperty("mufo") as Mufo;
+				
+			 
+				nlib.GetUrl('exec Mufettis.dbo.MobTBBautoNo  '+mufo.osid+", "+mufo.usid,senedr);
+				//	nlib.GetUrl('exec Mufettis.dbo.MobTBBautoNo  11026, 65',senedr);
+				
+			}  
+			import spark.components.supportClasses.StyleableTextField;
+			
+			private function senedr(event:Event):void {
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				var arc:Object= xml.Cedvel as Object;
+				dg1.dataProvider=new ArrayList([arc.s1.toString()]);
+				dg2.dataProvider=new ArrayList([arc.s2.toString()]);
+				dg3.dataProvider=new ArrayList([arc.s3.toString()]);
+				dg4.dataProvider=new ArrayList([arc.s4.toString()]);
+				dg5.dataProvider=new ArrayList([arc.s5.toString()]);
+				dg6.dataProvider=new ArrayList([arc.s6.toString()]);
+				dg7.dataProvider=new ArrayList([arc.s7.toString()]);
+				dg8.dataProvider=new ArrayList([arc.s8.toString()]);
+				dg9.dataProvider=new ArrayList([arc.s9.toString()]);
+			 
+				
+				
+				
+	/*		r1.textFlow= TextConverter.importToFlow (arc.s1.toString() , TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r2.textFlow=   TextConverter.importToFlow(arc.s2.toString() , TextConverter.TEXT_FIELD_HTML_FORMAT) ;
+				r3.textFlow= TextConverter.importToFlow(arc.s3.toString() , TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r4.textFlow= TextConverter.importToFlow(arc.s4.toString() , TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r5.textFlow= TextConverter.importToFlow(arc.s5.toString() , TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r6.textFlow= TextConverter.importToFlow(arc.s6.toString(), TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r7.textFlow= TextConverter.importToFlow(arc.s7.toString(), TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r8.textFlow= TextConverter.importToFlow(arc.s8.toString(), TextConverter.TEXT_FIELD_HTML_FORMAT);
+				r9.textFlow= TextConverter.importToFlow(arc.s9.toString(), TextConverter.TEXT_FIELD_HTML_FORMAT);
+				*/
+		 
+			}
+			
+			public function zeroPad(number:String, width:int):String
+			{
+				var ret:String="" + number;
+				while (ret.length < width)
+					ret="0" + ret;
+				return ret;
+			}
+			
+			
+			
+			public function tarPad(number:String):String
+			{
+				var ret:Array=number.split(" ");
+				if (ret.length<2)  return number;
+				var set:String=ret[0].toString();
+				ret=set.split("/");
+				
+				if (ret.length<2) ret=set.split("-");
+				if (ret.length<2) ret=set.split(".");
+				if (ret.length<2) return number;
+				return zeroPad(ret[1].toString(),2)+"."+zeroPad(ret[0].toString(),2)+"."+ret[2].toString();
+			}
+			private function getdate(dd:Date):String
+			{	
+				return zeroPad(dd.date.toString(),2) +"."+zeroPad((dd.month+1).toString(),2)+"."+dd.fullYear;				
+			}
+			private function gettime(dd:Date):String
+			{				
+				return zeroPad(dd.hours.toString(),2) +":"+zeroPad(dd.minutes.toString(),2)+":"+zeroPad(dd.seconds.toString(),2);				
+			}
+			
+			
+			
+			
+			
+			
+			
+			private var fid:String="";
+			
+			
+			
+			
+			private function getGridColumnLabel(rowItem:Object):String
+			{
+				return rowItem.ad;
+			}
+			import spark.components.gridClasses.GridColumn;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent;
+			protected function axg_selectionChangeHandler(event:GridSelectionEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				//	metntext.text= sened.selectedItem.metn.toString();
+				
+				
+			}
+			
+			
+			
+			
+			
+			protected function okbut_clickHandler(event:MouseEvent):void
+			{
+				
+				//	mufo.usid='65';  //silok
+				//	mufo.osid='8175';
+			 
+				okbut.enabled=false;
+				nlib.GetUrl('exec Mufettis.dbo.MobTBBauto 32, ' +mufo.osid+", "+mufo.usid,sifarr);
+				
+				
+			}
+			
+			private function sifarr(event:Event):void {
+			var ss:String="  TBB yaradıldı   OK"+"\n";
+				
+				MobileAlert.showt(ss+' İndi TBB surəti serverə köçürülür ' , 'Məlumat');
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				
+				var arc:Object= xml.Cedvel as Object;
+				ib1.visible=false;
+				ib2.visible=false;
+				okbut.visible=false;				
+				var bd1:BitmapData=new BitmapData( grp.width,grp.height,false,0xFFFFFFFF);				
+				var bitmap1:Bitmap=new Bitmap(bd1);				
+				bd1.draw(grp);
+				
+				
+				var as3_jpeg_wrapper: Object;
+				var loader:CLibInit = new CLibInit;
+				as3_jpeg_wrapper = loader.init();
+				var baSource: ByteArray = bd1.clone().getPixels( new Rectangle( 0, 0, bd1.width, bd1.height ) );	
+				var baAlchmey: ByteArray = as3_jpeg_wrapper.write_jpeg_file(baSource, bd1.width, bd1.height , 3, 2, 75);	
+				
+			 
+				fid=arc.id;
+				var 	fname:String="t"+zeroPad(fid,9)+".jpg" ;	
+				nlib.UpFtpB(baAlchmey ,  "Mufettis",fname ,uplodsresult);
+				
+		 	navigator.popView( flipTrans);
+			}
+			
+			
+			private function uplodsresult(event:Event):void
+			{
+				var xmdec:XMLDecoder=new XMLDecoder();
+				
+				var ss4:Object=xmdec.decode(new XML(event.target.data));
+				
+				var		result:String=ss4.soap_Body.qupResponse.qupResult.toString();
+				
+				if (result.substring(0, 6) == "Upload")
+					
+				{
+					nlib.GetUrl('exec Mufettis.dbo.MobTBBfoto '+fid,sif);
+					
+					//MobileAlert.show('Şəkil serverə köçürüldü OK' , 'Məlumat');
+					
+					function sif(event:Event):void {
+						
+				//		MobileAlert.showt('TBB surəti serverə köçürüldü OK' , 'Məlumat');
+					//	navigator.popView(flipTrans);
+						
+					}
+				}
+				else
+				{
+					MobileAlert.show(' Şəkil Serverə naməlum səbədən yüklənməmisdir! Əməliyyatı TƏKRAR edin', 'Diqqət')
+				}
+			}
+			
+			protected function okbut_clickHandlerd(event:MouseEvent):void
+			{
+				ib1.visible=false;
+				ib2.visible=false;
+				okbut.visible=false;				
+				var bd1:BitmapData=new BitmapData( grp.width,grp.height,false,0xFFFFFFFF);				
+				var bitmap1:Bitmap=new Bitmap(bd1);				
+				bd1.draw(grp);
+				
+				
+				var as3_jpeg_wrapper: Object;
+				var loader:CLibInit = new CLibInit;
+				as3_jpeg_wrapper = loader.init();
+				var baSource: ByteArray = bd1.clone().getPixels( new Rectangle( 0, 0, grp.width, grp.height ) );	
+				var baAlchmey: ByteArray = as3_jpeg_wrapper.write_jpeg_file(baSource, grp.width, grp.height , 3, 2, 95);	
+				
+				var 	fname:String="toop.jpg" ;	
+				var outFile:File=WorkDir.resolvePath('ttnda/Mufettis/cache/' + fname);
+				var stream:FileStream = new FileStream();    
+				stream.open(outFile , FileMode.WRITE);
+				stream.writeBytes(baAlchmey);
+				//	stream.writeBytes(image.data);
+				//		stream.addEventListener(
+				stream.close();
+				stream=null;
+				
+			}
+			
+			protected function imza2_mouseOverHandler(event:MouseEvent):void
+			{
+				vsera.setStyle('verticalScrollPolicy', ScrollPolicy.OFF);
+			}
+			
+			protected function imza2_mouseOutHandler(event:MouseEvent):void
+			{
+				vsera.setStyle('verticalScrollPolicy', ScrollPolicy.ON);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<s:DateTimeFormatter id="dateFormatter"
+							 timeStyle="none"
+							 dateStyle="medium"
+							 locale="az-Latn-AZ"/>
+		<s:FlipViewTransition id="flipTrans"  mode="cube" duration="200" direction="right" />
+		<s:ZoomViewTransition id="zoomTrans"  mode="out" duration="200"  />
+		<s:CrossFadeViewTransition id="fadeTrans"  duration="200" />
+		<s:SlideViewTransition id="slideTrans"  mode="cover" duration="200" direction="left" />
+		
+		
+		
+		
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="bback" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+		<s:Button id="bhelp"
+				  
+				  icon="@Embed('../assets/help40bg.png')"/>
+		
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%"
+				 id="titul"
+				 color="white"
+				 horizontalCenter="0"
+				 text="İstifadəçi: {mufo.uad}"
+				 textAlign="center"
+				 verticalAlign="middle"/>
+	</s:titleContent>
+	
+	<s:Scroller id="vsera" width="100%" height="100%"  horizontalScrollPolicy="off"  >
+		<s:Group width="100%" height="100%" >
+			
+			
+			<s:SkinnableContainer id="grp" width="100%" height="100%"  skinClass="components.gfill">
+				
+				<s:VGroup id="vera" width="100%" height="97%"   >
+					
+					<s:HGroup width="93%" horizontalAlign="right"   >
+						<s:Label   width="329" height="66" fontSize="13"   
+								   text="Azərbaycan Respublikasının Şəhərsalma və Tikinti Məcəlləsinin tələblərinə uyğun olaraq, Azərbaycan Respublikası Fövqəladə Hallar Nazirliyi tərəfindən Dövlət nəzarətinin aparılması qaydalarına əlavə"
+								   textAlign="center" verticalAlign="middle"/>
+					</s:HGroup>
+					
+					
+					<s:VGroup  width="100%" horizontalAlign="center" includeInLayout="true" gap="-2"  >
+						<s:Label   width="329"  fontSize="15" fontWeight="bold"
+								   text="Azərbaycan Respublikası Fövqəladə Hallar Nazirliyi     Tikintidə Təhlükəsizliyə Nəzarət Dövlət Agentliyi     Baş Dövlət Tikinti Müfəttişliyi"
+								   textAlign="center" verticalAlign="middle"/>
+						<s:Label x="449" y="101" width="329" fontSize="13"
+								 text="(Bakı şəhəri, Füzuli küçəsi-69)" textAlign="center" verticalAlign="middle"/>
+					</s:VGroup>
+					
+					
+					
+					<s:HGroup  width="100%"   horizontalAlign="center"   >
+						<s:Spacer  width="22%"     />
+						<s:Label id="vaxt"  width="100%"   text="" 
+								 textAlign="left" verticalAlign="middle"/>
+						<s:Spacer  width="80%"     />
+						
+						<s:Label  width="499"  fontSize="17" fontWeight="bold" height="30"
+								  text="TİKİNTİ OBYEKTİNƏ TEXNİKİ BAXIŞ BLANKI" textAlign="center" verticalAlign="middle"  />
+						<s:Spacer  width="80%"     />
+						<s:Label id="nomre"  width="100%"  text="{mufo.osid}"  textAlign="right"
+								 verticalAlign="middle"/>
+						<s:Spacer  width="22%"     />
+					</s:HGroup>
+					
+					
+					
+					
+					
+					
+					<s:VGroup width="100%" height="100%" gap="-1"  horizontalAlign="center">	
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="1" verticalAlign="middle"
+											  textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"  height="100%"  
+											 maxDisplayedLines="-1"  text="Obyekt, onun ünvanı, təyinatı və sifarişçisi"  verticalAlign="middle"
+											 textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"      skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg1"  minHeight="35"   width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%"  maxDisplayedLines="-1"  text="2" verticalAlign="middle"
+											  textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"   maxDisplayedLines="-1"   text="Torpaq sahəsi üzərində mülkiyyət, icarə və istifadə hüququnu təsdiq edən sənədlər   " 
+											 verticalAlign="middle"
+											 textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle"/> 
+								</s:layout>
+								
+								<s:DataGrid id="dg2"  minHeight="35"     width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="3" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							
+							<s:SkinnableContainer  width="38%"  height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"   maxDisplayedLines="-1"  text="Tikinti layihəsinə ekspertiza müəssisəsinin rəyi"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg3"  minHeight="35"     width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="4" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"    maxDisplayedLines="-1"  text="Tikintiyə icazə və xüsusi nişan"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg4"  minHeight="35"    width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+								
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="5" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"   maxDisplayedLines="-1"  text="Tikinti obyektinin təyinatı üzrə göstəriciləri"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg5"  minHeight="35"    width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>		
+						
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%"  maxDisplayedLines="-1"  text="6" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="Layihə təşkilatının adı və lisenziyası"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg6"   minHeight="35"   width="100%"   	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="7" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%" maxDisplayedLines="-1"  text="Podratçı təşkilatın adı və lisenziyası"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg7" minHeight="35"     width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>
+						
+						
+						
+						
+						
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							<s:SkinnableContainer  width="2%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label      fontWeight="bold" width="100%" height="100%" maxDisplayedLines="-1"  text="8" verticalAlign="middle"
+												 textAlign="center" />
+							</s:SkinnableContainer>		  
+							<s:SkinnableContainer  width="38%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								<s:Label     fontWeight="bold" width="100%"  maxDisplayedLines="-1"  text="Tikinti obyektinə baxış keçirən zaman tikintinin vəziyyəti"  verticalAlign="middle"
+												textAlign="left" />			
+							</s:SkinnableContainer>	
+							<s:SkinnableContainer  width="60%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg8"  minHeight="35"    width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridbox" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						<s:HGroup horizontalAlign="center"  width="93%" height="100%" gap="-1"  >
+							
+							<s:SkinnableContainer  width="100%" height="100%"    skinClass="components.xett" >		 
+								<s:layout>
+									<s:VerticalLayout verticalAlign="middle" horizontalAlign="center" /> 
+								</s:layout>
+								
+								<s:DataGrid id="dg9"   minHeight="35"   width="100%" 	skinClass="components.dgrid" textAlign="left" 
+											horizontalScrollPolicy="off"  verticalScrollPolicy="off"
+											requestedRowCount="1" requestedMaxRowCount="1" > 
+									<s:columns>
+										<s:ArrayList>		  
+											<s:GridColumn   itemRenderer="com.gridboxp" 	/>
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:SkinnableContainer>			
+						</s:HGroup>	
+						
+						
+						
+						<s:HGroup width="93%"  verticalAlign="middle"     >
+							<s:HGroup width="30%" horizontalAlign="center">	 
+								<s:Label    height="40" 
+											text="İstifadəçi: {mufo.uad}"	 textAlign="center" verticalAlign="middle"/>
+								
+							</s:HGroup>
+							
+							<s:HGroup width="30%" horizontalAlign="center">
+								<s:Label     height="40"  text=" "
+											 textAlign="center" verticalAlign="middle"/>
+								
+								
+							</s:HGroup>
+							
+							
+							<s:HGroup width="40%" horizontalAlign="center">
+								<s:Label        text="Məsul şəxs:" height="40"
+												textAlign="center" verticalAlign="middle"/>
+								
+								<s:RichEditableText    height="40"  text=" "  fontSize="14" verticalAlign="middle" focusEnabled="false"
+													   textAlign="center"  />
+								
+								
+							</s:HGroup>
+						</s:HGroup>
+						
+						
+						
+						
+						<s:HGroup width="93%"  verticalAlign="middle" horizontalAlign="right"   >
+							
+							<components:SignatureCapture id="imza1"  width="402" height="108"
+														 mouseOver="imza2_mouseOverHandler(event)"
+														 mouseOut="imza2_mouseOutHandler(event)" 					 />
+							<s:Spacer width="5%"/>
+							<s:Button    id="ib1" width="32" height="32"  click="{imza1.clear()}" skinClass="skins.silbut"/>
+							<s:Spacer width="50%"/>
+							<s:Button id="okbut"   width="165" height="45" label="Təsdiq"  click="okbut_clickHandler(event)"
+									  color="#04700F" fontSize="26"/>
+							<s:Spacer width="50%"/>
+							<s:Button id="ib2"   width="32" height="32" click="{imza2.clear()}" skinClass="skins.silbut"/>
+							<s:Spacer width="5%"/>
+							<components:SignatureCapture id="imza2"  width="402" height="108" 
+														 mouseOver="imza2_mouseOverHandler(event)"
+														 mouseOut="imza2_mouseOutHandler(event)"  />
+						</s:HGroup>
+						
+						
+						<s:HGroup width="93%"  verticalAlign="middle" horizontalAlign="right"   >
+							
+							<s:Label        text=" " height="10"
+											/>
+						</s:HGroup>
+						
+						
+					</s:VGroup>
+					
+					
+				</s:VGroup>
+				
+			</s:SkinnableContainer>
+		</s:Group>
+	</s:Scroller>
+	
+	
+	
+	
+	<s:Button x="36" y="15" width="235" height="41" label="Geriyə"
+			  click="navigator.popView( flipTrans)" color="#04700F" fontSize="26"/>
+	 
+	
+</s:View>

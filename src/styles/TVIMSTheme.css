@@ -1,0 +1,281 @@
+/* TTNDATVIMS UI theme – Flex 4.6 / AIR 51
+   All shared appearance rules live here.
+   NOTE: Flex CSS is NOT browser CSS. Layout coordinates, anchoring, and
+   transforms are properties, so ResponsiveStage.as handles canvas sizing.
+   Instance-level MXML styles override type/class CSS styles.
+*/
+@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace controls "com.flexcapacitor.controls.*";
+		@namespace view "com.flexcapacitor.prompt.view.*";
+		
+		
+		view|PromptDialog {
+		}
+		
+		view|PromptDialog s|Button {
+			horizontalAlign: 	center;
+			verticalAlign: 		middle;
+			paddingLeft: 		10;
+			paddingRight: 		10;
+			color: 				#ff0000;
+			chromeColor: 		#ECECEC;
+			fontFamily: 		_sans;
+			fontSize: 			18;
+			fontWeight: 		normal;
+		}
+
+		@namespace esri "http://www.esri.com/2008/ags";
+		esri|ScaleBar
+		{
+			skinClass: ClassReference("com.ScaleBarMetricSkin");
+		}
+		
+		@namespace s "library://ns.adobe.com/flex/spark";
+		
+		/* StyleableTextField, regular */
+		@font-face {
+			src: url("../assets/arial.ttf"); 
+			fontFamily: azeri;
+			embedAsCFF: false;
+		}
+		
+		
+		@font-face {
+			src: url("../assets/ariali.ttf");
+			fontStyle: italic;
+			fontFamily: azeri;
+			embedAsCFF: false;
+		}
+		
+		
+		
+		@font-face {
+			src: url("../assets/arialbd.ttf");
+			fontFamily: azeri;
+			fontWeight: bold;
+			embedAsCFF: false;
+		}
+		
+		
+		@font-face {
+			src: url("../assets/arialbi.ttf");
+			fontStyle: italic;
+			fontFamily: azeri;
+			fontWeight: bold;
+			embedAsCFF: false;
+		}
+		
+		/* ffffffffffffffffffffffffffffffffffffffffff
+		/* StyleableTextField, regular */
+		@font-face {
+			src: url("../assets/arial.ttf"); 
+			fontFamily: azerit;
+			embedAsCFF: true;
+		}
+		
+		
+		@font-face {
+			src: url("../assets/ariali.ttf");
+			fontStyle: italic;
+			fontFamily: azerit;
+			embedAsCFF: true;
+		}
+		
+		
+		
+		@font-face {
+			src: url("../assets/arialbd.ttf");
+			fontFamily: azerit;
+			fontWeight: bold;
+			embedAsCFF: true;
+		}
+		
+		
+		@font-face {
+			src: url("../assets/arialbi.ttf");
+			fontStyle: italic;
+			fontFamily: azerit;
+			fontWeight: bold;
+			embedAsCFF: true;
+		}
+		
+		esri|ContentNavigator
+		{
+			headerColor: #FFFFFF;
+			headerBackgroundAlpha: 1.0;
+			headerBackgroundColor: #E90000;
+		}
+
+		esri|InfoWindowLabel
+		{
+			color: white;
+			font-size: 20;
+		 fontWeight :bold;
+		 horizontalAlign:center;
+			 
+				 percentWidth:100;
+		}
+
+	 
+		esri|InfoWindow
+		{   paddingTop:4;
+			border-thickness: 0;
+			background-color: #353930;
+			backgroundAlpha: 0.8;
+		}
+
+		
+		s|Label
+		{
+			fontFamily: azerit;
+			 
+		}
+		
+	 
+		s|ActionBar
+		{
+			fontFamily: azeri;
+		}
+		
+		s|RichEditableText {
+			focusedTextSelectionColor: blue;
+		}
+		
+		s|SpinnerListItemRenderer
+		{
+			fontFamily: azeri;
+		}
+		
+		s|RadioButton
+		{
+			fontFamily: azeri;
+		}
+		s|CheckBox
+		{
+			fontFamily: azeri;
+		}
+		
+		s|DataGrid
+		{
+			alternatingRowColors:#FFFFFF,#efefef; 
+			fontFamily: azerit;
+			selectionColor:#f5d4d4;
+		}
+		
+		.azStyle {
+			src: url("../assets/arial.ttf"); 
+			fontFamily: azeri;
+			skinClass: ClassReference("spark.skins.mobile.TextAreaSkin");
+			skinClass: ClassReference("spark.skins.mobile.TextInputSkin");
+			embedAsCFF:false
+		}
+		
+		.azbStyle {
+			fontFamily: azeri;
+			skinClass: ClassReference("spark.skins.mobile.ButtonBarSkin");
+		}
+		global
+		{
+			font-size: 14;
+			vertical-align: middle;
+		}
+
+/* ---- Full viewport: remove unthemed bands around legacy pages ---- */
+s|ActionBar {
+    chromeColor: #17496A;
+    color: #FFFFFF;
+    fontFamily: azeri;
+}
+
+s|View {
+    backgroundColor: #EEF3F8;
+    color: #23364B;
+    fontFamily: azeri;
+}
+
+/* Comfortable defaults. Existing explicit fontSize attributes remain in charge. */
+s|Button {
+    chromeColor: #E3EBF4;
+    color: #16395B;
+    fontFamily: azeri;
+    fontWeight: bold;
+    fontSize: 17;
+    focusColor: #1976A7;
+}
+s|TextInput {
+    fontFamily: azeri;
+    fontSize: 17;
+    color: #1A2F46;
+    focusColor: #1976A7;
+}
+s|TextArea {
+    fontFamily: azeri;
+    fontSize: 16;
+    color: #1A2F46;
+    focusColor: #1976A7;
+}
+s|List {
+    fontFamily: azerit;
+    color: #16395B;
+    selectionColor: #D9EBF7;
+}
+
+/* Reusable named styles: instance styles keep their original event handlers. */
+.tvimsScreen {
+    backgroundColor: #EEF3F8;
+}
+.tvimsHeader {
+    color: #FFFFFF;
+    fontFamily: azeri;
+    fontWeight: bold;
+    fontSize: 19;
+    textAlign: center;
+    verticalAlign: middle;
+}
+.tvimsPrimary {
+    chromeColor: #176C99;
+    color: #FFFFFF;
+    fontWeight: bold;
+    fontFamily: azeri;
+}
+.tvimsSecondary {
+    chromeColor: #D8E6F1;
+    color: #164364;
+    fontWeight: bold;
+    fontFamily: azeri;
+}
+.tvimsDanger {
+    chromeColor: #B93845;
+    color: #FFFFFF;
+    fontWeight: bold;
+    fontFamily: azeri;
+}
+.tvimsSectionTitle {
+    color: #17496A;
+    fontWeight: bold;
+    fontFamily: azeri;
+    textAlign: center;
+}
+.tvimsMuted {
+    color: #566C80;
+    fontFamily: azeri;
+}
+.tvimsLoginTitle {
+    color: #17496A;
+    fontWeight: bold;
+    fontFamily: azeri;
+    textAlign: center;
+}
+.tvimsLoginField {
+    fontFamily: azeri;
+    color: #17354E;
+    focusColor: #176C99;
+}
+
+/* Existing styleName="customButton" previously had no centralized rule. */
+.customButton {
+    chromeColor: #E0EAF3;
+    color: #174A69;
+    fontWeight: bold;
+    fontFamily: azeri;
+}

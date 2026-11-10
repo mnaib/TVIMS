@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" creationComplete="init()"
+		 		width="502"
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 xmlns:components="spark.components.*"
+				 xmlns:flextras="http://www.flextras.com/mxml"
+				 xmlns:mx="library://ns.adobe.com/flex/mx">
+				 
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:NumberValidator   trigger="{okbut}" triggerEvent="click"  source="{meridian}"   minValue="44"  maxValue="51"  property="text" integerError="Enter Integer value"
+							  domain="real"   />
+			<mx:NumberValidator  trigger="{okbut}" triggerEvent="click"  source="{paralel}"   minValue="38"  maxValue="42" property="text" integerError="Enter Integer value"
+							  domain="real"   />
+	</fx:Declarations>
+	<s:BorderContainer backgroundColor="0x444444" width="100%" borderColor="0xcccccc" borderWeight="4" cornerRadius="10">
+				
+		<s:VGroup width="100%" gap="10" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15">
+				<s:Label width="100%" height="42" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="30" text="Koordinat  üzrə  Axtarış" textAlign="center" verticalAlign="top"/>
+		
+			
+			<s:HGroup width="460">
+				<s:VGroup gap="10" width="100%" >
+				<s:HGroup gap="10"  width="100%">
+				 
+					<s:Label width="100" height="29" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="20" text="Meridian" textAlign="center" verticalAlign="bottom"/>
+					
+					<s:TextInput id="meridian" width="100%" fontSize="16"  
+								 skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle"
+								 text="{glong1.text}"  textAlign="left"/>
+				</s:HGroup>
+			 
+				<s:HGroup gap="10"   width="100%" >
+				 
+					<s:Label width="100" height="31" color="0xcccccc" fontSize="20" text="Paaralel"
+							 textAlign="center" verticalAlign="bottom"/>
+					<s:TextInput id="paralel" width="100%" fontSize="16"
+								 skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle"
+								 text="{glat1.text}" textAlign="left"/>
+				</s:HGroup>
+					 
+					
+				</s:VGroup>
+				
+				
+			</s:HGroup>
+			<s:BorderContainer backgroundColor="0xcccccc" width="100%">
+				<s:HGroup width="100%" height="61" paddingBottom="15" paddingLeft="10"
+						  paddingRight="10" paddingTop="15" verticalAlign="middle">
+					<s:Button width="100%" label="OK"  id="okbut" click="setDate()"/>
+					<s:Button width="100%" label="İmtina" click="cancelDate()"/>
+				</s:HGroup>
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:BorderContainer>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.utils.WebMercatorUtil;
+			import com.flextras.mobile.autoCompleteComboBox.AutoCompleteComboBoxMobile;
+			
+			import components.MobileAlert;
+			
+			import mx.collections.ArrayCollection;
+			import mx.managers.PopUpManager;
+			[Bindable]
+			public var cavab:Object = new Object();
+			 
+			[Bindable]
+			public var Pauza1:Button;
+			[Bindable]
+			 public var  minuteTimer1:Timer ;
+		 [Bindable]
+			  public var gpsp1:com.esri.ags.Graphic;
+			[Bindable]
+			  public var mapos:Map;
+			[Bindable]
+			  public var gpspoint1:MapPoint;
+			[Bindable]
+			public var glat1:Label;
+			
+			[Bindable]
+			public var glong1:Label;
+			 
+		 
+			private function init(): void
+			{
+			}
+			  
+		 
+			private function setDate(): void
+			{
+				// if (!((meridian.text is Number) && ( paralel.text is Number))) return;
+				  if ( ( isNaN(Number(meridian.text )) ) ||  (isNaN(Number(paralel.text ))) ) return;
+				glong1.text=  meridian.text  ;
+				glat1.text= paralel.text  ;
+				Pauza1.label=">>";	
+				//a. Make sure the X field meridian is set to LON and the Y field is set to LAT. paralel
+				const  mapint:MapPoint     = new MapPoint(Number(meridian.text) , Number(paralel.text)  ,  new SpatialReference(4326))
+				const parmer:MapPoint = WebMercatorUtil.geographicToWebMercator(mapint) as MapPoint;
+				 
+	 				mapos.centerAt( parmer);
+				mapos.level = 16;
+				gpspoint1.x=parmer.x;
+				gpspoint1.y=parmer.y;
+				 
+				gpsp1.refresh();
+			 
+				minuteTimer1.dispatchEvent(new  TimerEvent( TimerEvent.TIMER  ));
+				minuteTimer1.stop();  
+			 	PopUpManager.removePopUp(this);
+			
+			}
+		 
+			private function cancelDate(): void
+			{
+			 
+				PopUpManager.removePopUp(this);
+			}
+		]]>
+	</fx:Script>
+</s:Group>

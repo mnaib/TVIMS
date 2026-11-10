@@ -1,0 +1,1050 @@
+<?xml version='1.0' encoding='utf-8'?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:flextras="http://www.flextras.com/mxml" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:esri="http://www.esri.com/2008/ags" xmlns:components="components.*" xmlns:com="com.*" xmlns:adaptive="com.responsive.*" width="100%" height="100%" destructionPolicy="never" preinitialize="view1_initializeHandler(event)" viewActivate="view2_activateHandler(event)" styleName="tvimsScreen">
+	
+	
+	<fx:Declarations>
+		<s:AnimateColor id="colorEffect" duration="2000" colorPropertyName="borderColor" colorFrom="0x0000FF" colorTo="0xFF0000" repeatCount="2" repeatBehavior="reverse"/>
+		<s:AnimateColor id="colorEffectBackground" colorPropertyName="borderColor" colorFrom="0xBBBBBB" colorTo="0xFF4444" repeatCount="2" repeatBehavior="reverse"/>
+		<s:Resize id="myResizeEffect" widthBy="10" heightBy="10"/>
+		<mx:Blur id="blurImage" duration="500" blurXFrom="0.0" blurXTo="10.0" blurYFrom="0.0" blurYTo="10.0"/>
+		<mx:Blur id="unblurImage" duration="500" blurXFrom="10.0" blurXTo="0.0" blurYFrom="10.0" blurYTo="0.0"/>
+		<mx:StringValidator id="svFirstname" source="{lad}" property="text" requiredFieldError="Firstname is required!" required="true"/>
+		<s:DateTimeFormatter id="dateFormatter" timeStyle="none" dateStyle="medium" locale="az-Latn-AZ"/>
+		<s:FlipViewTransition id="flipTrans" direction="right" duration="1000" mode="cube"/>
+		<s:ZoomViewTransition id="zoomTrans" duration="1000" mode="out"/>
+		<s:CrossFadeViewTransition id="fadeTrans" duration="1000"/>
+		<s:SlideViewTransition id="slideTrans" direction="left" duration="1000" mode="cover"/>
+		<s:DateTimeFormatter id="indi" dateTimePattern="yyyy.MM.dd HH:mm:ss"/>
+	<!--	<s:WebService id="srv" showBusyCursor="true" useProxy="false" wsdl="{wsdlstr}"/>
+	
+		<s:CallResponder id="sray" result="rray(event);"/>
+		<s:CallResponder id="seks" result="reks(event);"/>
+		<s:CallResponder id="sfor" result="rfor(event);"/>
+		<s:CallResponder id="sifarc" result="sifarrf(event);"/>
+		<s:CallResponder id="supd" result="rupd(event);"   fault="y_faultHandler(event)"/>
+		<s:CallResponder id="getid" result="getidr(event);" fault="getid_faultHandler(event)"/>
+		<s:CallResponder id="sadd" result="rsadd(event);"/>
+	-->		
+		<s:RadioButtonGroup id="obyekttip" itemClick="tipsec(event);"/>
+		
+	</fx:Declarations>
+	<fx:Script><![CDATA[
+		import com.*;
+		import com.adobe.serializers.json.*;
+		
+		import components.*;
+		
+		import mx.collections.ArrayCollection;
+		import mx.collections.XMLListCollection;
+		import mx.events.FlexEvent;
+		import mx.events.ItemClickEvent;
+		import mx.rpc.AsyncResponder;
+		import mx.rpc.Fault;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.soap.LoadEvent;
+		import mx.rpc.soap.SOAPResult;
+		import mx.utils.StringUtil;
+		import mx.validators.StringValidator;
+		
+		import spark.components.RadioButton;
+		import spark.components.RadioButtonGroup;
+		import spark.managers.PersistenceManager;
+		[Bindable]
+		private var mufo:Mufo;
+		[Bindable]
+		private var obstip:String="2";
+		[Bindable]
+		private var getalls:Object;
+		
+		private var persistenceManager:PersistenceManager = new PersistenceManager;
+		protected function view1_initializeHandler(event:FlexEvent):void
+		{
+			
+			mufo= persistenceManager.getProperty("mufo") as Mufo;
+			//**srv.wsdl= wsdlstr;
+			
+			/* 	if (mufo.duzelden)			sray.token=srv.execSQL(sqs2, 'DML',
+			'SELECT ad as rayon,id as numre FROM umumi.dbo.bolge where  id in (SELECT [bolge] FROM [Mufettis].[dbo].[istbolge] where istif='+mufo.usid+') ORDER BY ad', 10000);
+			else	sray.token=srv.execSQL(sqs2, 'DML', 'SELECT ad as rayon,id as numre FROM umumi.dbo.bolge ORDER BY ad', 10000);
+			
+			*/
+			nlib.GetUrl( getall+mufo.usid ,allresult);
+		} 
+		public static function convertSQLDate( dateString : String ) : Date
+		{
+			if( dateString == null ) return null;
+			
+			var datePattern : RegExp = /(\d{4}).(\d+).(\d+)( (\d+):(\d+):(\d+))?/;
+			var result : Object = datePattern.exec( dateString );
+			
+			if( result[ 4 ] != null ) return new Date( result[1], result[2] - 1, result[3], result[ 5 ], result[ 6 ], result[ 7 ] );
+			else return new Date( result[1], result[2] - 1, result[3] );            
+			
+		}
+	protected function view2_activateHandler(event:Event):void
+		{
+			
+			//	mufo=persistenceManager.getProperty("mufo") as Mufo;
+			//		srey.token=srv.execSQL(sqs2, 'DML', 'SELECT ad as rayon,id as numre FROM Mufettis.dbo.rey ORDER BY ad', 1000)
+			lad.text=mufo.oad;	
+			unvan.text=mufo.ounv;
+			podrat.text=mufo.opod;
+			if (mufo.obasla) date1=convertSQLDate(mufo.obasla);
+			if (mufo.oson) date2=convertSQLDate(mufo.oson); 
+			if (mufo.otipid !="3") obtip.visible=false;
+		}
+		
+		private function getindex(cmenu:Array,id:String):int
+		{
+			for(var i:int=0;i<cmenu.length;i++){
+				//var num:Number=.getItemAt(i).id;
+				if( cmenu[i].id.toString()==id ) 
+					 return i
+				 
+			}
+		return -1
+		} 		
+		private function tipsec(event:ItemClickEvent):void
+		{ 
+			teysec.selectedIndex=-1;
+			
+			switch (event.index) {
+				//			          	switch (obyekttip.selectedValue) {
+				case 10:
+					obstip="1";
+					teysec.dataProvider=new ArrayCollection(getalls.teyinat );
+					break;
+				case 0:
+					obstip="2";
+					teysec.dataProvider=new ArrayCollection(getalls.teyferdi  );
+					teysec.selectedIndex=0;
+					break;
+				
+				case 1:
+					obstip="3";
+					teysec.dataProvider=new ArrayCollection(getalls.teyqan  );
+					teysec.selectedIndex=0;
+					break;
+			}
+			
+			
+			
+		}
+		private function tipsecxx(event:ItemClickEvent):void
+		{ 
+			teysec.selectedIndex=-1;
+			
+			switch (event.index) {
+				//			          	switch (obyekttip.selectedValue) {
+				case 0:
+					obstip="1";
+					teysec.dataProvider=new ArrayCollection(getalls.teyinat );
+					break;
+				case 1:
+					obstip="2";
+					teysec.dataProvider=new ArrayCollection(getalls.teyferdi  );
+					teysec.selectedIndex=0;
+					break;
+				
+				case 2:
+					obstip="3";
+					teysec.dataProvider=new ArrayCollection(getalls.teyqan  );
+					teysec.selectedIndex=0;
+					break;
+			}
+			
+			
+			
+		}
+		import com.probertson.utils.GZIPEncoder;
+		public var siftip: ArrayCollection;
+		public var  sahtip: ArrayCollection;
+		public var sifreq:String="EXEC [Mufettis].[dbo].[MobSifarAdd] @userid= ";
+		public var sahreq:String="EXEC [Mufettis].[dbo].[MobSahibAdd]  @userid=";
+			public function allresult(event:Event):void
+		{	var xml2:XML=new XML(event.target.data);
+			
+			var xml:XML=new XML(nlib.DataToXml(event.target));
+			xml=xml.normalize();
+			
+			var cemddd:String="";
+			for each (var s:XML in xml.Cedvel)
+			{
+				cemddd+=s.children()[0];
+				
+			}
+			
+			getalls=JSON.parse( cemddd);
+			
+		
+			 
+			
+			
+			qeydealmasec.dataProvider=new ArrayCollection(getalls.qeydealma);
+		//	qeydealmasec.selectedItem= new Object({id:mufo.oqeyd, ad:mufo.oqey});
+		 
+			qeydealmasec.selectedIndex=getindex(qeydealmasec.dataProvider.toArray(),mufo.oqeyid);
+				
+			mmsec.dataProvider=new ArrayCollection(getalls.mm);
+					 mmsec.selectedIndex=getindex( mmsec.dataProvider.toArray(),mufo.ommid );
+
+			
+			bolgesec.dataProvider=new ArrayCollection(getalls.bolge );
+					 bolgesec.selectedIndex=getindex( bolgesec.dataProvider.toArray(),mufo.orayid );
+
+			
+			isteysec.dataProvider=new ArrayCollection(getalls.istey );
+		//	isteysec.selectedIndex=getindex( .dataProvider.toArray(),mufo );
+			var isitems:Vector.<Object>=isteysec.selectedItems;		
+			
+			/* 
+			for(var i:int=0;i<isteysec.dataProvider.length;i++){
+				var ittem:Object= isteysec.dataProvider.getItemAt(i);
+				if(ittem.id==){
+					var stuf:String=cmenu.getItemAt(i).stuff;
+				}
+			} */
+		 
+			if (mufo.it1=="+")		 isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(0));
+			if (mufo.it2=="+")		  isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(1));
+			if (mufo.it3=="+")		 isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(2));
+			if (mufo.it4=="+")	 isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(3));
+			if (mufo.it5=="+")	 isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(4));
+			if (mufo.it6=="+")	 isteysec.selectedItems.push(isteysec.dataProvider.getItemAt(5));
+			 
+			if (mufo.osahil=="+")	 sahilyani.selected=true;
+			if (mufo.oisgal=="+")	 isgal.selected=true;
+			teysec.dataProvider=new ArrayCollection(getalls.teyinat );
+			teysec.selectedIndex=getindex( teysec.dataProvider.toArray(),mufo.oteyid );
+			
+			
+			sifsec.dataProvider=new ArrayCollection(getalls.sifaris );
+			sifsec.selectedIndex=getindex( sifsec.dataProvider.toArray(),mufo.osifid );
+			
+			sahsec.dataProvider=new ArrayCollection(getalls.sahib );
+			sahsec.selectedIndex=getindex( sahsec.dataProvider.toArray(),mufo.osahid );
+			generateQuestions( getalls.obyekttip,mufo.otip );
+		}	
+		
+		[Bindable]
+		private var tablexml:XML=new XML();
+		
+		[Bindable]
+		private var wsdlstr:String="https://service.ttnda.az/agslogin/flexsqladmin.asmx?WSDL";
+		
+		[Bindable]
+		private var  getall :String="EXEC [Mufettis].[dbo].[MobYeniGetAll]  @userid=";
+		
+		[Bindable]
+		private var obtiparr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var  obtipsql :String="EXEC [Mufettis].[dbo].[MobGetObyektTip]  @userid=";
+		
+		
+		[Bindable]
+		private var  sifarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var  sifsql :String="EXEC [Mufettis].[dbo].[MobGetSifaris]  @userid=";
+		
+		[Bindable]
+		private var  saharr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var  sahsql :String="EXEC [Mufettis].[dbo].[MobGetSahib]  @userid=";
+		
+		
+		[Bindable]
+		private var  rayarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var  raysql :String="EXEC [Mufettis].[dbo].[MobGetRayon]  @userid=";
+		
+		[Bindable]
+		private var  teyarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var teysql :String="EXEC [Mufettis].[dbo].[MobGetTeyinat]  @userid=";
+		
+		
+		[Bindable]
+		private var  mmarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var mmsql :String="EXEC [Mufettis].[dbo].[MobGetMM]  @userid=";
+		
+		[Bindable]
+		private var  icarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var icsql :String="EXEC [Mufettis].[dbo].[MobGetIcaze]  @userid=";
+		
+		[Bindable]
+		private  var isteyarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var isteysql :String="EXEC [Mufettis].[dbo].[MobGetIsTey]  @userid=";
+		
+		[Bindable]
+		private  var qaarr:ArrayCollection = new ArrayCollection();	
+		
+		[Bindable]
+		private var qasql :String="EXEC [Mufettis].[dbo].[MobGetQeydAlma]  @userid=";
+		
+		 
+		
+		
+		
+		private function result2(evt:ResultEvent):void
+		{
+			
+			
+			mufo.gor=false;
+			tablexml=XML(evt.result);
+			
+			mufo.osid=tablexml.NewDataSet.Table.id.toString();
+			
+			mufo.oad=tablexml.NewDataSet.Table.ad.toString();
+			
+			//	lfor.text=tablexml.NewDataSet.Table.forma.toString();
+			//	lsah.text=tablexml.NewDataSet.Table.sahib.toString();
+			
+			mufo.orey=tablexml.NewDataSet.Table.reyi.toString();
+			
+			
+			//	ntey.text=tablexml.NewDataSet.Table.teyi.toString();
+			mufo.ounv=tablexml.NewDataSet.Table.unvan.toString();
+			mufo.oqeyd=tablexml.NewDataSet.Table.qeyd.toString();
+			mufo.oray=tablexml.NewDataSet.Table.boll.toString();
+			////	ltar.text=tablexml.NewDataSet.Table.ytarix.toString();
+			
+			//		nad.text=mufo.oad.toString();	
+			
+			//		nrey.text=mufo.orey.toString();
+			
+			//		nunv.text=mufo.ounv.toString();
+			//		nqeyd.text=mufo.oqeyd.toString();
+			//		nray.text=mufo.oray.toString();
+			
+			
+		}
+		
+		protected function execSQLResult1_faultHandler(event:FaultEvent):void
+		{
+			//		inff.text="Servis işləmir, interneti yoxlayin və ya Administratora muraciət edin";
+		}
+		
+		
+		
+		
+		private function generateQuestions(questions:Object,ads:String):void
+		{
+			
+			for each (var option:Object in questions)
+			{
+				var optionButton:RadioButton = new RadioButton();
+				optionButton.label = option.ad;
+				optionButton.groupName="obyekttip";
+				
+				// optionButton.group=
+				obtip.addElement(optionButton );
+				if (option.ad==ads) optionButton.selected=true;
+				//obyekttip.selectedValue=optionButton ;
+			}
+			
+			
+		}
+		
+		
+		private function rray(evt:ResultEvent):void
+		{
+			
+			mufo.gor=false;
+			
+			var xmlResult:XML=new XML(evt.result);
+			var remma4:ArrayCollection=new ArrayCollection();
+			
+			
+			
+			
+			for each (var s:XML in xmlResult.NewDataSet.Table)
+			{
+				
+				var oob:Object=new Object;
+				oob.numre=s.numre;
+				oob.rayon=s.rayon;
+				remma4.addItem(oob);
+			}
+			/* 		aray.source=remma4.source;
+			lray.dataProvider=aray;
+			sfor.token=srv.execSQL(sqs2, 'DML', 'SELECT ad as rayon,id as numre FROM Mufettis.dbo.mm ORDER BY ad', 10000)
+			*/
+		}
+		
+		
+		private function reks(evt:ResultEvent):void
+		{
+			
+			mufo.gor=false;
+			
+			var xmlResult:XML=new XML(evt.result);
+			var remma4:ArrayCollection=new ArrayCollection();
+			
+			
+			
+			
+			for each (var s:XML in xmlResult.NewDataSet.Table)
+			{
+				
+				var oob:Object=new Object;
+				oob.numre=s.numre;
+				oob.rayon=s.rayon;
+				remma4.addItem(oob);
+			}
+			/* 		aeks.source=remma4.source;
+			leks.dataProvider=aeks; */
+			
+		}
+		
+		
+		
+		private function rfor(evt:ResultEvent):void
+		{
+			
+			mufo.gor=false;
+			
+			var xmlResult:XML=new XML(evt.result);
+			var remma4:ArrayCollection=new ArrayCollection();
+			
+			
+			
+			
+			for each (var s:XML in xmlResult.NewDataSet.Table)
+			{
+				
+				var oob:Object=new Object;
+				oob.numre=s.numre;
+				oob.rayon=s.rayon;
+				remma4.addItem(oob);
+			}
+			/* 	afor.source=remma4.source;
+			lfor.dataProvider=afor;
+			lfor.selectedIndex=1;
+			if( mufo.udo=="D")    	lfor.selectedIndex=1;
+			else lfor.selectedIndex=0;
+			//	seks.token=srv.execSQL(sqs2, 'DML', 'SELECT * FROM Mufettis.dbo.MobEto', 10000)
+			*/
+		}
+		
+		
+		private function showTwoColumns2(rowItem:Object):String
+		{
+			return rowItem.rayon + "\  " + rowItem.ad + "\  " + rowItem.id;
+		}
+		
+		private function showTwoColumns(rowItem:Object):String
+		{
+			return rowItem.rayon;
+		}
+		
+		
+		
+		
+		protected function daxilet(event:MouseEvent):void
+		{
+			
+			//	var sin:String = indi.format(new Date()) + (new Date().milliseconds + 1000).toString().substr(1);
+			
+			if (lad.text.length>2 ) 
+			{
+				
+				var sts:String="0";
+				///		if (sifarish.selectedIndex>-1) sts=sifararr[sifarish.selectedIndex].id.toString();
+				
+				//var stt:String=" SELECT (max([id])+1) as osidd  FROM [Mufettis].[dbo].[obyekt]   DECLARE  @ridr int SELECT  @ridr=(max([id])+1)  FROM [Mufettis].[dbo].[obyekt]   INSERT INTO [Mufettis].[dbo].[obyekt]  	([id],[mus],[ad],[bolge],[teyinat],[mm],[E],[qeyd] ,[unvan],[podratci],[rey],[yt]) VALUES";
+				
+				
+				//	var stt:String="  INSERT INTO [Mufettis].[dbo].[obyekt]  	([id],[mus],[ad],[bolge],[teyinat],[mm],[E],[qeyd] ,[unvan],[rey],[yt]) VALUES";
+				//			stt=stt+"(@ridr  ," +sts+" , N'"+Azstring.Azstr(lad.text)+"' ,"+aray[lray.selectedIndex].numre+" , 1 , "+afor[lfor.selectedIndex].numre+" , "+ mufo.usid+" , N'"+Azstring.Azstr(lqeyd.text)+"' , N'"+Azstring.Azstr(lunv.text)+"' , '' , 0 ,'"+sin+"')"+" EXEC [Mufettis].[dbo].[PARSEN] @ridr ";
+				var stt:String="  EXEC  [mufettis].[dbo].[MobObyektUpdate] ";
+				
+				
+				
+				
+				stt=stt+ "@ad=N'" +  Azstring.Azstr(lad.text)+ "'"  ;
+				
+			}
+			else
+			{ lad.setFocus();
+				
+				colorEffect.target= lad;
+				//	colorEffect.end();
+				colorEffect.play()  
+				//	lad.effectStarted(blurImage);
+				//	lad.effectFinished(unblurImage);
+				return;
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (ad 2 hərfdən çox olamalıdır)' , 'Məlumat')
+			}
+			
+			stt=stt+ ",@tip =" + obstip  ;
+			stt=stt+ ",@id =" + mufo.osid ;	
+			
+			if (sifsec.selectedIndex>-1) 
+				/* 	{
+				sifsec.setFocus();
+				sifsec.selectedIndex=-1;
+				sifsec.openDropDown();
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (Sifarişçi seçilməyib )' , 'Məlumat');
+				return;
+				} */		
+				stt=stt+ ",@sifar =" + sifsec.selectedItem.id.toString() ;
+			/* if (sifsec.selectedIndex<0) {
+				sifsec.setFocus();
+				sifsec.selectedIndex=-1;
+				sifsec.openDropDown();
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (Sifarişçi seçilməyib )' , 'Məlumat');
+				return;
+			}		
+			stt=stt+ ",@sifar =" + sifsec.selectedItem.id.toString() ;	  */
+			if (sahsec.selectedIndex>-1)  		stt=stt+ ",@mus =" + sahsec.selectedItem.id.toString() ;
+			
+			if (bolgesec.selectedIndex<0) {
+				
+				bolgesec.setFocus();
+				bolgesec.selectedIndex=-1;
+				bolgesec.openDropDown();
+				//	MobileAlert.show(' Parametrlər düzgün deyil\n (Rayon seçilməyib )' , 'Məlumat');
+				return;
+			}		
+			stt=stt+ ",@bolge =" +  bolgesec.selectedItem.id.toString() ;
+			if (unvan.text.length<5 ) 
+			{unvan.setFocus();
+				//MobileAlert.show(' Parametrlər düzgün deyil\n ( Ünvan tam deyil )' , 'Məlumat');
+				return;
+			}
+			stt=stt+ ",@unvan=N'" +  Azstring.Azstr(unvan.text)+ "'"  ;
+			
+			
+			if( teysec.selectedIndex>-1) stt=stt+ ",@teyinat  =" +  teysec.selectedItem.id.toString() 
+			else {
+				
+				teysec.setFocus();
+				teysec.selectedIndex=-1;
+				teysec.openDropDown();
+				
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (M/M seçilməyib )' , 'Məlumat');
+				return;
+			};
+			if( mmsec.selectedIndex>-1) stt=stt+ ",@mm  =" +  mmsec.selectedItem.id.toString() 
+			else {
+				
+				mmsec.setFocus();
+				mmsec.selectedIndex=-1;
+				mmsec.openDropDown();
+				
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (M/M seçilməyib )' , 'Məlumat');
+				return;
+			}
+			
+			if (podrat.text.length>2 ) 	stt=stt+ ",@podratci=N'" +  Azstring.Azstr(podrat.text)+ "'"  ;
+			
+			if( qeydealmasec.selectedIndex>-1) stt=stt+ ",@qeydealma  =" +  qeydealmasec.selectedItem.id.toString() 
+			else {
+				
+				qeydealmasec.setFocus();
+				qeydealmasec.selectedIndex=-1;
+				qeydealmasec.openDropDown();
+				//MobileAlert.show(' Parametrlər düzgün deyil\n (Qeydəalma seçilməyib )' , 'Məlumat');
+				return;
+			}
+			
+			
+			if (sahilyani.selected ) stt=stt+ ",@sahilyani ='+'" ; 	 
+			if (isgal.selected ) stt=stt+ ",@iao  ='+'"  ;
+			/* if (date1 ) stt=stt+ ",@basla  ='"+date1.fullYear+"/"+(date1.month+1).toString()+"/"+date1.date+" " +
+				date1.hours+":"+date1.minutes+":"+date1.seconds +"'"  ;
+			if (date2 ) stt=stt+ ",@son  ='"+date2.fullYear+"/"+(date2.month+1).toString()+"/"+date2.date+" " +
+			date2.hours+":"+date2.minutes+":"+date2.seconds +"'"  ;		
+	 */		
+			if (vaxtb.text.length>8 )  	stt=stt+ ",@basla='" +  vaxtb.text+ "'"  ;
+			if (vaxts.text.length>8 )  	stt=stt+ ",@son='" +  vaxts.text+ "'" ; 
+			
+			stt=stt+ ",@makadres  ='mob'" ;
+			stt=stt+ ",@ipadres   ='mob'" ;
+			stt=stt+ ",@E="+mufo.usid ;
+	/*		if ((mufo.meridian) && (mufo.paralel))
+			{ 	
+				if ((mufo.meridian.length>3 )   &&  (mufo.paralel.length>3))
+				{stt=stt+ ",@par ="+mufo.paralel;  stt=stt+ ",@mer ="+mufo.meridian  ;}
+			}	 */	
+			var isitems:Vector.<Object>=isteysec.selectedItems;		
+			var itvar:Boolean=true;
+			for each(var item in isteysec.selectedItems )
+			{
+				itvar=false;
+				
+				stt=stt+ ",@it"+(item.id).toString()+  " ='+'" ;
+			}
+			
+			if (itvar) {
+				isteysec.setFocus();
+				
+				isteysec.openDropDown();
+				//MobileAlert.show(' Parametrlər düzgün deyil\n İşin Təyinatı seçilməyib )' , 'Məlumat');
+				return;
+			}
+			//d	stt=stt+sts+" , N'"+Azstring.Azstr(lad.text)+"' ,"+aray[lray.selectedIndex].numre+" , 1 , "+afor[lfor.selectedIndex].numre+" , "+ mufo.usid+" , N'"+Azstring.Azstr(lqeyd.text)+"' , N'"+Azstring.Azstr(lunv.text)+"' , '', 1";//+aeks[leks.selectedIndex].numre;
+			/*
+			@ char(1),
+			@ char(1),	
+			@ nvarchar(50),
+			@ nvarchar(50),
+			@ int 
+			,@ int 
+			,@ int 
+			@  nvarchar(255),
+			@ int,
+			@ int,
+			@ nvarchar(150),
+			@ int,
+			@  int,
+			@ nvarchar(255),
+			@ int,
+			
+			@dtBasla datetime,
+			@dtSon datetime,
+			@ int,
+			
+			
+			*/
+			trace(stt)
+			//+ mufo.osid
+			
+			MobileAlert.show( 'Obyekt  \n  -'+lad.text+'- \n Redaktə eiləcək?', ' Obyekt  Redaktə', 9, this, 
+				function  (event) 
+				{
+					if (event.data == MobileAlert.YES)
+					{
+						nlib.GetUrl(stt  ,resultok);
+					}
+					
+				});
+			
+			
+			// 		bazab.enabled=false;
+			///			getid.token=srv.execSQL(sqs2, 'DHL', stt, 1000)
+			
+		}
+		
+		private function getidr(evt:ResultEvent):void
+		{
+			//	bazab.enabled=true;
+			//	getid.token=srv.execSQL(sqs2, 'DML', 'sde.getobid', 1000)
+			
+			//	SELECT  Right(cast(isnull(max(objectid),0)+100000001 as varchar),8) FROM MFOTO
+			
+			var xmlResult:XML=new XML(evt.result);
+			
+			mufo.osid=xmlResult.NewDataSet.Table.osidd.toString();
+			
+			if ( mufo.osid=="")
+			{
+				MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat')
+				return;  
+			}
+			if( (isNaN(Number( StringUtil.trim(mufo.osid))))  || ( StringUtil.trim(mufo.osid).length==0))
+			{
+				MobileAlert.show('Xəta 25: Yenidən daxil edin ' , 'Məlumat')
+				return;  
+			}	 
+			mufo.oad=Azstring.Azstr(lad.text);	
+			
+			//	lfor.text=tablexml.NewDataSet.Table.forma.toString();
+			//	lsah.text=tablexml.NewDataSet.Table.sahib.toString();
+			
+			
+			
+			
+			//	ntey.text=tablexml.NewDataSet.Table.teyi.toString();
+			
+			
+			//		stt=stt+"(@ridr  , 0 , N'"+lad.text+"' ,"++" , "+atey[ltey.selectedIndex].numre+" , "+lfor.selectedItem.numre+" , "+ mufo.usid+" , N'"+lqeyd.text+"' , N'"+lunv.text+"' , "+arey[lrey.selectedIndex].numre+" ,'"+sin+"')"+" EXEC [Mufettis].[dbo].[PARSEN] @ridr ";
+			
+			MobileAlert.show(mufo.osid+'-No-li Obyekt bazaya  daxil edildi' , 'Məlumat')
+			
+			
+			// + mufo.osid
+			
+			nlib.GetUrl("EXEC Mufettis.dbo.Mobobsecid"  + mufo.osid,resultok);
+			
+			/* 		mufo.oray=aray[lray.selectedIndex].rayon.toString();
+			mufo.ofor=lfor.selectedItem.rayon.toString();
+			mufo.ounv=Azstring.Azstr(lunv.text);		
+			mufo.oqeyd=Azstring.Azstr(lqeyd.text); */
+			persistenceManager.setProperty("mufo",mufo);
+			persistenceManager.save();
+			//
+			//mufo.osah=sifarish.selectedIndex>-1?sifararr[sifarish.selectedIndex].id.toString():"0";;
+		}
+		
+		
+		private function resultok(event:Event):void {
+			
+			
+			mufo.gor=false;
+			
+			
+			trace("AXTAR GGG geldi" +(new Date()).toString()+"--"+(new Date()).milliseconds);
+			
+			var xml:XML=new XML(nlib.DataToXml(event.target));
+			
+			
+			
+			xml=xml.normalize();
+			
+			var cemddd:String="";
+			for each (var s:XML in xml.Cedvel)
+			{
+				cemddd+=s.children()[0];
+				
+			}
+			
+			var	taar =JSON.parse( cemddd);
+			
+			var	aar =taar[0] ;
+			
+			
+			
+			
+			if ( aar.id=="")
+			{
+				MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat')
+				return;  
+			}
+			if( (isNaN(Number( StringUtil.trim(aar.id))))  || ( StringUtil.trim(aar.id).length==0))
+			{
+				MobileAlert.show('Xəta 25: Yenidən daxil edin ' , 'Məlumat')
+				return;  
+			}
+			
+			mufo.Reset();
+			mufo.osid=aar.id.toString(); 
+			
+			mufo.oad=aar.ad.toString();	
+			
+			
+			if (aar.rey)		mufo.orey=aar.rey.toString();
+			
+			
+			//	ntey.text=tablexml.NewDataSet.Table.teyi.toString();
+			if (aar.unvan)	mufo.ounv=aar.unvan.toString();
+			if (aar.tey)		mufo.otey=aar.tey.toString();
+			if (aar.teyid)		mufo.oteyid=aar.teyid.toString();
+			//aar.qeyd	mufo.oqeyd=aar.qeyd.toString();
+			if (aar.ray)		mufo.oray=aar.ray.toString();
+			if (aar.rayid)		mufo.orayid=aar.rayid.toString();
+			 if (aar.meridian)		mufo.meridian= aar.meridian.toString();
+			 if (aar.paralel)		mufo.paralel= aar.paralel.toString();
+			
+			if (aar.pod)		mufo.opod=aar.pod.toString();
+			if (aar.it1)		mufo.it1=aar.it1.toString() ;
+			if (aar.it2)		mufo.it2=aar.it2.toString() ;
+			if (aar.it3)		mufo.it3=aar.it3.toString() ;
+			if (aar.it4)	mufo.it4=aar.it4.toString() ;
+			if (aar.it5)	mufo.it5=aar.it5.toString() ;
+			if (aar.it6)	mufo.it6=aar.it6.toString() ;
+			if (aar.sah)	mufo.osah=aar.sah.toString();
+			if (aar.sahid)	mufo.osahid=aar.sahid.toString();
+			if (aar.sif)	mufo.osif=aar.sif.toString();
+			if (aar.sifid)	mufo.osifid=aar.sifid.toString();
+			if (aar.mmid)	mufo.ommid=aar.mmid.toString();
+			if (aar.mm)	mufo.omm=aar.mm.toString();
+			if (aar.vez)	mufo.ovez=aar.vez.toString();
+			if (aar.qey)		mufo.oqey=aar.qey.toString();
+			if (aar.qeyid)		mufo.oqeyid=aar.qeyid.toString();
+			if (aar.tip)	mufo.otip=aar.tip.toString();
+			if (aar.tipid)	mufo.otipid=aar.tipid.toString();
+			if (aar.vezid)		mufo.ovezid=aar.vezid.toString();
+			if (aar.basla)		mufo.obasla=aar.basla.toString().replace("T","");
+			if (aar.son)			mufo.oson=aar.son.toString().replace("T","");;
+			if (aar.sahilyani)		mufo.osahil=aar.sahilyani.toString();
+			if (aar.isgal)		mufo.oisgal=aar.isgal.toString();
+			
+			////	ltar.text=tablexml.NewDataSet.Table.ytarix.toString();
+			MobileAlert.showt('Redaktə təsdiqləndi ' , 'Məlumat')
+			persistenceManager.setProperty("mufo",mufo);
+			persistenceManager.save();
+			navigator.popView(flipTrans);
+			
+			
+			
+		}
+		
+		
+		
+		private function  sifarrf(evt:ResultEvent):void {
+			
+			
+			tablexml =XML(evt.result);
+			/* 	sifararr.removeAll();
+			for each(var s:XML in tablexml.NewDataSet.Table)
+			{      
+			sifararr.addItem(s);      
+			}				
+			sifarish.dataProvider=sifararr;
+			
+			axtarsifar.searchListCollection=sifararr;
+			axtarsifar.dataGrid=sifarish;
+			sifarish.selectedIndex=0;
+			sad.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].ad);
+			sqeyd.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].qeyd);
+			
+			*/
+		//**	sadd.token=srv.execSQL(sqs2,'DML','select id , ad from  Mufettis.dbo.mustip ' ,10000)
+			nlib.GetUrl( 'select id , ad from  Mufettis.dbo.mustip '  ,rsadd);
+		}
+		
+		private function rsadd(evt:ResultEvent):void
+		{
+			
+			mufo.gor=false;
+			
+			var xmlResult:XML=new XML(evt.result);
+			
+			
+			/* 	saddarr.removeAll();
+			
+			for each(var s:XML in xmlResult.NewDataSet.Table)
+			{      
+			saddarr.addItem(s);      
+			}		
+			
+			sdrop.dataProvider=saddarr;
+			sdrop.selectedIndex=1; */
+			
+		}
+		
+		
+		private function rupd(evt:ResultEvent):void
+		{
+			//	 
+		//**	sifarc.token=srv.execSQL(sqs2,'DML','select  M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id  ' ,15000)
+			MobileAlert.show(mufo.osid+'Sifarişçi əlavə edildi '+'/n'+'Yeniden Sifarişçini seçin'  , 'Məlumat')
+			nlib.GetUrl( 'select  M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id  '   ,sifarrf);
+		}
+		
+		protected function sifarish_sec(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			
+			/* 		sad.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].ad);
+			sqeyd.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].qeyd);
+			*/
+		}
+		
+		protected function yenis(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			//		yenisb.visible = false;
+			
+		}
+		
+		protected function yeniadd(event:MouseEvent):void
+		{
+			var stt:String="DECLARE  @ridr int SELECT  @ridr=(max([id])+1)  FROM [Mufettis].[dbo].[mus]   INSERT INTO [Mufettis].[dbo].[mus]  	([id],[ad],[qeyd],[mustip] ) VALUES";
+			
+			//		stt=stt+"(@ridr  , N'"+sad.text+"' , N'"+Azstring.Azstr(sqeyd.text)+"', "+sdrop.selectedIndex.toString()+")";
+			
+		//**	supd.token=srv.execSQL(sqs2, 'DML', stt, 1000)	
+			nlib.GetUrl( stt   ,rupd);
+		}
+		
+		protected function yenicancel(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			//yenisb.visible = true;
+			
+			//	sad.editable=false;
+			//		sqeyd.editable=false;
+			
+			/* 	sad.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].ad);
+			sqeyd.text=Azstring.Azrec(sifararr[sifarish.selectedIndex].qeyd);
+			*/	
+		}
+		
+		private function getGridColumnLabel(rowItem:Object):String
+		{
+			return rowItem.ad;
+		}
+		
+		
+		protected function axtars(event:MouseEvent):void
+		{
+			// TODO Auto-generated method stub
+			//	sifarc.token=srv.execSQL(sqs2,'DML','select   M.id, M.ad, M.qeyd, T.ad as "tad" from Mufettis.dbo.mus M, Mufettis.dbo.mustip T where M.mustip<>0 and M.mustip=T.id '+ " and M.ad like N'%"+Azstring.Azstr(laxtar.text)+"%'" ,10000)
+			
+		}
+		
+		protected function y_faultHandler(event:FaultEvent):void
+		{
+			
+			bazab.enabled=true;
+			MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat')
+		}
+		protected function getid_faultHandler(event:FaultEvent):void
+		{
+			
+			bazab.enabled=true;
+			MobileAlert.show('Xəta 23: Yenidən daxil edin ' , 'Məlumat')
+		}
+		import com.flexets.android.views.components.DatePicker;
+		import com.flexets.android.views.components.DatePickerEvent;
+		
+		import mx.managers.PopUpManager;
+		[Bindable]
+		public var date1:Date; //=new Date();
+		private function onDateCancel1(event:DatePickerEvent):void
+		{
+			var datePicker:DatePicker=event.target as DatePicker;
+			datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+			datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+		}
+		private function onDateCancel2(event:DatePickerEvent):void
+		{
+			var datePicker:DatePicker=event.target as DatePicker;
+			datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet2);
+			datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel2);
+		}
+		private function onDateSet1(event:DatePickerEvent):void
+		{                                     
+			date1=event.date;
+			onDateCancel1(event);
+			
+		}
+		private function onDateSet2(event:DatePickerEvent):void
+		{
+			date2=event.date;
+			onDateCancel2(event);
+			
+		}
+		private function showDatePicker1():void
+		{  
+			if (!date1)
+				date1=new Date();
+			var datePicker:DatePicker=new DatePicker();
+			datePicker.currentDate=date1;
+			datePicker.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+			datePicker.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+			PopUpManager.addPopUp(datePicker, this, true);
+			PopUpManager.centerPopUp(datePicker);
+		}
+		[Bindable]	 
+		public var sifcavab:Object ;
+		[Bindable]	 
+		public var date2:Date;//=new Date();
+		private function sifadd():void
+		{  
+			var sifpop:SifarADD =new SifarADD();
+			sifpop.tipler=siftip;
+			sifpop.titad="Sifarişçi əlavə et";
+			sifpop.req=sifreq +mufo.usid;
+			sifpop.cavabbox=sifsec;
+			
+			PopUpManager.addPopUp(sifpop, this, true);
+			PopUpManager.centerPopUp(sifpop);
+			
+		}
+		private function sahadd():void
+		{  
+			var sahpop:SahibADD =new SahibADD();
+			sahpop.tipler=sahtip;
+			sahpop.titad="Sahib əlavə et";
+			sahpop.req=sahreq +mufo.usid;
+			sahpop.cavabbox=sahsec;
+			
+			PopUpManager.addPopUp(sahpop, this, true);
+			PopUpManager.centerPopUp(sahpop);
+			
+		}
+		private function showDatePicker2():void
+		{   if (!date2) date2=date1? new Date(date1): new Date()
+			var datePicker2:DatePicker=new DatePicker();
+			datePicker2.currentDate=date2;
+			datePicker2.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet2);
+			datePicker2.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel2);
+			PopUpManager.addPopUp(datePicker2, this, true);
+			PopUpManager.centerPopUp(datePicker2);
+		}
+		
+	]]></fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="bbasck" click="navigator.popView(slideTrans)" icon="@Embed('../assets/back40.png')"/>
+		
+		
+	</s:actionContent>
+	
+	<s:titleContent>
+		<s:Label width="100%" color="white" horizontalCenter="0" text="İstifadəçi: {mufo.uad}" textAlign="center" verticalAlign="middle"/>
+	</s:titleContent>
+	
+	
+	<adaptive:ResponsiveStage fitMode="fill" protectPortrait="true" id="adaptiveStage" designWidth="1280" designHeight="720" width="1280" height="720" includeInLayout="false"><s:Label x="10" y="18" width="80" height="59" fontSize="23" fontWeight="bold" text="Adı" textAlign="right" verticalAlign="middle"/>
+	<s:Button id="bazab" x="911" y="448" width="281" height="48" label=" DAXIL et" click="daxilet(event)" color="#A102FC" enabled="{mufo.duzelden}" fontSize="26"/>
+	
+	
+	<s:TextInput id="lad" x="118" y="10" width="620" height="69" styleName="azStyle" skinClass="spark.skins.mobile.TextAreaSkin"/>
+	<s:TextInput id="unvan" x="118.19998" y="314" width="618" height="51" styleName="azStyle" skinClass="spark.skins.mobile.TextAreaSkin" validationSubField="bunu yaz"/>
+	<s:TextInput id="podrat" x="118.5" y="507" width="615" height="51" prompt="Tikintinin vəziyyəti haqqında qeydlər" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle"/>
+	
+	<s:Button x="911" y="571" width="281" height="49" label="Geriyə" click="navigator.popView(flipTrans)" color="#04700F" fontSize="26"/>
+	
+	<s:Label x="21" y="111" width="98" height="30" fontSize="18" fontWeight="bold" text="Sifarişçi" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="10" y="187" width="98" height="30" fontSize="18" fontWeight="bold" text="Sahib" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="10" y="253" width="98" height="30" fontSize="18" fontWeight="bold" text="Bölgə" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="13" y="329" width="98" height="30" fontSize="18" fontWeight="bold" text="Ünvan" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="10" y="397" width="98" height="30" fontSize="18" fontWeight="bold" text="Təyinat" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="947" y="81" width="211" height="30" fontSize="18" fontWeight="bold" text="İşin Təyinatı" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="1097" y="92" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="83" y="47" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="78" y="265" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="81" y="341" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="81" y="413" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="82" y="463" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label visible="false" x="84" y="409" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="959" y="142" width="153" height="30" fontSize="18" fontWeight="bold" visible="false" text="İcazə verən" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="7" y="586" width="98" height="30" fontSize="18" fontWeight="bold" text="Qeydəalma" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="14" y="512" width="98" height="30" fontSize="18" fontWeight="bold" text="Podratçı" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="31" y="451" width="76" height="30" fontSize="18" fontWeight="bold" text="M/M" textAlign="center" verticalAlign="middle"/>
+	<s:Label x="96" y="598" width="27" height="12" color="#FC0000" fontSize="25" fontWeight="bold" text="*" textAlign="center" verticalAlign="middle"/>
+	<flextras:AutoCompleteComboBoxMobile id="sifsec" x="118.29999" buttonMode="true" y="104" labelField="ad" width="561"/>
+	
+	<s:HGroup x="827" y="20" width="427" height="49" gap="25" id="obtip" visible="false">
+		
+	</s:HGroup>
+	<flextras:DropDownList id="mmsec" x="118.3" y="448" width="617" labelField="ad"/>
+	<flextras:AutoCompleteComboBoxMobile id="sahsec" x="118.25" y="176" width="561" labelField="ad"/>
+	<flextras:AutoCompleteComboBoxMobile id="teysec" x="123.15" y="382" width="618" labelField="ad" enabled="false"/>
+	<flextras:DropDownList id="bolgesec" x="117.899994" y="245" width="621" labelField="ad" typicalItem=""/>
+	<flextras:DropDownList id="qeydealmasec" labelField="ad" x="118.5" y="577" width="615"/>
+	<com:DropDownListEx id="isteysec" x="827" y="110" width="428" height="36" labelField="ad"/>
+	<flextras:DropDownList id="icazesec" x="827" y="170" width="428" height="36" labelField="ad" visible="false"/>
+	
+	<s:CheckBox id="sahilyani" x="880" y="318" width="144" height="42" label="Sahilyan" fontSize="14" fontWeight="bold"/>
+	<s:CheckBox id="isgal" x="1062" y="318" width="144" height="42" label="İşğaldan azad" fontSize="14" fontWeight="bold"/>
+	<s:Button visible="false" x="911" y="421" width="281" height="48" label="Koordinat" click=" navigator.pushView(Koordinat,flipTrans)" color="#A102FC" fontSize="26"/>
+	
+	<s:HGroup x="827" y="248" width="428" height="40">		
+		<s:Button width="185" height="34" label="Sona çatma" click="showDatePicker2()"/>
+		<s:TextInput id="vaxts" width="230" text="{indi.format(date2)}" editable="false" textAlign="center"/>
+	</s:HGroup>
+	<s:HGroup x="827" y="184" width="428" height="40">
+		<s:Button width="185" height="34" label="Başlama" click="showDatePicker1()"/>
+		<s:TextInput id="vaxtb" width="232" text="{indi.format(date1)}" textAlign="center" editable="false"/>
+	</s:HGroup>
+	<s:Button x="698" y="104" height="42" label="+" fontSize="35" click="{sifadd()}"/>
+	<s:Button x="698" y="177" height="42" label="+" fontSize="35" click="{sahadd()}"/>
+	
+</adaptive:ResponsiveStage></s:View>

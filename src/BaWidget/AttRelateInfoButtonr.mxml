@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+////////////////////////////////////////////////////////////////////////////////
+//
+// Version 2.2.2 - Mar 30, 2011
+//
+// Delevoped by Robert Scheitlin
+//
+////////////////////////////////////////////////////////////////////////////////
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%" height="35">
+	<s:layout>
+		<s:HorizontalLayout gap="2" horizontalAlign="center" verticalAlign="middle"/>
+	</s:layout>
+	<fx:Metadata>
+		[Event(name="attachmentBtnClicked", type="flash.events.Event")]
+		[Event(name="relateBtnClicked", type="flash.events.Event")]
+		[Event(name="zoomToBtnClicked", type="flash.events:MouseEvent")]
+		[Event(name="iconBtnClicked", trpe="flash.events:MouseEvent")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.symbols.FillSymbol;
+			
+			import flash.filters.*;
+			
+			import spark.primitives.supportClasses.FilledElement;
+		
+			[Bindable]
+			private var _zoomToBtnToolTip:String;
+			
+			[Bindable]
+			private var _attachBtnToolTip:String;
+			
+			[Bindable]
+			private var _relateBtnToolTip:String;
+		
+			public function set zoomToBtnToolTip(value:String):void
+			{
+				_zoomToBtnToolTip = value;
+			}
+			
+			public function addIconBtn(imageSource:String, btnId:String, toolTip:String = ""):void
+			{
+				var grp:Group = new Group();
+				grp.verticalCenter = 0;
+				grp.horizontalCenter = 0;
+				grp.height =30;
+				grp.width = 30;
+				
+			
+				var rect:Rect = new Rect();
+				rect.right = 1;
+				rect.left = 1;
+				rect.top = 1;
+				rect.bottom = 1;
+				rect.radiusX = 5;
+				rect.radiusY =5; 
+				rect.fill = new SolidColor(getStyle('contentBackgroundColor'),1);
+				var bevFil:spark.filters.BevelFilter = new spark.filters.BevelFilter();
+				bevFil.blurX = bevFil.blurY = 3;
+				bevFil.distance = 1;
+				bevFil.highlightAlpha = 0.5;
+				bevFil.highlightColor = 0xffffff;
+				bevFil.shadowAlpha = 0.3;
+				bevFil.strength = 0;
+				bevFil.shadowColor = 0x000000;
+				bevFil.knockout = true;
+				bevFil.type = BitmapFilterType.FULL;
+				rect.filters = [bevFil];
+				grp.addElement(rect);
+				
+				var gra:Graphic = new Graphic();
+				gra.width = gra.height = 30;
+				gra.buttonMode = gra.useHandCursor = true;
+				gra.addEventListener(MouseEvent.MOUSE_DOWN, function():void{bevFil.angle=225});
+				gra.addEventListener(MouseEvent.MOUSE_UP, function():void{bevFil.angle=45});
+				gra.addEventListener(MouseEvent.MOUSE_OVER, function():void{bevFil.strength=2;});
+				gra.addEventListener(MouseEvent.MOUSE_OUT, function():void{bevFil.strength=0;});
+				gra.toolTip = toolTip;
+				gra.addEventListener(MouseEvent.CLICK, iconBtn_Click);
+				gra.addElement(grp);
+				gra.name = btnId;
+				addElement(gra);
+			}
+			
+			public function set attachBtnToolTip(value:String):void
+			{
+				_attachBtnToolTip = value;
+				//attachBtn.toolTip = value;
+			}
+			
+			
+			
+			private function iconBtn_Click(event:Event):void
+			{
+				event.currentTarget.dispatchEvent(new MouseEvent("iconBtnClicked"));
+			}
+			
+			
+			
+			private function zoomToBtn_Click(event:Event):void
+			{
+				dispatchEvent(new MouseEvent("zoomToBtnClicked"));
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	<s:Graphic id="zoomToBtn"
+			   width="30" height="30"
+			   buttonMode="true" useHandCursor="true"
+			   mouseDown="{zoomToBtnbf.angle=225}"
+			   mouseUp="{zoomToBtnbf.angle=45}"
+			   mouseOver="{zoomToBtnbf.strength=2;}"
+			   mouseOut="{zoomToBtnbf.strength=0;}"
+			   toolTip="{_zoomToBtnToolTip}"
+			   click="zoomToBtn_Click(event)">
+		<s:Group verticalCenter="0" horizontalCenter="0" width="30" height="30">
+			<s:Rect left="1" right="1" top="1" bottom="1"
+					radiusX="5" radiusY="5">
+				<s:fill>
+					<mx:SolidColor id="zoomToBtnfill" color="{getStyle('contentBackgroundColor')}" alpha="1"/>
+				</s:fill>
+				<s:filters>
+					<s:BevelFilter id="zoomToBtnbf" blurX="3" blurY="3" distance="1" highlightAlpha="0.5"
+								   highlightColor="#ffffff" shadowAlpha="0.3" strength="0" shadowColor="#000000"
+								   knockout="true" type="BitmapFilterType.FULL"/>
+				</s:filters>
+			</s:Rect>
+			<s:BitmapImage source="@Embed('../assets/images/sse.png')" height="30" width="30" horizontalCenter="0" verticalCenter="0" />
+		</s:Group>
+	</s:Graphic>
+	</s:Group>

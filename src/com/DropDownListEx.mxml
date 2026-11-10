@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:DropDownList xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx"
+				xmlns:com="com.*"
+				creationComplete="dropdownlist_creationCompleteHandler(event)">
+	<fx:Declarations>
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.events.FlexEvent;
+			
+			private var _selectedItems:Vector.<Object> = new Vector.<Object>();
+			
+			override public function set selectedItems(value:Vector.<Object>):void{
+				this._selectedItems = value;
+			}
+			
+			override public function get selectedItems():Vector.<Object>{
+				return _selectedItems;
+			}
+			
+			override public function get prompt():String{
+				
+				var s:String = "";
+				
+				selectedItems.sort(function compare(x:Object, y:Object):Number {
+					return -(Number(y['index']) - Number(x['index']));
+				});
+				
+				for each(var item:Object in selectedItems){
+					s += (item['ad']+",");
+				}
+				
+				if(s.length > 0){
+					return s.substr(0, s.length - 1);
+				}else{
+					return super.prompt;
+				}
+			}
+			
+			protected function dropdownlist_creationCompleteHandler(event:FlexEvent):void {
+				this.addEventListener("selectedItemsChange", selectedItemsChangeHandler);
+			}
+			
+			private function selectedItemsChangeHandler(evt:Event):void{
+				this.labelDisplay.text = prompt;
+			}
+			
+			override protected function item_mouseDownHandler(event:MouseEvent):void{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:itemRenderer>
+		<fx:Component>
+			<com:CheckBoxItemRenderer/>
+		</fx:Component>
+	</s:itemRenderer>
+</s:DropDownList>
+ 

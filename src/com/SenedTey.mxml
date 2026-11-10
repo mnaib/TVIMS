@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"     creationComplete="init()"
+		 		width="502"
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 xmlns:components="spark.components.*"
+				 xmlns:flextras="http://www.flextras.com/mxml" xmlns:mx="library://ns.adobe.com/flex/mx"
+				 >
+	<fx:Declarations>
+		<s:DateTimeFormatter id="indi" 
+							 dateTimePattern="yyyy.MM.dd"/>
+		<s:DateTimeFormatter id="dateFormatter"
+							 timeStyle="none"
+							 dateStyle="medium"
+							 locale="az-Latn-AZ"/>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer backgroundColor="0x444444" width="100%" borderColor="0xcccccc" borderWeight="4" cornerRadius="10">
+				
+		<s:VGroup width="100%" gap="10" paddingBottom="15" paddingLeft="15" paddingRight="15" paddingTop="15">
+				<s:Label width="100%" height="42" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="30" text="{titad}" textAlign="center" verticalAlign="top"/>
+		
+			
+			<s:HGroup width="460">
+				<s:VGroup gap="10" width="100%" >
+					<s:HGroup gap="10"   width="100%" >
+						
+						<s:Label width="100" height="43" color="0xcccccc" fontSize="20" text="Tip"
+								 textAlign="center" verticalAlign="middle"/>
+						<flextras:DropDownList id="stip"     labelField = "ad"   width="100%"  />
+					</s:HGroup>	
+					<s:HGroup gap="10"   width="100%" >
+						
+						<s:Label width="100" height="43" color="0xcccccc" fontSize="20" text="Tip"
+								 textAlign="center" verticalAlign="middle"/>
+						<flextras:AutoCompleteComboBoxMobile id="stey"    width="100%" labelField="ad"/>
+
+					</s:HGroup>	
+				<s:HGroup gap="10"  width="100%">
+				 
+					<s:Label width="100" y="7" height="43" alignmentBaseline="descent" color="0xcccccc"
+							 fontSize="20" text="Ad-Nömrə" textAlign="center" verticalAlign="middle"/>
+					
+					<s:TextInput id="snomre" width="100%"   textAlign="left" skinClass="spark.skins.mobile.TextAreaSkin" styleName="azStyle" />
+				</s:HGroup>
+				
+				<s:HGroup gap="10"   width="100%" >
+					<s:Label width="100" y="7" height="43" alignmentBaseline="descent" color="0xcccccc" id="lll"
+							 fontSize="20" text="Tarix" textAlign="center" verticalAlign="middle"/>
+				 
+			 <s:TextInput id="starix"  width="100%" skinClass="spark.skins.mobile.TextAreaSkin"   verticalCenter="{lll}"
+						   buttonMode="true"
+						  styleName="azStyle"    click="showDatePicker1()" text="{indi.format(date1)}" textAlign="left"  editable="false"/>
+ 		</s:HGroup>
+					
+				</s:VGroup>
+			 
+			</s:HGroup>
+			<s:BorderContainer backgroundColor="0xcccccc" width="100%">
+				<s:HGroup width="100%" height="61" paddingBottom="15" paddingLeft="10"
+						  paddingRight="10" paddingTop="15" verticalAlign="middle">
+					<s:Button width="100%" label="OK" click="oket()"/>
+					<s:Button width="100%" label="İmtina" click="cancelet()"/>
+				</s:HGroup>
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:BorderContainer>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.flextras.mobile.autoCompleteComboBox.AutoCompleteComboBoxMobile;
+			
+			import components.MobileAlert;
+			
+			import mx.collections.ArrayCollection;
+			 import spark.components.DataGrid
+			import mx.managers.PopUpManager;
+			 [Bindable]
+			public var senedgrid:DataGrid;
+			 
+			[Bindable]
+			public var item: Object;
+			 
+			[Bindable]
+			public var mufo: Mufo;
+			
+			[Bindable]
+			public var QadaganMufObyekt:Boolean ;
+	        [Bindable]
+			public var titad:String=" Sənəd əlavə et";
+		   [Bindable]
+			public var req:String=" EXEC  [Mufettis].[dbo].[MobSenedYeni]    ";
+		 	[Bindable]
+			public var getTey :String=" EXEC  [Mufettis].[dbo].[MobSenedGetTeyinat]    ";
+			[Bindable]
+			public var getTip :String=" EXEC  [Mufettis].[dbo].[MobSenedGetTip]    ";
+			private function init(): void
+			{var stt:String="";
+				stt=stt+ " @osid =" +item.id.toString()  ;
+				stt=stt+ " ,@hal =" +item.hal.toString()  ;
+				
+			stt=stt+ ", @sid =" +item.sened.toString()  ;
+				stt=stt+ " ,@obyekt  ="  +mufo.osid  ;
+				stt=stt+ " ,@user  =" +mufo.usid  ;
+				
+			
+				nlib.GetUrl(getTey +stt  ,teyresult);
+				 
+			}
+			public function teyresult(event:Event):void
+			{	 
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				xml=xml.normalize();
+				var tipray:ArrayCollection = new ArrayCollection();
+				var  siin:int=0;
+				var  sin:int=0;
+				for each (var s:XML in xml.Cedvel)
+				{
+					
+					var oob:Object=new Object();
+			//	if 	(s.sec.toString()=='1')  
+					oob.id=s.id ; 
+					if (s.sec.toString()==1) siin=sin;	
+					oob.ad=s.ad.toString();					 
+					tipray.addItem(oob );
+						 sin++; 
+				}
+			
+				stey.dataProvider =tipray;
+				stey.selectedIndex =siin;
+				var stt:String="";
+				stt=stt+ " @osid =" +item.id.toString()  ;
+				stt=stt+ " ,@hal =" +item.hal.toString()  ;
+				stt=stt+ ", @sid =" +item.sened.toString()  ;
+				stt=stt+ " ,@obyekt  ="  +mufo.osid  ;
+				stt=stt+ " ,@user  =" +mufo.usid  ;
+				nlib.GetUrl(getTip +stt  ,tipresult);
+			} 
+			
+			public function tipresult(event:Event):void
+			{	 
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				xml=xml.normalize();
+				var tipray:ArrayCollection = new ArrayCollection();
+				var  siin:int=0;
+				var  sin:int=0;
+				for each (var s:XML in xml.Cedvel)
+				{
+					
+					var oob:Object=new Object();
+					//	if 	(s.sec.toString()=='1')  
+					oob.id=s.id ; 
+					if (oob.id.toString()==item.hal.toString()) siin=sin;	
+					oob.ad=s.ad.toString();					 
+					tipray.addItem(oob );
+					sin++; 
+				}
+				
+				stip.dataProvider =tipray;
+				stip.selectedIndex =siin;			 
+				starix.text=item.ytarix;
+				snomre.text=item.nomre;
+				
+				if (item.mutleq.toString() == '1')
+				{
+					
+					starix.prompt='Mütləq yazılmalıdır';
+					
+					snomre.prompt='Mütləq yazılmalıdır'; 
+					
+				}
+			} 
+			private function oket(): void
+			{
+					if( stip.selectedIndex<0) 
+					{					
+					stip.setFocus(); 
+					stip.openDropDown();					
+			 			return;
+				}
+					if( stey.selectedIndex<0) 
+					{					
+						stey.setFocus(); 
+						stey.openDropDown();					
+						return;
+					}
+				var stt:String="";
+				stt=stt+ " @osid =" +item.id.toString()  ;
+				stt=stt+ ", @sid =" +item.sened.toString()  ;
+				stt=stt+ ", @obyekt=" +mufo.osid  ;
+				stt=stt+ " ,@user="+mufo.usid  ;
+				 
+					if (starix.text.length<6 ) {
+					starix.focusEnabled=true;
+					return;
+					
+					}
+					if (snomre.text.length<0 ) {
+						snomre.focusEnabled=true;
+					return;
+					
+					}
+					
+				 
+					
+				
+		    	if (starix.text.length>0 ) 		stt=stt+ " ,@tarix=N'" +starix.text  +"'"  ;
+				if (snomre.text.length>0 ) 		stt=stt+ ", @nomre=N'" +snomre.text+"'" ;
+				
+				 stt=stt+ " ,@hal  =" +stip.selectedItem.id.toString()  ;
+				  
+				 stt=stt+ " ,@tey  =" +stey.selectedItem.id.toString() 
+		  	nlib.GetUrl( req+stt ,tallresult,erroret);
+			
+			}
+			
+			private function erroret(event:Event): void
+			{
+				MobileAlert.show('Xəta baş verdi !', 'Məlumat');
+				PopUpManager.removePopUp(this);
+			}
+			
+			public function tallresult(event:Event):void
+			{	var xml2:XML=new XML(event.target.data);
+				
+				var xml:XML=new XML(nlib.DataToXml(event.target));
+				xml=xml.normalize();
+			 var	cavab:String=xml.Cedvel.cavab.toString();
+			 
+				if (cavab !='Ok') {
+					 MobileAlert.show('Xəta: '+cavab , 'Məlumat');
+					 
+					 return; 
+				}
+				nlib.GetUrl("EXEC mufettis.dbo.MobGetSened "+ mufo.osid.toString(),senedr);	
+				 MobileAlert.showt('Əməliyyat təsdiqləndi ! ' , 'Məlumat');
+				PopUpManager.removePopUp(this);
+			}
+			private function senedr(event:Event):void {
+				
+				var sarr:ArrayCollection= new ArrayCollection(); 
+				var xmlResult:XML=new XML(nlib.DataToXml(event.target));
+				
+				
+				for each(var s:XML in xmlResult.Cedvel )
+				{      
+					sarr.addItem(s);      
+				}				
+				
+				senedgrid.dataProvider=sarr;
+				senedgrid.selectedIndex=0;	
+				senedgrid.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+				
+			}	
+			private function cancelet(): void
+			{
+			 
+				PopUpManager.removePopUp(this);
+			}
+			
+			import com.flexets.android.views.components.DatePicker;
+			import com.flexets.android.views.components.DatePickerEvent;
+			[Bindable]
+			public var date1:Date; //=new Date();
+			private function onDateCancel1(event:DatePickerEvent):void
+			{
+				var datePicker:DatePicker=event.target as DatePicker;
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+				datePicker.removeEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+			}
+			private function onDateSet1(event:DatePickerEvent):void
+			{                                     
+				date1=event.date;
+				onDateCancel1(event);
+				
+			}
+			 
+			private function showDatePicker1():void
+			{  
+				if (!date1)
+					date1=new Date();
+				var datePicker:DatePicker=new DatePicker();
+				datePicker.currentDate=date1;
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_SET, onDateSet1);
+				datePicker.addEventListener(DatePickerEvent.DATE_PICKER_CANCEL, onDateCancel1);
+				PopUpManager.addPopUp(datePicker, this, true);
+			 	PopUpManager.centerPopUp(datePicker);
+			}
+			
+			
+		]]>
+	</fx:Script>
+</s:Group>
